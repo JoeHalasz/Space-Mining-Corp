@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Ship
+  - trigger
+  - CinemachineTarget
+  - Asteroid
+  - AsteroidSpawnTrigger
+  - AsteroidSpawnZone
+  - AsteroidSpawnAreaSpawner
+  - Magnet
+  - Cargo
+  - Engine
+  - Power Generator
+  - Battery
+  - Ore Detector
+  - Beacon
+  - Enemy
+  - Seat
+  - NPC
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Background
+  - Water
+  - UI
+  - Player model
+  - Station
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
