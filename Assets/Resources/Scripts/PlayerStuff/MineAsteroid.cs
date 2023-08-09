@@ -14,7 +14,7 @@ public class MineAsteroid : MonoBehaviour
     void Update()
     {
         // when the player left clicks, cast a ray
-        if (Input.GetMouseButton(0) && !uiManager.UIOpen)
+        if (Input.GetMouseButtonDown(0) && !uiManager.UIOpen)
         {
             // cast a ray that stops at the first object it hits
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -29,8 +29,8 @@ public class MineAsteroid : MonoBehaviour
                 {
                     if (hit.transform.GetComponent<AsteroidGenerator>() == null)
                         Destroy(hit.transform.gameObject);
-                    
-                    hit.transform.GetComponent<AsteroidGenerator>().MineAsteroid(transform.gameObject, ray, hit, ray.direction, 5);
+                    else
+                        hit.transform.GetComponent<AsteroidGenerator>().MineAsteroid(transform.gameObject, ray, hit, ray.direction, 5);
                 }
             }
         }

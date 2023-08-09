@@ -23,6 +23,8 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
     List<GameObject> allAsteroids = new List<GameObject>();
 
+    int numAsteroids = 0;
+
     void doTest()
     {
         
@@ -48,10 +50,12 @@ public class TimeAsteroidGeneration : MonoBehaviour
                 if (Random.Range(0, 100) < 10)
                 {
                     GenerateOneAsteroid(new Vector3(x, 0, z), true);
+                    numAsteroids++;
                 }
                 else
                 {
                     GenerateOneAsteroid(new Vector3(x, 0, z), false);
+                    numAsteroids++;
                 }
             }
         }
@@ -84,6 +88,16 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         // add the asteroid to the parents asteroid field
         allAsteroids.Add(newAsteroid);
+
+        if (numAsteroids > (maxAsteroidsX * maxAsteroidsZ) / 2)
+        {
+            newAsteroid.GetComponent<AsteroidGenerator>().increment = .8f;
+        }
+        else
+        {
+            newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
+        }
+
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }
 }

@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9967b2f397f06cd4a93c1c44fb70704b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isBig: 0
+  increment: 0.75
 --- !u!23 &7258035624418149018
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -108,7 +110,7 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
 --- !u!33 &-8582383135295148735
