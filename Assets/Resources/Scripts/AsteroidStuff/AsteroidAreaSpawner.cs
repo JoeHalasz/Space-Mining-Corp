@@ -42,6 +42,7 @@ public class AsteroidAreaSpawner : MonoBehaviour
         
         // add the asteroid to the parents asteroid field
         gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>().AsteroidField.Add(newAsteroid);
+        newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }
 

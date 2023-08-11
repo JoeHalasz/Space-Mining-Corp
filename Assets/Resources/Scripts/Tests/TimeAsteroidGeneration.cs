@@ -25,9 +25,8 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
     int numAsteroids = 0;
 
-    void doTest()
+    IEnumerator doTest()
     {
-        
         // delete all asteroids
         foreach (GameObject asteroid in allAsteroids)
         {
@@ -46,29 +45,43 @@ public class TimeAsteroidGeneration : MonoBehaviour
         {
             for (int z = 0; z < maxAsteroidsZ * spacing; z += spacing)
             {
+                bool isBig = false;
                 // random chance to spawn a big asteroid
                 if (Random.Range(0, 100) < 10)
-                {
-                    GenerateOneAsteroid(new Vector3(x, 0, z), true);
-                    numAsteroids++;
-                }
-                else
-                {
-                    GenerateOneAsteroid(new Vector3(x, 0, z), false);
-                    numAsteroids++;
-                }
+                    isBig = true;
+                
+                GenerateOneAsteroid(new Vector3(x, 0, z), isBig);
+                numAsteroids++;
+
+                yield return WaitForFrames(30);
             }
         }
         stopwatch.Stop();
         Debug.Log("Time to generate " + maxAsteroidsX * maxAsteroidsZ + " asteroids: " + stopwatch.ElapsedMilliseconds + "ms");
+        yield break;
     }
 
-    void Update()
+    public static IEnumerator WaitForFrames(int frameCount)
+    {
+        if (frameCount <= 0)
+        {
+            yield break;
+        }
+
+        while (frameCount > 0)
+        {
+            frameCount--;
+            yield return null;
+        }
+    }
+
+    void FixedUpdate()
     {
         if (redoTest)
         {
             redoTest = false;
-            doTest();
+            IEnumerator coroutine = doTest();
+            StartCoroutine(coroutine);
         }
     }
 
@@ -91,7 +104,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         if (numAsteroids > (maxAsteroidsX * maxAsteroidsZ) / 2)
         {
-            newAsteroid.GetComponent<AsteroidGenerator>().increment = .8f;
+            newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
         }
         else
         {
@@ -100,4 +113,5 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }
+
 }

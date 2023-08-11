@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading;
 
 public class AsteroidGenerator : MonoBehaviour
 {
@@ -10,17 +11,17 @@ public class AsteroidGenerator : MonoBehaviour
     public Item mineralType;
     public bool isBig = false;
 
-    float AsteroidMinSize = 3f; // 12
-    float AsteroidMaxSize = 5; // 15
+    float AsteroidMinSize = 3.2f; // 12
+    float AsteroidMaxSize = 3.7f; // 15
     float AsteroidVariability = 1f;
+
+    ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
 
     List<Vector3> points = new List<Vector3>();
     List<Vector3> outsidePoints = new List<Vector3>();
     IDictionary<Vector3, Color> pointColors = new Dictionary<Vector3, Color>();
 
     IDictionary<Vector3, int> Vertices = new Dictionary<Vector3, int>();
-
-    ConvexHullCalculator ConvexHullCalc = new ConvexHullCalculator();
 
     IDictionary<Vector3, List<Vector3>> pointToCubes = new Dictionary<Vector3, List<Vector3>>();
 
@@ -44,10 +45,13 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateAsteroid()
     {
+        // time it
+        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
         if (isBig)
         {
-            AsteroidMinSize = 6; //18
-            AsteroidMaxSize = 8; //20
+            //AsteroidMinSize = 4f; //18
+            //AsteroidMaxSize = 4.5f; //20
         }
         // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
         float size = Random.Range(AsteroidMinSize, AsteroidMaxSize);
@@ -68,10 +72,10 @@ public class AsteroidGenerator : MonoBehaviour
                     float distance = Vector3.Distance(new Vector3(0,0,0), new Vector3(x, y, z));
 
                     // the further from center, the higher the chances are that the vertex will not be added
-                    if (.6f > distance / maxDistance)
+                    if (.75f > distance / maxDistance)
                     {
                         Vector3 middle = new Vector3(x, y, z);
-                        // generate 6 points around the position of the voxel that make a cube
+                        // generate 8 points around the position of the voxel that make a cube
                         Vector3[] pointsAround = new Vector3[8];
                         pointsAround[0] = new Vector3(x + inbetweenPointSize, y + inbetweenPointSize, z + inbetweenPointSize);
                         pointsAround[1] = new Vector3(x + inbetweenPointSize, y + inbetweenPointSize, z - inbetweenPointSize);
@@ -88,7 +92,7 @@ public class AsteroidGenerator : MonoBehaviour
                         {
                             // get the distance from the center of the asteroid
                             float distanceFromCenter = Vector3.Distance(new Vector3(0, 0, 0), point);
-                            if (.6f > distanceFromCenter / maxDistance)
+                            if (.75f > distanceFromCenter / maxDistance)
                             {
                                 if (!pointsSetPositions.ContainsKey(point))
                                 {
@@ -106,7 +110,14 @@ public class AsteroidGenerator : MonoBehaviour
                 }
             }
         }
-        
+
+        // stop the timer
+        stopwatch.Stop();
+        //Debug.Log("part1 took: " + stopwatch.Elapsed.ToString());
+
+        stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+
         float addRandomness = inbetweenPointSize;
 
         // add some randomness to each point and give each point a color
@@ -119,8 +130,8 @@ public class AsteroidGenerator : MonoBehaviour
         {
             Color color = Random.Range(0, 10) < 9 ? mineralType.getColor() : new Color(.2f, .2f, .2f);
 
-            if (increment >= 1f)
-                color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0, 1f));
+            //if (increment >= 1f)
+            //    color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0, 1f));
                 
             // put the point into pointToCubes
             foreach (int index in cube)
@@ -139,19 +150,22 @@ public class AsteroidGenerator : MonoBehaviour
             }
 
         }
+        stopwatch.Stop();
+        //Debug.Log("part2 took: " + stopwatch.Elapsed.ToString());
 
+        // spawn a thread to generate the mesh
         GenerateMesh();
 
     }
 
-    void GenerateMesh()
-    {
-        List<Vector3> allVerts = new List<Vector3>();
-        List<int> allTris = new List<int>();
-        List<Vector3> allNormals = new List<Vector3>();
+    List<Vector3> allVerts;
+    List<int> allTris;
+    List<Vector3> allNormals;
 
-        foreach (List<int> cube in cubesPointIndecies)
-        {
+    void GenerateVertsTrisAndNormalsForList(List<List<int>> cubes)
+    {
+        ConvexHullCalculator ConvexHullCalc = new ConvexHullCalculator();
+        foreach (List<int> cube in cubes){
             List<Vector3> verts = new List<Vector3>();
             List<int> tris = new List<int>();
             List<Vector3> normals = new List<Vector3>();
@@ -161,25 +175,49 @@ public class AsteroidGenerator : MonoBehaviour
             {
                 pointInThisCube.Add(points[index]);
             }
-
             ConvexHullCalc.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
-
             // add the verts and tris to the allVerts and allTris
-            foreach (Vector3 vert in verts)
-            {
-                allVerts.Add(vert);
-            }
-            foreach (int tri in tris)
-            {
-                allTris.Add(tri + allVerts.Count - verts.Count);
-            }
-            foreach (Vector3 normal in normals)
-            {
-                allNormals.Add(normal);
-            }
-
+            AddToArrays(verts, tris, normals);
         }
+    }
 
+    void AddToArrays(List<Vector3> verts, List<int> tris, List<Vector3> normals)
+    {
+        // lock allVerts so its threadsafe
+        lock (allVerts)
+        {
+            lock (allTris)
+            {
+                lock (allNormals)
+                {
+                    allVerts.AddRange(verts);
+                    foreach (int tri in tris)
+                    {
+                        allTris.Add(tri + allVerts.Count - verts.Count);
+                    }
+                    allNormals.AddRange(normals);
+                }
+            }
+        }
+    }
+
+    void GenerateMesh()
+    {
+        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
+        stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+        allVerts = new List<Vector3>();
+        allTris = new List<int>();
+        allNormals = new List<Vector3>();
+
+        GenerateVertsTrisAndNormalsForList(cubesPointIndecies);
+        stopwatch.Stop();
+        //Debug.Log("part3 without threads took: " + stopwatch.Elapsed.ToString());
+        
+
+        stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
         Color[] colors = new Color[allVerts.Count];
         //for every vert add a color
         for (int i = 0; i < allVerts.Count; i++)
@@ -204,6 +242,8 @@ public class AsteroidGenerator : MonoBehaviour
         GetComponent<MeshCollider>().sharedMesh = mesh;
 
         GetComponent<MeshFilter>().mesh = mesh;
+        stopwatch.Stop();
+        //Debug.Log("part4 took: " + stopwatch.Elapsed.ToString());
     }
 
 
@@ -275,35 +315,49 @@ public class AsteroidGenerator : MonoBehaviour
 
         cubesPointIndecies = newCubesPointIndecies;
 
-        //// loop through all cubes, and if none of a cubes points are apart of another cube then remove the cube
-        //newCubesPointIndecies = new List<List<int>>();
-        //foreach (List<int> cube in cubesPointIndecies)
-        //{
-        //    bool isPartOfAnotherCube = false;
-        //    foreach (List<int> otherCube in cubesPointIndecies)
-        //    {
-        //        if (cube != otherCube)
-        //        {
-        //            foreach (int index in cube)
-        //            {
-        //                if (otherCube.Contains(index))
-        //                {
-        //                    Debug.Log("HJere");
-        //                    isPartOfAnotherCube = true;
-        //                    break;
-        //                }
-        //            }
-        //            if (isPartOfAnotherCube)
-        //                break;
-        //        }
-        //    }
-        //    if (!isPartOfAnotherCube)
-        //    {
-        //        newCubesPointIndecies.Add(cube);
-        //    }
-        //}
 
-        //cubesPointIndecies = newCubesPointIndecies;
+        // remove any cubes if they are not attached to any other cube
+        IDictionary<Vector3, int> pointCopies = new Dictionary<Vector3, int>();
+
+        // loop through all the cubes
+        foreach (List<int> cube in cubesPointIndecies)
+        {
+            // loop through all the points in the cube
+            foreach (int index in cube)
+            {
+                // if the point is not in pointCopies then add it
+                if (!pointCopies.ContainsKey(points[index]))
+                {
+                    pointCopies.Add(points[index], 1);
+                }
+                // if the point is in pointCopies then add one to the value
+                else
+                {
+                    pointCopies[points[index]]++;
+                }
+            }
+        }
+
+        newCubesPointIndecies = new List<List<int>>();
+        // loop through all the cubes
+        foreach (List<int> cube in cubesPointIndecies)
+        {
+            // if all of the points in the cube are 1 then delete the cube
+            bool deleteCube = true;
+            foreach (int index in cube)
+            {
+                if (pointCopies[points[index]] != 1)
+                {
+                    deleteCube = false;
+                }
+            }
+            if (!deleteCube)
+            {
+                newCubesPointIndecies.Add(cube);
+            }
+        }
+
+        cubesPointIndecies = newCubesPointIndecies;
 
 
     }
@@ -355,7 +409,7 @@ public class AsteroidGenerator : MonoBehaviour
 
         GenerateVertices2(dimentions, Voxels);
         // generate the mesh
-        GenerateMesh();
+        GenerateMesh2();
 
         Vector3 center = new Vector3(dimentions.x / 2, dimentions.y / 2, dimentions.z / 2);
         // randomly rotate the asteroid from the center
@@ -369,7 +423,7 @@ public class AsteroidGenerator : MonoBehaviour
         List<int> tris = new List<int>();
         List<Vector3> normals = new List<Vector3>();
         // get just outer points
-        ConvexHullCalc.GenerateHull(points, true, ref verts, ref tris, ref normals);
+        ConvexHullCalcGlobal.GenerateHull(points, true, ref verts, ref tris, ref normals);
 
         // generate the colors based off of the mineralType
         Color[] colors = new Color[verts.Count];
@@ -568,5 +622,118 @@ public class AsteroidGenerator : MonoBehaviour
         points.Remove(closestPoint);
         outsidePoints.Remove(closestPoint);
     }
+
+
+    //void RemovePointClosestToRay3(Vector3 hitPoint)
+    //{
+    //    float closestDistance = Mathf.Infinity;
+
+    //    // make the closest point 10 away so that they player cant hit really far away asteroids
+    //    Vector3 closestPoint = Vector3.zero;
+    //    Vector3 asteroidCurrentPosition = transform.position;
+    //    // find the closest point to the rays hit
+    //    int spot1 = 0;
+    //    int i = 0;
+    //    foreach (Vector3 point in outsidePoints)
+    //    {
+    //        float distance = Vector3.Distance(hitPoint, point + asteroidCurrentPosition);
+    //        if (distance < closestDistance)
+    //        {
+    //            closestDistance = distance;
+    //            closestPoint = point;
+    //            spot1 = i;
+    //        }
+    //        i++;
+    //    }
+
+    //    // remove the closest point
+    //    points.Remove(closestPoint);
+    //    outsidePoints.Remove(closestPoint);
+
+    //    if (points.Count <= 5)
+    //    {
+    //        return;
+    //    }
+
+    //    // find the closest point to the point that was removed
+    //    closestDistance = Mathf.Infinity;
+    //    Vector3 closestPoint2 = Vector3.zero;
+    //    i = 0;
+    //    int spot2 = 0;
+    //    foreach (Vector3 point in points)
+    //    {
+
+    //        float distance = Vector3.Distance(closestPoint, point);
+    //        if (distance < closestDistance)
+    //        {
+    //            // if the point isnt in outside points
+    //            if (!outsidePoints.Contains(point))
+    //            {
+    //                closestDistance = distance;
+    //                closestPoint2 = point;
+    //                spot2 = i;
+    //            }
+    //        }
+    //        i++;
+    //    }
+
+    //    // add it to outside points
+    //    outsidePoints.Add(closestPoint2);
+
+    //    // replace all spot1s in verts with spot2
+    //    for (int j = 0; j < verts.Count; j++)
+    //    {
+    //        if (verts[j] == closestPoint)
+    //        {
+    //            verts[j] = closestPoint2;
+    //        }
+    //    }
+
+    //    // recalculate uvs
+    //    Vector2[] uvs = new Vector2[verts.Count];
+    //    for (int j = 0; j < verts.Count; j++)
+    //    {
+    //        uvs[j] = new Vector2(verts[j].x, verts[j].z);
+    //    }
+
+    //    // replace the meshes verts and uvs
+
+
+    //    GetComponent<MeshFilter>().mesh.vertices = verts.ToArray();
+    //    GetComponent<MeshFilter>().mesh.uv = uvs;
+
+    //    GetComponent<MeshFilter>().mesh.RecalculateNormals();
+    //    GetComponent<MeshFilter>().mesh.RecalculateBounds();
+
+
+    //    //// replace all spot1s in tris with spot2
+    //    //for (int j = 0; j < tris.Length; j++)
+    //    //{
+    //    //    if (tris[j] == spot1)
+    //    //    {
+    //    //        tris[j] = spot2;
+    //    //    }
+    //    //}
+
+    //    //// replace all spot1s in each normals vector3 with spot2
+    //    //for (int j = 0; j < normals.Length; j++)
+    //    //{
+    //    //    for (int k = 0; k < normals[j].Length; k++)
+    //    //    {
+    //    //        if (normals[j][k] == spot1)
+    //    //        {
+    //    //            normals[j][k] = spot2;
+    //    //        }
+    //    //    }
+    //    // }
+
+
+
+
+
+    //}
+
+
+
 }
 
