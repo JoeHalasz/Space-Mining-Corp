@@ -53,7 +53,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
                 GenerateOneAsteroid(new Vector3(x, 0, z), isBig);
                 numAsteroids++;
 
-                yield return WaitForFrames(30);
+                yield return WaitForFrames(7);
             }
         }
         stopwatch.Stop();
@@ -94,7 +94,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         // random mineral based on the world position
         // worldPosition = asteroid pos + asteroid area spawner position + asteroid field position
-        Vector3 worldPosition = position + transform.position + transform.parent.position;
+        Vector3 worldPosition = position + transform.position;
 
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = minerals.GetMineralTypeFromPos(worldPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;

@@ -4,12 +4,11 @@ using UnityEngine;
 public class TurnZoneOn : MonoBehaviour
 {
 
-    Minerals minerals;
+    AsteroidSpawnManager asteroidSpawnManager;
 
     void Start()
     {
-        minerals = new Minerals();
-        minerals.SetUp();
+        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
     }
 
     // if this enters a trigger that is tagged as "AsteroidSpawnZone", spawn asteroids in that zone
@@ -18,7 +17,7 @@ public class TurnZoneOn : MonoBehaviour
         if (other.gameObject.tag == "AsteroidSpawnZone")
         {
             // call the GenerateAsteroids funtion of other
-            other.gameObject.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(minerals);
+            other.gameObject.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(asteroidSpawnManager);
         }
     }
 }

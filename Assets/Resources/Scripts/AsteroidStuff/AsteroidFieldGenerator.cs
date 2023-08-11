@@ -30,11 +30,15 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     public Minerals minerals;
 
+    AsteroidSpawnManager asteroidSpawnManager;
+
     // Start is called before the first frame update
     void Start()
     {
         minerals = new Minerals();
         minerals.SetUp();
+
+        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
 
         if (SpawnAsteroidField)
         {
@@ -77,7 +81,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().density = density * (sizeOfPartitions / 1000f);
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().height = (height / ((height - negativeHeight) / sizeOfPartitions));
-        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(minerals);
+        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(asteroidSpawnManager);
         // add to the dictionary
         areaPositions.Add(pos, true);
     }
