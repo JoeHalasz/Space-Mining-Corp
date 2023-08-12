@@ -8,6 +8,7 @@ public class Mission
     public string GetName() { return Name; }
     string Description;
     public string GetDescription() { return Description; }
+    public void SetDescription(string desc) { Description = desc; }
     int Level;
     public int GetLevel() { return Level; }
     float CreditsReward;

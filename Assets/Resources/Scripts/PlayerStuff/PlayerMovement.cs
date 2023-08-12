@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.InputSystem;
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
  */
@@ -51,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
 
     private const float _threshold = 0.01f;
 
+    private InputActionAsset inputs;
+
     private bool _hasAnimator;
 
     Rigidbody _rigidBody;
@@ -70,7 +72,6 @@ public class PlayerMovement : MonoBehaviour
     public void UnlockPlayerMovement() { 
         lockPlayerMovement = false; 
         lockedReason = null; 
-
         // unfreze the rigidbodys position
         _rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
     }
@@ -97,6 +98,10 @@ public class PlayerMovement : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody>();
 
         AssignAnimationIDs();
+        // get the input action reference
+        inputs = GetComponent<PlayerInput>().actions;
+        // enable it
+        inputs.Enable();
     }
 
     private void Update()
@@ -142,30 +147,29 @@ public class PlayerMovement : MonoBehaviour
     {
         // this is when the player is floating 
 
-
-        // rotate in the z axis with q and e
-        if (Input.GetKey(KeyCode.Q) && !Grounded)
+        if (!Grounded && inputs["RollLeft"].ReadValue<float>() == 1)
         {
             transform.rotation *= Quaternion.Euler(0, 0, 100 * Time.deltaTime);
         }
-        else if (Input.GetKey(KeyCode.E) && !Grounded)
+        if (!Grounded && inputs["RollRight"].ReadValue<float>() == 1)
         {
             transform.rotation *= Quaternion.Euler(0, 0, -100 * Time.deltaTime);
         }
+
         float zBefore = transform.rotation.z;
 
         Vector3 targetVelocity = new Vector3();
 
-        if (Input.GetKey(KeyCode.W))
+        if (inputs["MoveForward"].ReadValue<float>() == 1)
         {
             targetVelocity += transform.forward * _flySpeed;
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (inputs["MoveBackward"].ReadValue<float>() == 1)
         {
             targetVelocity -= transform.forward * _flySpeed;
         }
         // side to side movements
-        if (Input.GetKey(KeyCode.D))
+        if (inputs["MoveRight"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -176,7 +180,7 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity += transform.right * _flySpeed;
             }
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (inputs["MoveLeft"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -188,7 +192,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         // up and down movements
-        if (Input.GetKey(KeyCode.Space))
+        if (inputs["MoveUp"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -199,7 +203,7 @@ public class PlayerMovement : MonoBehaviour
                 targetVelocity += transform.up * _flySpeed;
             }
         }
-        else if (Input.GetKey(KeyCode.LeftControl))
+        else if (inputs["MoveDown"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -211,7 +215,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // if the player right clicks, teleport them 100 units in the direction they are facing
+        // if the player right clicks, teleport them 100 units in the direction they are facing. This will be removed for real game
         if (Input.GetMouseButtonUp(1))
         {
             transform.position += transform.forward * 100;
@@ -257,9 +261,6 @@ public class PlayerMovement : MonoBehaviour
 
         _rigidBody.velocity = playerVelocity;
     }
-
-
-
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {

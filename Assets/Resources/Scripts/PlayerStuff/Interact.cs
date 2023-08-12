@@ -1,11 +1,11 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Interact : MonoBehaviour
 {
 
     InteractWithInventory inventoryHitHandler;
     PlayerMovement playerMovement;
-
 
     // Start is called before the first frame update
     void Start()
@@ -15,12 +15,12 @@ public class Interact : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
     }
 
-    // Update is called once per frame
-    void Update()
+
+    public void OnInteract(InputAction.CallbackContext context)
     {
-        
-        if (Input.GetKeyDown(KeyCode.F))
+        if (context.started)
         {
+
             // if the player is sitting, then unsit them
             if (playerMovement.getIsLocked())
             {
@@ -37,7 +37,7 @@ public class Interact : MonoBehaviour
                 }
                 // player is in a menu, so close it
                 playerMovement.UnlockPlayerInputs();
-                
+
             }
             else if (playerMovement.getPlayerInputsLocked() && playerMovement.GetLockedReason().tag == "NPC")
             {
@@ -67,10 +67,9 @@ public class Interact : MonoBehaviour
                     }
                 }
             }
-
-            
         }
     }
+
 
     public void HandleValidHit(Ray ray, RaycastHit hit)
     {

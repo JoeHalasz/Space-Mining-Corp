@@ -65,7 +65,6 @@ public class Inventory : MonoBehaviour
         {
             if (pair != null)
                 Debug.Log(gameObject.name + "Inv " + i + ": " + pair.item.getName() + " " + pair.amount);
-            
             i++;
         }
     }
@@ -108,7 +107,7 @@ public class Inventory : MonoBehaviour
             if (items[pos] == null)
             {
                 items[pos] = itemPair;
-                PrintInv();inventoryUIScript.UpdateInventory();
+                inventoryUIScript.UpdateInventory();
                 return null; // this means the other inv should replace the slot this came from with null
             }
             else
@@ -119,11 +118,11 @@ public class Inventory : MonoBehaviour
                     if (!items[pos].addAmount(amount))
                     {
                         float totalLeft = items[pos].addAmountPossible(amount);
-                        PrintInv();inventoryUIScript.UpdateInventory();
+                        inventoryUIScript.UpdateInventory();
                         // make a new item pair with the amount that couldnt be added
                         return new ItemPair(item, totalLeft);
                     }
-                    PrintInv();inventoryUIScript.UpdateInventory();
+                    inventoryUIScript.UpdateInventory();
                     return null; // this means the other inv should replace the slot this came from with null
                 }
                 else
@@ -132,7 +131,7 @@ public class Inventory : MonoBehaviour
                     // should act like item swap
                     ItemPair oldItemPair = items[pos];
                     items[pos] = itemPair;
-                    PrintInv();inventoryUIScript.UpdateInventory();
+                    inventoryUIScript.UpdateInventory();
                     return oldItemPair;
                 }
             }
@@ -166,19 +165,19 @@ public class Inventory : MonoBehaviour
                 itemPair.amount -= totalLeft;
                 if (totalLeft == 0)
                 {
-                    PrintInv();inventoryUIScript.UpdateInventory();
+                    inventoryUIScript.UpdateInventory();
                     return null;
                 }
             }
             if (nullSpots.Count != 0)
             {
                 items[nullSpots[0]] = itemPair;
-                PrintInv();inventoryUIScript.UpdateInventory();
+                inventoryUIScript.UpdateInventory();
                 return null;
             }
             else
             {
-                PrintInv();inventoryUIScript.UpdateInventory();
+                inventoryUIScript.UpdateInventory();
                 return itemPair;
             }
         }
@@ -191,13 +190,13 @@ public class Inventory : MonoBehaviour
         ItemPair itemPair2 = items[newIndex];
         items[index] = itemPair2;
         items[newIndex] = itemPair;
-        PrintInv();inventoryUIScript.UpdateInventory();
+        inventoryUIScript.UpdateInventory();
     }
 
     public void removeItem(int index)
     {
         items[index] = null;
-        PrintInv();inventoryUIScript.UpdateInventory();
+        inventoryUIScript.UpdateInventory();
     }
 
     public ItemPair getItemAtPos(int index)

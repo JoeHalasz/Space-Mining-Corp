@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class OpenInventoryUI : MonoBehaviour
 {
@@ -117,21 +118,24 @@ public class OpenInventoryUI : MonoBehaviour
 
     int mouseHoldThreshhold = 4;
 
-    // Update is called once per frame
-    void Update()
+    public void ShowOrHideUI(InputAction.CallbackContext context)
     {
         // if the player presses tab and the inventory is not open, open it else close it
-        if (IsOnPlayer && Input.GetKeyDown(KeyCode.Tab) && !inventoryUI.activeSelf && !GetComponent<UIManager>().UIOpen)
+        if (IsOnPlayer && !inventoryUI.activeSelf && !GetComponent<UIManager>().UIOpen)
         {
             ShowInventory(this.gameObject);
             GetComponent<UIManager>().UIOpen = true;
         }
-        else if (IsOnPlayer && Input.GetKeyDown(KeyCode.Tab) && inventoryUI.activeSelf)
+        else if (IsOnPlayer && inventoryUI.activeSelf)
         {
             HideInventory();
             GetComponent<UIManager>().UIOpen = false;
         }
+    }
 
+    // Update is called once per frame
+    void Update()
+    {
         if (inventoryOpen)
         {
             if (Input.GetMouseButtonDown(0) || (mouseDownFrames > mouseHoldThreshhold && !Input.GetMouseButton(0) && (heldItem != null || (LastCaller != null && LastCaller.GetComponent<OpenInventoryUI>().heldItem != null))))
@@ -167,12 +171,11 @@ public class OpenInventoryUI : MonoBehaviour
                         xSquare = (int)x;
                         ySquare = (int)y;
                     }
-
                 }
                 if (InSquare)
                 {
                     int pos = getFlatPos(xSquare, ySquare);
-                    Debug.Log(xSquare + " " + ySquare + " " + pos);
+
                     bool shiftPressed = Input.GetKey(KeyCode.LeftShift);
                     Inventory thisInventory = GetComponent<Inventory>();
                     Inventory otherInventory = LastCaller.GetComponent<Inventory>();

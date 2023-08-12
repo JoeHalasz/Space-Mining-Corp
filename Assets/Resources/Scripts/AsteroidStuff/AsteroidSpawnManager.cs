@@ -60,8 +60,11 @@ public class AsteroidSpawnManager : MonoBehaviour
             }
 
             if (initialLoadFinished)
-                yield return WaitForFrames(7);
                 // wait 7 frames
+                yield return WaitForFrames(7);
+            else if (AsteroidPositionsSpawnQueue.Count % 100 == 0)
+                yield return 0;
+                
         }
     }
 

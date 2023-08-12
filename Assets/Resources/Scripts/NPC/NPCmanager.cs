@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using static System.Net.Mime.MediaTypeNames;
 
 public class NPCmanager : MonoBehaviour
 {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -19,6 +20,10 @@ public class ShipMovement : MonoBehaviour
 
     Rigidbody _rigidBody;
 
+    GameObject player;
+
+    private InputActionAsset inputs;
+
     bool lockMovement = true;
     public bool getIsLocked() { return lockMovement; }
 
@@ -28,6 +33,12 @@ public class ShipMovement : MonoBehaviour
     private void Start()
     {
         _rigidBody = GetComponent<Rigidbody>();
+        // find the player
+        player = GameObject.Find("Player");
+        // get the input action reference
+        inputs = player.GetComponent<PlayerInput>().actions;
+        // enable it
+        inputs.Enable();
     }
 
     private void Update()
@@ -40,11 +51,11 @@ public class ShipMovement : MonoBehaviour
     private void NormalMove()
     {
         // rotate in the z axis with q and e
-        if (Input.GetKey(KeyCode.Q))
+        if (inputs["RollLeft"].ReadValue<float>() == 1)
         {
             transform.rotation *= Quaternion.Euler(0, 0, 100 * Time.deltaTime);
         }
-        else if (Input.GetKey(KeyCode.E))
+        else if (inputs["RollRight"].ReadValue<float>() == 1)
         {
             transform.rotation *= Quaternion.Euler(0, 0, -100 * Time.deltaTime);
         }
@@ -52,16 +63,16 @@ public class ShipMovement : MonoBehaviour
 
         Vector3 targetVelocity = new Vector3();
 
-        if (Input.GetKey(KeyCode.W))
+        if (inputs["MoveForward"].ReadValue<float>() == 1)
         {
             targetVelocity += transform.forward * _flySpeed;
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (inputs["MoveBackward"].ReadValue<float>() == 1)
         {
             targetVelocity -= transform.forward * _flySpeed;
         }
         // side to side movements
-        if (Input.GetKey(KeyCode.D))
+        if (inputs["MoveRight"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -72,7 +83,7 @@ public class ShipMovement : MonoBehaviour
                 targetVelocity += transform.right * _flySpeed;
             }
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (inputs["MoveLeft"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -84,7 +95,7 @@ public class ShipMovement : MonoBehaviour
             }
         }
         // up and down movements
-        if (Input.GetKey(KeyCode.Space))
+        if (inputs["MoveUp"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {
@@ -95,7 +106,7 @@ public class ShipMovement : MonoBehaviour
                 targetVelocity += transform.up * _flySpeed;
             }
         }
-        else if (Input.GetKey(KeyCode.LeftControl))
+        else if (inputs["MoveDown"].ReadValue<float>() == 1)
         {
             if (targetPitch < -90 || targetPitch > 90)
             {

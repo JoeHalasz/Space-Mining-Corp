@@ -110,6 +110,7 @@ public class FactionManager : MonoBehaviour
             }
             if (!found)
             {
+                newMission.SetDescription(factionName + " needs some " + newMission.GetDescription());
                 currentMissions.Add(newMission);
             }
         }
