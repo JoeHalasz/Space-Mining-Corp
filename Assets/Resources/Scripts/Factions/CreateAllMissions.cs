@@ -24,7 +24,7 @@ public class CreateAllMissions
                 // make the reward based on the amount to mine with a little bit of randomness
                 float creditsReward = amountToMine * mineral.getSellValue();
                 // do the same for rep
-                float reputationReward = amountToMine * mineral.getSellValue() * .1f;
+                float reputationReward = amountToMine * mineral.getSellValue() / 200000f;
 
 
                 string name;

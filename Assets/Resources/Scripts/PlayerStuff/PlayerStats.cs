@@ -8,8 +8,13 @@ public class PlayerStats : MonoBehaviour
     float playerCredits;
     float playerHealth;
 
-    GameObject playerCurrentShip;
-    
+    public GameObject playerCurrentShip;
+
+    public int numMainMissionsDone = 0;
+
+    int numCargoSlots = 8;
+    public int GetNumCargoSlots() { return numCargoSlots; }
+
     Dictionary<string, float> playerReputation = new Dictionary<string, float>();
 
     public float getCredits()

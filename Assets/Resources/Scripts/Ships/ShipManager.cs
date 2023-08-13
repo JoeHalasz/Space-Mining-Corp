@@ -18,12 +18,16 @@ public class ShipManager : MonoBehaviour
     // get the ships inventory script
     private Inventory inventory;
     private OpenInventoryUI inventoryUI;
+
+    int numCargoSlots = -1;
+    public int GetNumCargoSlots() { MaxCargoCalculation(); return numCargoSlots; }
     
 
     // Start is called before the first frame update
     void Start()
     {
-        UpdateShipPartsDictionary();
+        if (shipPartsDictionary == null)
+            UpdateShipPartsDictionary();
         inventory = GetComponent<Inventory>();
         inventoryUI = GetComponent<OpenInventoryUI>();
         if (inventory == null )
@@ -61,15 +65,9 @@ public class ShipManager : MonoBehaviour
 
     void MaxCargoCalculation()
     {
-        int numCargoSlots = 0;
-        // loop the list at cargo in shipPartsDictionary
-        foreach (GameObject cargo in shipPartsDictionary["Cargo"])
-        {
-            // add the scale of the cargo to the max cargo
-            numCargoSlots += (int)(cargo.transform.localScale.x * cargo.transform.localScale.y * cargo.transform.localScale.z);
-        }
-
-        inventoryUI.SetNumSlots(numCargoSlots);
+        if (shipPartsDictionary == null)
+            UpdateShipPartsDictionary();
+        numCargoSlots = shipPartsDictionary["Cargo"].Count;
     }
 
     void MaxPowerCalculation()

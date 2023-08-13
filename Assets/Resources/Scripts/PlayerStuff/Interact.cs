@@ -37,7 +37,6 @@ public class Interact : MonoBehaviour
                 }
                 // player is in a menu, so close it
                 playerMovement.UnlockPlayerInputs();
-
             }
             else if (playerMovement.getPlayerInputsLocked() && playerMovement.GetLockedReason().tag == "NPC")
             {

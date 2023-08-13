@@ -29,32 +29,64 @@ public class Minerals
         return newItem;
     }
 
+    public Item GetMineralByName(string name)
+    {
+        if (MineralsList.ContainsKey(name))
+        {
+            return MineralsList[name];
+        }
+        else if (OresList.ContainsKey(name))
+        {
+            return OresList[name];
+        }
+        else
+        {
+            Debug.Log("Mineral " + name + " not found");
+            return null;
+        }
+    }
+
     public void SetUp()
     {
         // light armor plating group 1 // white color
         MineralsList.Add("Titanium", SetupOneItem("Titanium", "refined tier 1 light armor materials", 4.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.white, 1));
         // heavy armor plating group 1 // grey metalic color
         MineralsList.Add("Iron", SetupOneItem("Iron", "refined tier 1 heavy armor materials", 7.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.63f, .61f, .58f, 1f), 1));
-        // computer parts group 1 // dark grey color
-        MineralsList.Add("Silicon", SetupOneItem("Silicon", "refined tier 1 computer materials", 2.3f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.black, 1));
+        // energy parts group 1 // dark grey color
+        MineralsList.Add("Silicon", SetupOneItem("Silicon", "refined tier 1 computer materials", 2.3f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.25f, .25f, .25f, 1f), 1));
         // energy parts group 1 // dark blue color
         MineralsList.Add("Cobalt", SetupOneItem("Cobalt", "refined tier 1 energy materials", 8.9f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(0f, .278f, .67f, 1f), 1));
         // weapons parts group 1 // blue and silver color
         MineralsList.Add("Magnesium", SetupOneItem("Magnesium", "refined tier 1 weapons materials", 1.7f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.75f, .76f, .76f, 1f), 1));
+        // fuel group 1 // green color
+        MineralsList.Add("Uranium", SetupOneItem("Uranium", "refined tier 1 fuel", 8.7f, 2f, -1f, true, 99, Item.ItemType.Fuel, Color.green, 1));
 
+
+        // light armor plating group 2 // 
+        MineralsList.Add("somerthing", SetupOneItem("somerthing", "refined tier 2 light armor materials", 8.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.black, 2));
+        // heavy armor plating group 2 // yellow metalic color
+        MineralsList.Add("Argonite", SetupOneItem("Argonite", "refined tier 2 heavy armor materials", 15.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.63f, .61f, .58f, 1f), 2));
         // computer parts group 2 // shiny silver color
-        MineralsList.Add("Platinum", SetupOneItem("Platinum", "refined tier 2 computer materials", 21.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.gray, 2));
+        MineralsList.Add("Platinum", SetupOneItem("Planite", "refined tier 2 computer materials", 6.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.gray, 2));
+        // energy parts group 2 // 
+        MineralsList.Add("smthin", SetupOneItem("smthin", "refined tier 2 energy materials", 8.9f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.black, 2));
+        // weapons parts group 2 // glowing green color
+        MineralsList.Add("Nuclarium", SetupOneItem("Nuclarium", "refined tier 2 weapons materials", 13.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.green, 2));        
+        // fuel group 2 // bright purple color, glowing
+        MineralsList.Add("Pentolium", SetupOneItem("Pentolite", "refined tier 2 fuel", 15.1f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(1f, .5f, 1f, 1f), 2));
 
         // light armor plating group 3. Should be glowing white
         MineralsList.Add("Phasium", SetupOneItem("Phasium", "refined tier 3 light armor materials", 5.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(1f, 1f, 1f, 0.5f), 3));
         // heavy armor plating group 3 // should be greyish white
         MineralsList.Add("Lunarite", SetupOneItem("Lunarite", "refined tier 3 heavy armor materials", 19.3f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.white, 3));
         // computer parts group 3 // shiny red color
-        MineralsList.Add("Rubelline", SetupOneItem("Rubelline", "refined tier 3 computer materials", 15.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.red, 3));
+        MineralsList.Add("Rubelline", SetupOneItem("Rubelline", "refined tier 3 computer materials", 5.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.red, 3));
         // energy parts group 3 // yellow color
         MineralsList.Add("Solarium", SetupOneItem("Solarium", "refined tier 3 energy materials", 25.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.yellow, 3));
-        // weapons parts group 3 // glowing green color
-        MineralsList.Add("Nuclarium", SetupOneItem("Nuclarium", "refined tier 3 weapons materials", 23.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.green, 3));        
+        // weapons parts group 3 // dark purple color
+        MineralsList.Add("Gravitite", SetupOneItem("Gravitite", "refined tier 3 weapons materials", 40.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.29f,0, .5f, 1f), 3));
+        // fuel group 3 // lime color
+        MineralsList.Add("Exlite", SetupOneItem("Exlite", "refined tier 3 fuel", 30.7f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(.75f, .93f, .38f, 1f), 3));
 
         for (int i = 0; i < 4; i++)
         {

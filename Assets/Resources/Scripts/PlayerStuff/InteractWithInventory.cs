@@ -15,6 +15,9 @@ public class InteractWithInventory : MonoBehaviour
     // Update is called once per frame
     public void HandleHit(Ray ray, RaycastHit hit)
     {
+        if (GetComponent<UIManager>().UIOpen)
+            return;
+
         // check if the thing that was hit has a parent
         if (hit.collider.transform.parent != null)
         {
@@ -22,13 +25,16 @@ public class InteractWithInventory : MonoBehaviour
             Inventory hitInventory = hit.collider.transform.parent.GetComponent<Inventory>();
             if (hitInventory != null)
             {
-                if (!GetComponent<UIManager>().UIOpen)
+                if (hit.collider.transform.name == "OreRefiner")
+                {
+                    hitInventory.openInventory(GetComponent<PlayerStats>().playerCurrentShip);
+                }
+                else
                 {
                     hitInventory.openInventory(this.gameObject);
-                    GetComponent<UIManager>().UIOpen = true;
                 }
+                GetComponent<UIManager>().UIOpen = true;
             }
         }
-                
     }
 }

@@ -12,25 +12,33 @@ public class FactionManager : MonoBehaviour
     public List<Mission> GetCurrentMissions() { return currentMissions; }
     public void RemoveMission(Mission mission) { currentMissions.Remove(mission); }
 
-    float playerReputation = 1; // this should be a float between 0 and 4
+    [SerializeField]
+    bool remakeMissions = false;
+
+    float playerReputation = 0; // this should be a float between 0 and 4
     public float GetPlayerReputation() { return playerReputation; }
-    public float AddPlayerReputation(float add) { return playerReputation += add; }
+    public void AddPlayerReputation(float add) { playerReputation += add; remakeMissions = true; }
     
     GameObject Player;
 
     string factionName;
     public string getFactionName() {  return factionName; }
 
-    [SerializeField]
-    bool remakeMissions = false;
+   
+    PlayerStats playerStats;
+
+    Minerals minerals;
 
     // Start is called before the first frame update
     void Start()
     {
         factionName = transform.name;
         Player = GameObject.FindGameObjectWithTag("Player");
+        playerStats = Player.GetComponent<PlayerStats>();
         CreateAllMissions c = new CreateAllMissions();
         AllDefaultMissionsByLevel = c.CreateAllGameMissions();
+        minerals = new Minerals();
+        minerals.SetUp();
         MakeMissions();
     }
 
@@ -40,6 +48,7 @@ public class FactionManager : MonoBehaviour
         {
             MakeMissions();
             transform.Find("NPC").GetComponent<NPCmanager>().RefreshMissions();
+            remakeMissions = false;
         }
     }
 
@@ -50,8 +59,8 @@ public class FactionManager : MonoBehaviour
             // give the player the rewards
             playerReputation += mission.GetReputationReward();
             // add the rep to the playerstats
-            Player.GetComponent<PlayerStats>().AddReputation(factionName, mission.GetReputationReward());
-            Player.GetComponent<PlayerStats>().AddCredits(mission.GetCreditsReward());
+            playerStats.AddReputation(factionName, mission.GetReputationReward());
+            playerStats.AddCredits(mission.GetCreditsReward());
 
             // remake the missions pool
             MakeMissions();
@@ -61,7 +70,8 @@ public class FactionManager : MonoBehaviour
     public void MakeMissions()
     {
         currentMissions = new List<Mission>();
-        int playerLevel = (int)playerReputation;
+        int playerLevel = (int)playerReputation/100;
+        MakeMainMissions(playerLevel);
         // number of missions to make should be a random number between 4 and 7
         int numberOfMissionsToMake = Random.Range(4, 8);
         int tries = 0;
@@ -77,11 +87,11 @@ public class FactionManager : MonoBehaviour
             List<Mission> missionsToCombine = new List<Mission>();
             for (int i = 0; i < numMissionsToCombine; i++)
             {
-                int randLevel;
-                if (playerLevel < 2)
-                    randLevel = 1;
+                int randLevel = 0;
+                if (playerLevel < 1)
+                    randLevel = 0;
                 else
-                    randLevel = Random.Range(1, playerLevel + 1);
+                    randLevel = (int)Random.Range(1, playerLevel + 1);
 
                 // 10% chance to change to 0
                 if (Random.Range(0, 10) == 0)
@@ -110,11 +120,52 @@ public class FactionManager : MonoBehaviour
             }
             if (!found)
             {
-                newMission.SetDescription(factionName + " needs some " + newMission.GetDescription());
+                if (newMission.getIsMainMission())
+                    newMission.SetDescription(newMission.GetDescription());
+                else
+                    newMission.SetDescription(factionName + " needs some " + newMission.GetDescription());
                 currentMissions.Add(newMission);
             }
         }
 
     }
 
+    void MakeMainMissions(int playerLevel)
+    {
+        int numMainMissionsDone = playerStats.numMainMissionsDone;
+        if (numMainMissionsDone == 0)
+        {
+            Mission mission = new Mission();
+            List<ItemPair> goal = new List<ItemPair>();
+            // add 1000 ice
+            goal.Add(new ItemPair(minerals.GetMineralByName("Ice"), 0));
+            mission.SetUpMission("Main Mission Mine Ice", "Board your ship, fly out and mine some ice, and bring it back here", 0, 1000, 1, new List<ItemPair>(), goal, true);
+            currentMissions.Add(mission);
+        }
+        if (numMainMissionsDone == 1 && playerReputation > 180)
+        {
+            Mission mission = new Mission();
+            List<ItemPair> goal = new List<ItemPair>();
+            goal.Add(new ItemPair(minerals.GetMineralByName("Uranium"), 1000));
+            mission.SetUpMission("Main Mission Refine Uranium", "We want to restart the station core, we need some tier 1 fuel to get that done.", 0, 5000, .2f, new List<ItemPair>(), goal, true);
+            currentMissions.Add(mission);
+        }
+        if (numMainMissionsDone == 2 && playerReputation > 280)
+        {
+            Mission mission = new Mission();
+            List<ItemPair> goal = new List<ItemPair>();
+            goal.Add(new ItemPair(minerals.GetMineralByName("Pentolium"), 1000));
+            mission.SetUpMission("Main Mission Refine Pentolium", "We want to restart the warpgate, we need some tier 2 fuel to get that done.", 0, 10000, .2f, new List<ItemPair>(), goal, true);
+            currentMissions.Add(mission);
+        }
+        if (numMainMissionsDone == 3 && playerReputation > 380)
+        {
+            Mission mission = new Mission();
+            List<ItemPair> goal = new List<ItemPair>();
+            goal.Add(new ItemPair(minerals.GetMineralByName("Exlite"), 1500));
+            goal.Add(new ItemPair(minerals.GetMineralByName("Gravitite"), 1500));
+            mission.SetUpMission("Main Mission Refine Exlite, Refine Gravitite", "Its time to destroy the threat once and for all.", 0, 100000, .2f, new List<ItemPair>(), goal, true);
+            currentMissions.Add(mission);
+        }
+    }
 }

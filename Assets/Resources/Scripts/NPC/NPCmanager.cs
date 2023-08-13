@@ -106,7 +106,10 @@ public class NPCmanager : MonoBehaviour
         // set the mission name
         newMission.transform.Find("Title").GetComponent<TMPro.TextMeshProUGUI>().text = mission.GetName();
         // set the mission description
-        newMission.transform.Find("Description").GetComponent<TMPro.TextMeshProUGUI>().text = factionName + " needs some " + mission.GetDescription();
+        if (mission.getIsMainMission())
+            newMission.transform.Find("Description").GetComponent<TMPro.TextMeshProUGUI>().text = mission.GetDescription();
+        else
+            newMission.transform.Find("Description").GetComponent<TMPro.TextMeshProUGUI>().text = factionName + " needs some " + mission.GetDescription();
         newMission.transform.Find("CreditsReward").GetComponent<TMPro.TextMeshProUGUI>().text = "Credits: " + mission.GetCreditsReward();
         newMission.transform.Find("ReputationReward").GetComponent<TMPro.TextMeshProUGUI>().text = "Reputation: " + mission.GetReputationReward();
 

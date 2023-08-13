@@ -7,44 +7,113 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
 
-    List<ItemPair> items;
+    List<ItemPair> items = new List<ItemPair>();
 
     public OpenInventoryUI inventoryUIScript;
 
     int totalInvSlots = -1;
+    public int GetTotalInvSlots() { return totalInvSlots; }
+    
+    public int numRows;
+    public int numCols;
+    public int leftOver;
     
     // Start is called before the first frame update
     void Start()
     {
-
         inventoryUIScript = GetComponent<OpenInventoryUI>();
 
-        items = new List<ItemPair>();
+        // if this gameObject has a shipManager, then get the numslots from it
+        if (GetComponent<ShipManager>() != null)
+        {
+            totalInvSlots = GetComponent<ShipManager>().GetNumCargoSlots();
+        }
+        else if (GetComponent<PlayerStats>() != null)
+        {
+            totalInvSlots = GetComponent<PlayerStats>().GetNumCargoSlots();
+        }
+
         if (inventoryUIScript == null)
             Debug.LogError("Inventory UI script is null in Inventory script on game object " + this.gameObject);
         else
         {
-            int numRows;
-            int numCols;
+            updateInvSize();
+        }
+    }
 
-            numRows = inventoryUIScript.numRows;
-            numCols = inventoryUIScript.numCols;
-            
-            totalInvSlots = numRows * numCols;
+    public void updateInvSize()
+    {
+        if (totalInvSlots < 0)
+        {
+            Debug.Log("Error in Inventory.cs. totalInvSlots has not been set");
+        }
+        SetNumSlots(totalInvSlots);
+        if (isEmpty())
+        {
+            totalInvSlots = numRows * numCols + leftOver;
             for (int i = 0; i < totalInvSlots; i++)
             {
                 items.Add(null);
             }
         }
+        else
+        {
+            Debug.Log("Cant update inventory size, its not empty");
+        }
     }
 
-    public void openInventory(GameObject player)
+    // sets the number of rows and columns based on the number of slots in the inventory
+    // only changes for the otherInventory
+    public void SetNumSlots(int numSlots)
+    {
+        bool good = false;
+        numRows = 4;
+        int originalNumSlots = numSlots;
+        while (!good)
+        {
+            numCols = 0;
+            numSlots = originalNumSlots;
+            leftOver = 0;
+            while (numSlots > 0)
+            {
+                if (numSlots - numRows < 0)
+                {
+                    leftOver = numSlots;
+                    numSlots = 0;
+                }
+                else
+                {
+                    numSlots -= numRows;
+                    numCols++;
+                }
+
+            }
+            if (numCols < 12)
+                good = true;
+            else
+                numRows++;
+        }
+    }
+
+
+    public bool isEmpty()
+    { 
+        foreach (ItemPair pair in items)
+        {
+            if (pair != null)
+                return false;
+        }
+        return true;
+    }
+
+    public void openInventory(GameObject other)
     {
         if (inventoryUIScript != null)
         {
-            // open the players inventory
+            // open the other inventory
             inventoryUIScript.ShowInventory(this.gameObject);
-            player.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject);
+            if (other != null)
+                other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject);
             inventoryUIScript.UpdateInventory();
         }
     }
@@ -98,6 +167,7 @@ public class Inventory : MonoBehaviour
 
     public ItemPair addItem(Item item, float amount, int pos) // if pos is -1, add to first available slot
     {
+        PrintInv();
         // make a pair out of item
         ItemPair itemPair = new ItemPair(item, amount);
         
@@ -182,6 +252,7 @@ public class Inventory : MonoBehaviour
             }
         }
 
+
     }
 
     public void moveItem(int index, int newIndex)
@@ -226,20 +297,14 @@ public class Inventory : MonoBehaviour
                 float removeAmount = Mathf.Min(totalLeft, pair.amount);
                 pair.amount -= removeAmount;
                 totalLeft -= removeAmount;
+                Debug.Log(totalLeft);
                 if (totalLeft == 0)
-                {
                     return true;
-                    // loop through all the items and remove any that have 0 amount
-                    for (int i = 0; i < items.Count; i++)
-                    {
-                        if (items[i] != null && items[i].amount == 0)
-                        {
-                            removeItem(i);
-                        }
-                    }
-                }
+                
             }
         }
+        if (totalLeft == 0)
+            return true;
         Debug.LogError("Something went wrong in removeItemAmount");
         return false;
     }

@@ -14,14 +14,16 @@ public class Mission
     float CreditsReward;
     public float GetCreditsReward() { return (int)CreditsReward; }
     float ReputationReward;
-    public float GetReputationReward() { return (int)ReputationReward; }
+    public float GetReputationReward() { return ((float)((int)(ReputationReward*1000)))/10f; }
     List<ItemPair> ItemRewards;
     public List<ItemPair> GetItemRewards() { return ItemRewards; }
+    bool isMainMission;
+    public bool getIsMainMission() { return isMainMission; }
 
     List<ItemPair> Goal;
     public List<ItemPair> GetGoal() { return Goal; }
 
-    public void SetUpMission(string name, string description, int level, float creditsReward, float reputationReward, List<ItemPair> ItemRewards, List<ItemPair> goal)
+    public void SetUpMission(string name, string description, int level, float creditsReward, float reputationReward, List<ItemPair> ItemRewards, List<ItemPair> goal, bool isMainMission=false)
     {
         this.Name = name;
         this.Description = description;
@@ -30,6 +32,7 @@ public class Mission
         this.ReputationReward = reputationReward;
         this.ItemRewards = ItemRewards;
         this.Goal = goal;
+        this.isMainMission = isMainMission;
     }
 
     public void SetUpMission(Mission other)
@@ -49,6 +52,7 @@ public class Mission
         {
             Goal.Add(item.GetCopy());
         }
+        this.isMainMission = other.isMainMission;
     }
 
     // this function assumes that the other mission has only one goal and one reward
@@ -120,6 +124,7 @@ public class Mission
         Debug.Log("Level: " + this.Level);
         Debug.Log("CreditsReward: " + this.CreditsReward);
         Debug.Log("ReputationReward: " + this.ReputationReward);
+        Debug.Log("Main mission: " + this.isMainMission);
         Debug.Log("Goal: ");
         foreach (ItemPair itemPair in this.Goal)
         {
@@ -138,7 +143,7 @@ public class Mission
             int newAmount = (int)(itemPair.amount * Random.Range(.5f, 2f));
             itemPair.amount = newAmount;
             newCreditsReward += newAmount * itemPair.item.getSellValue() * Random.Range(.9f, 1.1f);
-            newRepReward += newAmount * itemPair.item.getSellValue() * Random.Range(.9f, 1.1f) * .1f;
+            newRepReward += newAmount * itemPair.item.getSellValue() * Random.Range(.9f, 1.1f) / 200000f;
         }
         this.CreditsReward = newCreditsReward;
         this.ReputationReward = newRepReward;
@@ -192,6 +197,9 @@ public class Mission
                     Debug.Log("This should never happen in Mission.cs");
                 }
             }
+            if (isMainMission)
+                GameObject.Find("Player").GetComponent<PlayerStats>().numMainMissionsDone++;
+
             return true;
         }
         return false;
