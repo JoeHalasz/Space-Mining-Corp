@@ -9093,8 +9093,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 19767990}
   - {fileID: 1705050533}
+  - {fileID: 19767990}
   m_Father: {fileID: 380102339}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -20199,6 +20199,7 @@ GameObject:
   - component: {fileID: 9073721953687455645}
   - component: {fileID: 9073721953687455646}
   - component: {fileID: 9073721953687455647}
+  - component: {fileID: 9073721953687455650}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -20246,11 +20247,10 @@ MonoBehaviour:
   FootstepAudioClips: []
   FootstepAudioVolume: 0.5
   Grounded: 1
-  GroundedOffset: -0.5
   GroundedRadius: 0.28
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
 --- !u!114 &9073721953687455645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20295,6 +20295,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UIOpen: 0
   playerMissionUI: {fileID: 166009391}
+--- !u!136 &9073721953687455650
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9073721953687455641}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9074961490135384792
 GameObject:
   m_ObjectHideFlags: 0

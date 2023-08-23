@@ -17,9 +17,8 @@ public class AttachOtherToStation : MonoBehaviour
     // if a gameobject goes into the trigger, attach it to the station
     void OnTriggerEnter(Collider other)
     {
-        // if the collider is not a trigger
         if (!other.isTrigger)
-            getFinalParent(other.gameObject).transform.SetParent(this.gameObject.transform);
+            getFinalParent(other.gameObject).transform.SetParent(transform);
     }
 
     // if a gameobject leaves the trigger, detach it from the station

@@ -15,14 +15,15 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
     public bool Grounded = true;
 
-    [Tooltip("Useful for rough ground")]
-    public float GroundedOffset = -0.5f;
+    float GroundedOffset = 0f;
 
     [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
     public float GroundedRadius = 0.28f;
 
     [Tooltip("What layers the character uses as ground")]
     public LayerMask GroundLayers;
+
+    float groundAngle;
 
     // cinemachine
     private float targetYaw;
@@ -56,6 +57,8 @@ public class PlayerMovement : MonoBehaviour
     private bool _hasAnimator;
 
     Rigidbody _rigidBody;
+
+    Vector3 groundNormal;
 
     bool lockPlayerMovement = false;
     public bool getIsLocked() { return lockPlayerMovement; }
@@ -128,13 +131,48 @@ public class PlayerMovement : MonoBehaviour
         //_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
 
+    void OnCollisionStay(Collision collision)
+    {
+        if (Grounded || true)
+        {
+            ContactPoint contact = collision.contacts[0];
+            groundNormal = contact.normal;
+            Vector3 temp = Vector3.Cross(contact.normal, Vector3.down);
+            var groundSlopeDir = Vector3.Cross(temp, contact.normal);
+            var groundSlopeAngle = Vector3.Angle(contact.normal, Vector3.up);
+            // debug.log it
+            Debug.DrawRay(contact.point, contact.normal, Color.red, 5f);
+            Debug.DrawRay(contact.point, groundSlopeDir, Color.green, 5f);
+            Debug.Log("here");
+
+            // get angle between contact.point and contact.normal
+            float angle = Vector3.Angle(contact.point, contact.normal) - 90;
+            // if the player is looking backwards in the y then invert it
+            if (transform.localRotation.eulerAngles.y > 180)
+                angle *= -1;
+            // rotate players z axis to match the angle
+            groundAngle = angle;
+        }
+    }
+
     private void GroundedCheck()
     {
+        RaycastHit hitInfo;
         // set sphere position, with offset
-        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
-            transform.position.z);
-        Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
-            QueryTriggerInteraction.Ignore);
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedRadius*2, transform.position.z);
+        Grounded = Physics.SphereCast(spherePosition, GroundedRadius, -transform.up, out hitInfo,
+                       GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+
+        // draw that 
+        //Debug.DrawRay(spherePosition, -transform.up * (GroundedRadius));
+        //Physics.SphereCast(new Ray(this.transform.position + new Vector3(0,this.transform.localScale.y-2,0), -this.transform.up), this.transform.localScale.y * -0.5f, this.transform.localScale.y);
+        // draw that 
+        //Debug.DrawRay(this.transform.position + new Vector3(0, this.transform.localScale.y, 0), -this.transform.up * (this.transform.localScale.y * 0.5f));
+        if (Grounded)
+        {
+            // rotate the player to match the ground normal
+            //transform.rotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, hitInfo.normal.y, transform.localRotation.eulerAngles.z);
+        }
 
         // update animator if using character
         if (_hasAnimator)
@@ -228,35 +266,28 @@ public class PlayerMovement : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
-        // change rotation based on mouse movement
-        transform.rotation *= Quaternion.Euler(-mouseY, mouseX, 0);
-
-
-        // get the gameObject that the transform is grounded to 
-        if (Grounded)
+        if (!Grounded)
         {
-            GameObject groundedTo = null;
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.0f, GroundLayers))
-                groundedTo = hit.collider.gameObject;
-
-            // make that this transforms parent
-            if (groundedTo != null)
+            // if the camera has any x rotation, move it to the player
+            if (_mainCamera.transform.localRotation.eulerAngles.x != 0)
             {
-                // if groundedTo has a rigidbody, add its velocity to this transform
-                Rigidbody rb = groundedTo.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    // get this transforms rb
-                    playerVelocity += rb.velocity;
-                }
-                playerVelocity -= groundedTo.transform.up * 9.81f * Time.deltaTime; // gravity 
-                // slowly change the players z rotation to match the groundedTo
-                Quaternion targetRotation = Quaternion.LookRotation(transform.forward, groundedTo.transform.up);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.1f);
-                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, targetRotation.eulerAngles.z);
+                transform.localRotation = Quaternion.Euler(_mainCamera.transform.localRotation.eulerAngles.x, transform.localRotation.eulerAngles.y, transform.localRotation.eulerAngles.z);
+                _mainCamera.transform.localRotation = Quaternion.Euler(0, 0, 0);
             }
-
+            // change rotation based on mouse movement
+            transform.localRotation *= Quaternion.Euler(-mouseY, mouseX, 0);
+        }
+        else
+        {   // if the camera has any x rotation, move it to the player
+            if (transform.localRotation.eulerAngles.x != 0)
+            {
+                _mainCamera.transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, _mainCamera.transform.localRotation.eulerAngles.y, _mainCamera.transform.localRotation.eulerAngles.z);
+                transform.localRotation = Quaternion.Euler(transform.localRotation.x, 0, 0);
+            }
+            // rotate like a normal player on the ground
+            transform.localRotation *= Quaternion.Euler(0, mouseX, 0);
+            _mainCamera.transform.rotation *= Quaternion.Euler(-mouseY, 0, 0);
+            transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, transform.localRotation.eulerAngles.y, groundAngle);
         }
 
         _rigidBody.velocity = playerVelocity;
@@ -269,7 +300,7 @@ public class PlayerMovement : MonoBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
         Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
@@ -278,9 +309,10 @@ public class PlayerMovement : MonoBehaviour
         else Gizmos.color = transparentRed;
 
         // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
-        Gizmos.DrawSphere(
-            new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
-            GroundedRadius);
+        //Gizmos.DrawSphere(
+        //    new Vector3(transform.position.x, transform.position.y, transform.position.z),
+        //    GroundedRadius);
+
     }
 
     private void OnFootstep(AnimationEvent animationEvent)
