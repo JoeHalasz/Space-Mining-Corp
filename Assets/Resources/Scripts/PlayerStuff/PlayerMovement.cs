@@ -131,48 +131,32 @@ public class PlayerMovement : MonoBehaviour
         //_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
 
-    void OnCollisionStay(Collision collision)
-    {
-        if (Grounded || true)
-        {
-            ContactPoint contact = collision.contacts[0];
-            groundNormal = contact.normal;
-            Vector3 temp = Vector3.Cross(contact.normal, Vector3.down);
-            var groundSlopeDir = Vector3.Cross(temp, contact.normal);
-            var groundSlopeAngle = Vector3.Angle(contact.normal, Vector3.up);
-            // debug.log it
-            Debug.DrawRay(contact.point, contact.normal, Color.red, 5f);
-            Debug.DrawRay(contact.point, groundSlopeDir, Color.green, 5f);
-            Debug.Log("here");
-
-            // get angle between contact.point and contact.normal
-            float angle = Vector3.Angle(contact.point, contact.normal) - 90;
-            // if the player is looking backwards in the y then invert it
-            if (transform.localRotation.eulerAngles.y > 180)
-                angle *= -1;
-            // rotate players z axis to match the angle
-            groundAngle = angle;
-        }
-    }
+    Transform oldParent = null;
 
     private void GroundedCheck()
     {
         RaycastHit hitInfo;
         // set sphere position, with offset
-        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedRadius*2, transform.position.z);
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y + GroundedRadius*2, transform.position.z);
+        bool lastGrounded = Grounded;
         Grounded = Physics.SphereCast(spherePosition, GroundedRadius, -transform.up, out hitInfo,
                        GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
 
-        // draw that 
-        //Debug.DrawRay(spherePosition, -transform.up * (GroundedRadius));
-        //Physics.SphereCast(new Ray(this.transform.position + new Vector3(0,this.transform.localScale.y-2,0), -this.transform.up), this.transform.localScale.y * -0.5f, this.transform.localScale.y);
-        // draw that 
-        //Debug.DrawRay(this.transform.position + new Vector3(0, this.transform.localScale.y, 0), -this.transform.up * (this.transform.localScale.y * 0.5f));
-        if (Grounded)
-        {
-            // rotate the player to match the ground normal
-            //transform.rotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, hitInfo.normal.y, transform.localRotation.eulerAngles.z);
+        if (!lastGrounded && Grounded)
+        {   // we just hit the ground
+            // set oldParent
+            oldParent = transform.parent;
+            // set the players parent to the ground we just 
+            transform.SetParent(hitInfo.transform);
         }
+        else if (lastGrounded && !Grounded)
+        {   // we just left the ground
+            // set the players parent to the ground we just 
+            transform.SetParent(oldParent);
+        }
+
+        Debug.Log(Grounded);
+
 
         // update animator if using character
         if (_hasAnimator)
@@ -271,6 +255,7 @@ public class PlayerMovement : MonoBehaviour
             // if the camera has any x rotation, move it to the player
             if (_mainCamera.transform.localRotation.eulerAngles.x != 0)
             {
+                Debug.Log("Moving to flying view movement");
                 transform.localRotation = Quaternion.Euler(_mainCamera.transform.localRotation.eulerAngles.x, transform.localRotation.eulerAngles.y, transform.localRotation.eulerAngles.z);
                 _mainCamera.transform.localRotation = Quaternion.Euler(0, 0, 0);
             }
@@ -278,40 +263,24 @@ public class PlayerMovement : MonoBehaviour
             transform.localRotation *= Quaternion.Euler(-mouseY, mouseX, 0);
         }
         else
-        {   // if the camera has any x rotation, move it to the player
+        {   // if the player has any x rotation, move it to the camera
             if (transform.localRotation.eulerAngles.x != 0)
             {
-                _mainCamera.transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, _mainCamera.transform.localRotation.eulerAngles.y, _mainCamera.transform.localRotation.eulerAngles.z);
-                transform.localRotation = Quaternion.Euler(transform.localRotation.x, 0, 0);
+                Debug.Log("Moving to ground view movement");
+                _mainCamera.transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, 0, 0);
+                transform.localRotation = Quaternion.Euler(0, transform.localRotation.eulerAngles.y, transform.localRotation.eulerAngles.z);
             }
             // rotate like a normal player on the ground
             transform.localRotation *= Quaternion.Euler(0, mouseX, 0);
             _mainCamera.transform.rotation *= Quaternion.Euler(-mouseY, 0, 0);
-            transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, transform.localRotation.eulerAngles.y, groundAngle);
+            //transform.localRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, transform.localRotation.eulerAngles.y, groundAngle);
         }
 
         _rigidBody.velocity = playerVelocity;
     }
 
-    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
-    {
-        if (lfAngle < -360f) lfAngle += 360f;
-        if (lfAngle > 360f) lfAngle -= 360f;
-        return Mathf.Clamp(lfAngle, lfMin, lfMax);
-    }
-
     private void OnDrawGizmos()
     {
-        Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
-        Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
-
-        if (Grounded) Gizmos.color = transparentGreen;
-        else Gizmos.color = transparentRed;
-
-        // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
-        //Gizmos.DrawSphere(
-        //    new Vector3(transform.position.x, transform.position.y, transform.position.z),
-        //    GroundedRadius);
 
     }
 

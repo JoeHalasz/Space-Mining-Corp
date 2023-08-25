@@ -21,6 +21,7 @@ TagManager:
   - Enemy
   - Seat
   - NPC
+  - Ground
   layers:
   - Default
   - TransparentFX
