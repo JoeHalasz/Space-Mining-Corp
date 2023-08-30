@@ -155,7 +155,7 @@ public class PlayerMovement : MonoBehaviour
             transform.SetParent(oldParent);
         }
 
-        Debug.Log(Grounded);
+        // Debug.Log(Grounded);
 
 
         // update animator if using character

@@ -64,10 +64,10 @@ public class Minerals
 
         // light armor plating group 2 // 
         MineralsList.Add("somerthing", SetupOneItem("somerthing", "refined tier 2 light armor materials", 8.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.black, 2));
-        // heavy armor plating group 2 // yellow metalic color
-        MineralsList.Add("Argonite", SetupOneItem("Argonite", "refined tier 2 heavy armor materials", 15.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.63f, .61f, .58f, 1f), 2));
+        // heavy armor plating group 2 // orange metalic color
+        MineralsList.Add("Argonide", SetupOneItem("Argonide", "refined tier 2 heavy armor materials", 15.8f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.63f, .61f, .58f, 1f), 2));
         // computer parts group 2 // shiny silver color
-        MineralsList.Add("Platinum", SetupOneItem("Planite", "refined tier 2 computer materials", 6.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.gray, 2));
+        MineralsList.Add("Platinum", SetupOneItem("Platinum", "refined tier 2 computer materials", 6.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.gray, 2));
         // energy parts group 2 // 
         MineralsList.Add("smthin", SetupOneItem("smthin", "refined tier 2 energy materials", 8.9f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.black, 2));
         // weapons parts group 2 // glowing green color
