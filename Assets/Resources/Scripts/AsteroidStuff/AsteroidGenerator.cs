@@ -19,7 +19,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     List<Vector3> points = new List<Vector3>();
     List<Vector3> outsidePoints = new List<Vector3>();
-    IDictionary<Vector3, Color> pointColors = new Dictionary<Vector3, Color>();
+    IDictionary<Vector3, int> pointColors = new Dictionary<Vector3, int>();
 
     IDictionary<Vector3, int> Vertices = new Dictionary<Vector3, int>();
 
@@ -128,18 +128,15 @@ public class AsteroidGenerator : MonoBehaviour
 
         foreach (List<int> cube in cubesPointIndecies)
         {
-            Color color = Random.Range(0, 10) < 9 ? mineralType.getColor() : new Color(.2f, .2f, .2f);
+            int mineralGroup = Random.Range(0, 10) < 8 ? 0:1;
 
-            //if (increment >= 1f)
-            //    color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0, 1f));
-                
             // put the point into pointToCubes
             foreach (int index in cube)
             {
                 // add the pointColor if its not already in there
                 if (!pointColors.ContainsKey(points[index]))
                 {
-                    pointColors.Add(points[index], color);
+                    pointColors.Add(points[index], mineralGroup);
                 }
 
                 if (!pointToCubes.ContainsKey(points[index]))
@@ -219,18 +216,65 @@ public class AsteroidGenerator : MonoBehaviour
         stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
         Color[] colors = new Color[allVerts.Count];
-        //for every vert add a color
-        for (int i = 0; i < allVerts.Count; i++)
-        {
-            colors[i] = pointColors[allVerts[i]];
-        }
 
         // create the mesh
         mesh = new Mesh();
         mesh.vertices = allVerts.ToArray();
-        mesh.triangles = allTris.ToArray();
+        //mesh.triangles = allTris.ToArray();
+
+        // create a submesh for the ore material
+        mesh.subMeshCount = 2;
+        // add 10% of the tris to the ore submesh
+        
+        // make 2 vectors for the tris groups
+        List<int> oreTris = new List<int>();
+        List<int> otherTris = new List<int>();
+
+        for (int i = 0; i < allTris.Count; i+=3)
+        {
+            // if the point is in the ore group
+            if (pointColors[allVerts[allTris[i]]] == 1)
+            {
+                // add the tris to the ore group
+                oreTris.Add(allTris[i]);
+                oreTris.Add(allTris[i+1]);
+                oreTris.Add(allTris[i+2]);
+            }
+            else
+            {
+                // add the tris to the other group
+                otherTris.Add(allTris[i]);
+                otherTris.Add(allTris[i+1]);
+                otherTris.Add(allTris[i+2]);
+            }
+        }
+
+        // add the ore tris to the submesh
+        mesh.SetTriangles(oreTris.ToArray(), 0);
+        // set the rest of the tris to the other submesh
+        mesh.SetTriangles(otherTris.ToArray(), 1);
+
+        //int length = (int)((allTris.Count / 3) / 10f);
+        //int[] oreTris = new int[length*3];
+        //for (int i = 2; i < length; i+=3)
+        //{
+        //    oreTris[i-2] = allTris[i-2];
+        //    oreTris[i-1] = allTris[i-1];
+        //    oreTris[i] = allTris[i];
+        //}
+        //// add the ore tris to the submesh
+        //mesh.SetTriangles(oreTris, 0);
+        //// set the rest of the tris to the other submesh
+        //int[] otherTris = new int[allTris.Count - oreTris.Length];
+        //for (int i = 0; i < otherTris.Length; i++)
+        //{
+        //    otherTris[i] = allTris[i + oreTris.Length];
+        //}
+        //mesh.SetTriangles(otherTris, 1);
+
+        // add normals
         mesh.normals = allNormals.ToArray();
-        mesh.colors = colors;
+
         // generate uvs
         Vector2[] uvs = new Vector2[allVerts.Count];
         for (int i = 0; i < allVerts.Count; i++)
@@ -440,7 +484,7 @@ public class AsteroidGenerator : MonoBehaviour
                     float chance = Random.Range(0f, 1f);
                     if (chance > 0.1f)
                     {
-                        pointColors[outsidePoint] = new Color(0.2f, .2f, .2f);
+                        // pointColors[outsidePoint] = new Color(0.2f, .2f, .2f);
                     }
                 }
             }
@@ -546,14 +590,14 @@ public class AsteroidGenerator : MonoBehaviour
                                     points.Add(newPoint);
                                     // 90% chance for a point to be the color of the asteroid
                                     // this will be changed to just the center of the asteroid, the outer layer will only be 10% mineral color
-                                    if (rand < .9f)
-                                    {
-                                        pointColors[newPoint] = mineralType.getColor();
-                                    }
-                                    else
-                                    {
-                                        pointColors[newPoint] = new Color(0.2f, .2f, .2f);
-                                    }
+                                    //if (rand < .9f)
+                                    //{
+                                    //    pointColors[newPoint] = mineralType.getColor();
+                                    //}
+                                    //else
+                                    //{
+                                    //    pointColors[newPoint] = new Color(0.2f, .2f, .2f);
+                                    //}
                                 }
                                 else
                                 {

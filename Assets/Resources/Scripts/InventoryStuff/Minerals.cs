@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -22,10 +23,17 @@ public class Minerals
 
     Item SetupOneItem(string name, string desc, float density, float sellValue, float buyValue, bool stackable, int maxStack, Item.ItemType itemType, Color color, int level)
     {
+        // color is no longer used
         Item newItem = new Item();
         // get the sprint with that name
         Sprite sprite = Resources.Load<Sprite>("Textures/MineralSprites/" + name);
-        newItem.SetUpItem(name, desc, density, sellValue, buyValue, stackable, maxStack, itemType, color, level, sprite);
+        // get the mineral material with that name
+        Material material = Resources.Load<Material>("Materials/Minerals/" + name);
+
+        Debug.Log("Creating item using material " + material);
+        Debug.Log("Looked for " + name);
+
+        newItem.SetUpItem(name, desc, density, sellValue, buyValue, stackable, maxStack, itemType, material, level, sprite);
         return newItem;
     }
 
@@ -73,7 +81,7 @@ public class Minerals
         // weapons parts group 2 // glowing green color
         MineralsList.Add("Nuclarium", SetupOneItem("Nuclarium", "refined tier 2 weapons materials", 13.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.green, 2));        
         // fuel group 2 // bright purple color, glowing
-        MineralsList.Add("Pentolium", SetupOneItem("Pentolite", "refined tier 2 fuel", 15.1f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(1f, .5f, 1f, 1f), 2));
+        MineralsList.Add("Pentolium", SetupOneItem("Pentolium", "refined tier 2 fuel", 15.1f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(1f, .5f, 1f, 1f), 2));
 
         // light armor plating group 3. Should be glowing white
         MineralsList.Add("Phasium", SetupOneItem("Phasium", "refined tier 3 light armor materials", 5.4f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(1f, 1f, 1f, 0.5f), 3));
@@ -108,7 +116,7 @@ public class Minerals
         // for every mineral, create an ore
         foreach (Item mineral in MineralsList.Values)
         {
-            OresList.Add(mineral.getName() + " Ore", SetupOneItem(mineral.getName() + " Ore", "un"+ mineral.getDescription(), mineral.getDensity(), mineral.getSellValue()/2, -1f, true, 999, Item.ItemType.Ore, mineral.getColor(), mineral.getLevel()));
+            OresList.Add(mineral.getName() + " Ore", SetupOneItem(mineral.getName() + " Ore", "un"+ mineral.getDescription(), mineral.getDensity(), mineral.getSellValue()/2, -1f, true, 999, Item.ItemType.Ore, /*mineral.getColor()*/new Color(), mineral.getLevel()));
         }
 
         foreach (Item ore in OresList.Values)
@@ -206,6 +214,13 @@ public class Minerals
 
     public Item GetMineralTypeFromPos(Vector3 WorldPos, bool isBigAsteroid)
     {
+        List<Item> values = Enumerable.ToList(OresList.Values);
+
+        // get a random value from OresList
+        return values[Random.Range(0, values.Count)];
+
+
+
         int zone = CalculateZone(WorldPos);
 
         // 90% chance of stone

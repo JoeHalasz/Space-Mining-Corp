@@ -25,6 +25,13 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
     int numAsteroids = 0;
 
+    AsteroidSpawnManager asteroidSpawnManager;
+
+    void Start()
+    {
+        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
+    }
+
     IEnumerator doTest()
     {
         // delete all asteroids
@@ -49,8 +56,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
                 // random chance to spawn a big asteroid
                 if (Random.Range(0, 100) < 10)
                     isBig = true;
-                
-                GenerateOneAsteroid(new Vector3(x, 0, z), isBig);
+                asteroidSpawnManager.AddToQueue(new Vector3(x, 0, z));
                 numAsteroids++;
 
                 yield return WaitForFrames(7);

@@ -78,10 +78,18 @@ public class AsteroidSpawnManager : MonoBehaviour
         // set the parent to this objects parent
         newAsteroid.transform.SetParent(gameObject.transform.parent, false);
         // random mineral based on the world position
-        newAsteroid.GetComponent<AsteroidGenerator>().mineralType = minerals.GetMineralTypeFromPos(position, isBig);
+
+        Item mineralType = minerals.GetMineralTypeFromPos(position, isBig);
+
+        newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;
 
         newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
+
+        // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
+        newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
+        // Debug.log the color
+        Debug.Log(newAsteroid.GetComponent<Renderer>().material);
 
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }

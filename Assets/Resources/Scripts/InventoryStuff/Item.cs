@@ -24,11 +24,11 @@ public class Item
     bool stackable;
     int maxStack;
     ItemType type;
-    Color color;
+    Material material;
     int level;
     Sprite sprite;
 
-    public void SetUpItem(string name, string description, float density, float sellValue, float buyValue, bool stackable, int maxStack, ItemType type, Color color, int level, Sprite sprite)
+    public void SetUpItem(string name, string description, float density, float sellValue, float buyValue, bool stackable, int maxStack, ItemType type, Material material, int level, Sprite sprite)
     {
         this.Name = name;
         this.description = description;
@@ -38,7 +38,7 @@ public class Item
         this.stackable = stackable;
         this.maxStack = maxStack;
         this.type = type;
-        this.color = color;
+        this.material = material;
         this.level = level;
         this.sprite = sprite;
     }
@@ -51,7 +51,7 @@ public class Item
     public bool getStackable()     { return stackable; }
     public int getMaxStack()       { return maxStack; }
     public ItemType getType()      { return type; }
-    public Color getColor()        { return color; }
+    public Material getMaterial()  { return material; }
     public int getLevel()          { return level; }
     public Sprite getSprite()      { return sprite; }
 
