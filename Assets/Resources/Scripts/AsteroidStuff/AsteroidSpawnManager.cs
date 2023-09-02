@@ -88,8 +88,6 @@ public class AsteroidSpawnManager : MonoBehaviour
 
         // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
-        // Debug.log the color
-        Debug.Log(newAsteroid.GetComponent<Renderer>().material);
 
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }

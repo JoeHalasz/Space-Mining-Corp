@@ -48,11 +48,7 @@ public class AsteroidGenerator : MonoBehaviour
         // time it
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
-        if (isBig)
-        {
-            //AsteroidMinSize = 4f; //18
-            //AsteroidMaxSize = 4.5f; //20
-        }
+
         // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
         float size = Random.Range(AsteroidMinSize, AsteroidMaxSize);
         Vector3 dimentions = new Vector3(size, size, size);
@@ -212,7 +208,6 @@ public class AsteroidGenerator : MonoBehaviour
         stopwatch.Stop();
         //Debug.Log("part3 without threads took: " + stopwatch.Elapsed.ToString());
         
-
         stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
         Color[] colors = new Color[allVerts.Count];
@@ -253,25 +248,6 @@ public class AsteroidGenerator : MonoBehaviour
         mesh.SetTriangles(oreTris.ToArray(), 0);
         // set the rest of the tris to the other submesh
         mesh.SetTriangles(otherTris.ToArray(), 1);
-
-        //int length = (int)((allTris.Count / 3) / 10f);
-        //int[] oreTris = new int[length*3];
-        //for (int i = 2; i < length; i+=3)
-        //{
-        //    oreTris[i-2] = allTris[i-2];
-        //    oreTris[i-1] = allTris[i-1];
-        //    oreTris[i] = allTris[i];
-        //}
-        //// add the ore tris to the submesh
-        //mesh.SetTriangles(oreTris, 0);
-        //// set the rest of the tris to the other submesh
-        //int[] otherTris = new int[allTris.Count - oreTris.Length];
-        //for (int i = 0; i < otherTris.Length; i++)
-        //{
-        //    otherTris[i] = allTris[i + oreTris.Length];
-        //}
-        //mesh.SetTriangles(otherTris, 1);
-
         // add normals
         mesh.normals = allNormals.ToArray();
 
@@ -293,7 +269,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)
     {
-        RemoveCubesClosestToRay(hit.point + rayDirection);
+        RemoveCubesClosestToRay(ray, hit);
 
         // if the miner or the miners parent has an inventory then add the mineral to the inventory
         if (miner.GetComponent<Inventory>() != null)
@@ -321,90 +297,339 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
-    void RemoveCubesClosestToRay(Vector3 hitPoint)
+    // check dist every .2f on the ray
+    void RemoveCubesClosestToRay(Ray ray, RaycastHit hit)
     {
         float closestDistance = Mathf.Infinity;
-
-        // make the closest point 10 away so that they player cant hit really far away asteroids
-        Vector3 closestPoint = Vector3.zero;
+        List<int> closestCube = new List<int>();
         Vector3 asteroidCurrentPosition = transform.position;
-        // find the closest point to the rays hit
-        
+
         // loop through all cubes
         foreach (List<int> cube in cubesPointIndecies)
         {
-            // loop through all points in the cube
+            // find the midpoint of the cube
+            Vector3 midPoint = Vector3.zero;
             foreach (int index in cube)
             {
-                Vector3 point = points[index];
-                float distance = Vector3.Distance(hitPoint, point + asteroidCurrentPosition);
+                midPoint += points[index];
+            }
+            midPoint /= cube.Count;
+            // get the closest one to the hitpoint
+            float distance = Vector3.Distance(hit.point, midPoint + asteroidCurrentPosition);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestCube = cube;
+            }
+        }
+
+        // this should be a list of all the cubes that could be the best cube to remove
+        List<List<int>> closestCubes = new List<List<int>>();
+        // get all the cubes that contain one of the points in the closest cube
+        foreach (List<int> cube in cubesPointIndecies)
+        {
+            foreach (int index in cube)
+            {
+                if (closestCube.Contains(index))
+                {
+                    closestCubes.Add(cube);
+                    break;
+                }
+            }
+        }
+
+        // do that again but for all the closestCubes
+        List<List<int>> closestCubes2 = new List<List<int>>();
+        foreach (List<int> cube in cubesPointIndecies)
+        {
+            foreach (int index in cube)
+            {
+                // if this cube is in closestCubes2 then break
+                if (closestCubes2.Contains(cube))
+                    break;
+                foreach (List<int> cube2 in closestCubes)
+                {
+                    if (cube2.Contains(index))
+                    {
+                        // if the cube is already in the list then don't add it again
+                        if (closestCubes2.Contains(cube))
+                            break;
+                        closestCubes2.Add(cube);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // for each .2 meters on the ray, check to see if we are still getting closer to the closest cube midpoint
+        // if we still are then keep going, if not then stop and remove the closest cube
+        Vector3 rayDirection = ray.direction;
+        Vector3 rayOrigin = ray.origin;
+        Vector3 rayPoint = rayOrigin;
+        Vector3 closestCubeMidPoint = Vector3.zero;
+        
+        float lastClosestDist = Mathf.Infinity;
+        List<int> lastClosest = new List<int>();
+        closestDistance = Mathf.Infinity;
+        List<int> currentClosest = new List<int>();
+
+        int i = 0;
+
+        while (i++ < 5000)
+        {
+            //// make a small sphere at the rayPoint
+            //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //sphere.transform.position = rayPoint;
+            //sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+            //sphere.GetComponent<Renderer>().material.color = Color.red;
+            // loop through all the cubes and find the closest one
+            foreach (List<int> cube in closestCubes)
+            {
+
+                // if there is a currentClosest point
+                if (currentClosest.Count != 0)
+                {
+                    // if the current distance to that closest point is greater than the last distance to the closest point
+                    // then we have gone too far and should remove the last closest cube
+                    float currentDistance = Vector3.Distance(rayPoint, closestCubeMidPoint + asteroidCurrentPosition);
+                    if (currentDistance > lastClosestDist)
+                    {
+                        // remove the last closest cube from cubePointIndecies
+                        cubesPointIndecies.Remove(lastClosest);
+                        return;
+                    }
+                }
+
+                // find the midpoint of the cube
+                Vector3 midPoint = Vector3.zero;
+                foreach (int index in cube)
+                {
+                    midPoint += points[index];
+                }
+                midPoint /= cube.Count;
+                // get the closest one to the hitpoint
+                float distance = Vector3.Distance(rayPoint, midPoint + asteroidCurrentPosition);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
-                    closestPoint = point;
+                    currentClosest = cube;
+                    closestCubeMidPoint = midPoint;
                 }
             }
+
+            lastClosest = currentClosest;
+            lastClosestDist = closestDistance;
+            rayPoint += rayDirection * .2f;
         }
-
-        List<List<int>> newCubesPointIndecies = new List<List<int>>();
-
-        // loop through cubesPointIndecies and if the closest point is in it then dont add it to the new list
-        foreach (List<int> cube in cubesPointIndecies)
-        {
-            if (!cube.Contains(points.IndexOf(closestPoint)))
-            {
-                newCubesPointIndecies.Add(cube);
-            }
-        }
-
-        cubesPointIndecies = newCubesPointIndecies;
-
-
-        // remove any cubes if they are not attached to any other cube
-        IDictionary<Vector3, int> pointCopies = new Dictionary<Vector3, int>();
-
-        // loop through all the cubes
-        foreach (List<int> cube in cubesPointIndecies)
-        {
-            // loop through all the points in the cube
-            foreach (int index in cube)
-            {
-                // if the point is not in pointCopies then add it
-                if (!pointCopies.ContainsKey(points[index]))
-                {
-                    pointCopies.Add(points[index], 1);
-                }
-                // if the point is in pointCopies then add one to the value
-                else
-                {
-                    pointCopies[points[index]]++;
-                }
-            }
-        }
-
-        newCubesPointIndecies = new List<List<int>>();
-        // loop through all the cubes
-        foreach (List<int> cube in cubesPointIndecies)
-        {
-            // if all of the points in the cube are 1 then delete the cube
-            bool deleteCube = true;
-            foreach (int index in cube)
-            {
-                if (pointCopies[points[index]] != 1)
-                {
-                    deleteCube = false;
-                }
-            }
-            if (!deleteCube)
-            {
-                newCubesPointIndecies.Add(cube);
-            }
-        }
-
-        cubesPointIndecies = newCubesPointIndecies;
-
 
     }
+
+    //// cube midpoint dist check
+    //void RemoveCubesClosestToRay3(Vector3 hitPoint)
+    //{
+
+    //    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    sphere.transform.position = hitPoint;
+    //    sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //    sphere.GetComponent<Renderer>().material.color = Color.blue;
+
+    //    float closestDistance = Mathf.Infinity;
+    //    List<int> closestCube = new List<int>();
+    //    Vector3 asteroidCurrentPosition = transform.position;
+
+    //    // loop through all cubes
+    //    foreach (List<int> cube in cubesPointIndecies)
+    //    {
+    //        // find the midpoint of the cube
+    //        Vector3 midPoint = Vector3.zero;
+    //        foreach (int index in cube)
+    //        {
+    //            midPoint += points[index];
+    //        }
+    //        midPoint /= cube.Count;
+    //        // get the closest one to the hitpoint
+    //        float distance = Vector3.Distance(hitPoint, midPoint + asteroidCurrentPosition);
+    //        GameObject sphere3 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //        sphere3.transform.position = midPoint + asteroidCurrentPosition;
+    //        sphere3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //        sphere3.GetComponent<Renderer>().material.color = Color.green;
+    //        if (distance < closestDistance)
+    //        {
+    //            closestDistance = distance;
+    //            closestCube = cube;
+    //        }
+    //    }
+
+
+    //    // make a small red sphere at the closest cube midpoint
+    //    GameObject sphere2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    Vector3 midPoint2 = Vector3.zero;
+    //    foreach (int index in closestCube)
+    //    {
+    //        midPoint2 += points[index];
+    //    }
+    //    midPoint2 /= closestCube.Count;
+    //    sphere2.transform.position = midPoint2+ asteroidCurrentPosition;
+    //    sphere2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //    sphere2.GetComponent<Renderer>().material.color = Color.red;
+
+    //    // delete the cube from cubePointIndecies
+    //    cubesPointIndecies.Remove(closestCube);
+
+    //    //// find the closest triangle to where the hitpoint is
+    //    //float closestDistance = Mathf.Infinity;
+    //    //int closestTriangleIndex = 0;
+    //    //Vector3 asteroidCurrentPosition = transform.position;
+    //    //for (int i = 0; i < allTris.Count; i+=3)
+    //    //{
+    //    //    Vector3 point1 = allVerts[allTris[i]];
+    //    //    Vector3 point2 = allVerts[allTris[i+1]];
+    //    //    Vector3 point3 = allVerts[allTris[i+2]];
+    //    //    // get the midpoint of the points
+    //    //    Vector3 midPoint = (point1 + point2 + point3) / 3;
+    //    //    float distance = Vector3.Distance(hitPoint, midPoint+asteroidCurrentPosition);
+    //    //    if (distance < closestDistance)
+    //    //    {
+    //    //        closestDistance = distance;
+    //    //        closestTriangleIndex = i;
+    //    //    }
+    //    //}
+
+    //    //// make 3 little sphere game objects to show where the closest triangle is
+    //    //GameObject sphere1 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    //sphere1.transform.position = allVerts[allTris[closestTriangleIndex]]+ asteroidCurrentPosition;
+    //    //sphere1.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //    //GameObject sphere2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    //sphere2.transform.position = allVerts[allTris[closestTriangleIndex+1]]+ asteroidCurrentPosition;    
+    //    //sphere2.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //    //GameObject sphere3 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //    //sphere3.transform.position = allVerts[allTris[closestTriangleIndex+2]]+ asteroidCurrentPosition;
+    //    //sphere3.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+    //    //// make them red
+    //    //sphere1.GetComponent<Renderer>().material.color = Color.red;
+    //    //sphere2.GetComponent<Renderer>().material.color = Color.red;
+    //    //sphere3.GetComponent<Renderer>().material.color = Color.red;
+
+
+    //    //// remove the cube that contains that triangle
+    //    //List<int> cubeToRemove = new List<int>();
+    //    //foreach (List<int> cube in cubesPointIndecies)
+    //    //{
+    //    //    // print the cube 
+    //    //    string cubeString2 = "";
+    //    //    foreach (int index in cube)
+    //    //    {
+    //    //        cubeString2 += index + ", ";
+    //    //    }
+    //    //    Debug.Log("Cube is " + cubeString2);
+    //    //    Debug.Log("Looking for " + allTris[closestTriangleIndex] + ", " + allTris[closestTriangleIndex+1] + ", " + allTris[closestTriangleIndex+2]);
+    //    //    if (cube.Contains(allTris[closestTriangleIndex]) || cube.Contains(allTris[closestTriangleIndex+1]) || cube.Contains(allTris[closestTriangleIndex+2]))
+    //    //    {
+    //    //        Debug.Log("here");
+    //    //        cubeToRemove = cube;
+    //    //    }
+    //    //}
+    //    //Debug.Log("Closest Distance was " + closestDistance);
+
+    //    //// Debug.Log the cube
+    //    //string cubeString = "";
+    //    //foreach (int index in cubeToRemove)
+    //    //{
+    //    //    cubeString += index + ", ";
+    //    //}
+    //    //Debug.Log(cubeString);
+
+    //    //cubesPointIndecies.Remove(cubeToRemove);
+
+
+    //}
+
+    //// closest point remove all cubes with that point then remove all cubes that are not connected anymore
+    //void RemoveCubesClosestToRay2(Vector3 hitPoint)
+    //{
+    //    float closestDistance = Mathf.Infinity;
+
+    //    // make the closest point 10 away so that they player cant hit really far away asteroids
+    //    Vector3 closestPoint = Vector3.zero;
+    //    Vector3 asteroidCurrentPosition = transform.position;
+    //    // find the closest point to the rays hit
+        
+    //    // loop through all cubes
+    //    foreach (List<int> cube in cubesPointIndecies)
+    //    {
+    //        // loop through all points in the cube
+    //        foreach (int index in cube)
+    //        {
+    //            Vector3 point = points[index];
+    //            float distance = Vector3.Distance(hitPoint, point + asteroidCurrentPosition);
+    //            if (distance < closestDistance)
+    //            {
+    //                closestDistance = distance;
+    //                closestPoint = point;
+    //            }
+    //        }
+    //    }
+
+    //    List<List<int>> newCubesPointIndecies = new List<List<int>>();
+
+    //    // loop through cubesPointIndecies and if the closest point is in it then dont add it to the new list
+    //    foreach (List<int> cube in cubesPointIndecies)
+    //    {
+    //        if (!cube.Contains(points.IndexOf(closestPoint)))
+    //        {
+    //            newCubesPointIndecies.Add(cube);
+    //        }
+    //    }
+
+    //    cubesPointIndecies = newCubesPointIndecies;
+
+
+    //    // remove any cubes if they are not attached to any other cube
+    //    IDictionary<Vector3, int> pointCopies = new Dictionary<Vector3, int>();
+
+    //    // loop through all the cubes
+    //    foreach (List<int> cube in cubesPointIndecies)
+    //    {
+    //        // loop through all the points in the cube
+    //        foreach (int index in cube)
+    //        {
+    //            // if the point is not in pointCopies then add it
+    //            if (!pointCopies.ContainsKey(points[index]))
+    //            {
+    //                pointCopies.Add(points[index], 1);
+    //            }
+    //            // if the point is in pointCopies then add one to the value
+    //            else
+    //            {
+    //                pointCopies[points[index]]++;
+    //            }
+    //        }
+    //    }
+
+    //    newCubesPointIndecies = new List<List<int>>();
+    //    // loop through all the cubes
+    //    foreach (List<int> cube in cubesPointIndecies)
+    //    {
+    //        // if all of the points in the cube are 1 then delete the cube
+    //        bool deleteCube = true;
+    //        foreach (int index in cube)
+    //        {
+    //            if (pointCopies[points[index]] != 1)
+    //            {
+    //                deleteCube = false;
+    //            }
+    //        }
+    //        if (!deleteCube)
+    //        {
+    //            newCubesPointIndecies.Add(cube);
+    //        }
+    //    }
+
+    //    cubesPointIndecies = newCubesPointIndecies;
+
+
+    //}
 
 
 

@@ -30,9 +30,6 @@ public class Minerals
         // get the mineral material with that name
         Material material = Resources.Load<Material>("Materials/Minerals/" + name);
 
-        Debug.Log("Creating item using material " + material);
-        Debug.Log("Looked for " + name);
-
         newItem.SetUpItem(name, desc, density, sellValue, buyValue, stackable, maxStack, itemType, material, level, sprite);
         return newItem;
     }
