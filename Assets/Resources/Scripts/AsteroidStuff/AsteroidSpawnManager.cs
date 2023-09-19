@@ -12,6 +12,9 @@ public class AsteroidSpawnManager : MonoBehaviour
     private bool lastEmptyCheck = true;
     public bool initialLoadFinished = false;
 
+    List<GameObject> AllPregeneratedAsteroids = new List<GameObject>();
+    List<GameObject> AllPregeneratedBigAsteroids = new List<GameObject>();
+
     System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
     public void AddToQueue(Vector3 pos)
@@ -24,6 +27,21 @@ public class AsteroidSpawnManager : MonoBehaviour
         minerals.SetUp();
         IEnumerator coroutine = SpawnAsteroidFromQueue();
         StartCoroutine(coroutine);
+        MakePregeneratedAsteroids();
+    }
+
+    void MakePregeneratedAsteroids()
+    {
+        // make 100 normal asteroids
+        for (int i = 0; i < 100; i++)
+        {
+            AllPregeneratedAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), false));
+        }
+        // make 100 big asteroids
+        for (int i = 0; i < 100; i++)
+        {
+            AllPregeneratedBigAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), true));
+        }
     }
 
     private IEnumerator SpawnAsteroidFromQueue()
@@ -35,7 +53,7 @@ public class AsteroidSpawnManager : MonoBehaviour
             if (AsteroidPositionsSpawnQueue.Count != 0)
             {
                 if (AsteroidPositionsSpawnQueue[0] != null)
-                    GenerateOneAsteroid(AsteroidPositionsSpawnQueue[0], Random.Range(0, 10) == 0 ? true : false);
+                    CopyOneAsteroid(AsteroidPositionsSpawnQueue[0]);
                 AsteroidPositionsSpawnQueue.RemoveAt(0);
                 lastEmptyCheck = false;
             }
@@ -68,7 +86,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         }
     }
 
-    void GenerateOneAsteroid(Vector3 position, bool isBig)
+    GameObject GenerateOneAsteroid(Vector3 position, bool isBig)
     {
         GameObject newAsteroid = Instantiate(asteroidPrefab, position, Quaternion.identity) as GameObject;
         // add the asteroid to the parents asteroid field
@@ -90,6 +108,25 @@ public class AsteroidSpawnManager : MonoBehaviour
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
 
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
+        newAsteroid.SetActive(false);
+        return newAsteroid;
+    }
+
+    void CopyOneAsteroid(Vector3 position)
+    {
+        bool isBig = Random.Range(0, 10) == 0;
+        GameObject asteroidToCopy;
+        if (isBig)
+            asteroidToCopy = AllPregeneratedBigAsteroids[Random.Range(0, AllPregeneratedBigAsteroids.Count)];
+        else
+            asteroidToCopy = AllPregeneratedBigAsteroids[Random.Range(0, AllPregeneratedBigAsteroids.Count)];
+        
+        // make a copy of the asteroid
+        GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
+        Item mineralType = minerals.GetMineralTypeFromPos(position, isBig);
+        newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
+        newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
+        newAsteroid.SetActive(true);
     }
 
     static IEnumerator WaitForFrames(int frameCount)

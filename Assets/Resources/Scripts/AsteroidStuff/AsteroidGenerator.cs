@@ -5,7 +5,6 @@ using System.Threading;
 
 public class AsteroidGenerator : MonoBehaviour
 {
-
     // texture for the asteroid
     [SerializeField]
     public Item mineralType;

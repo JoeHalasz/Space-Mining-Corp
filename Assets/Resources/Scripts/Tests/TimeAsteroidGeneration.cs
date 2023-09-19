@@ -11,6 +11,9 @@ public class TimeAsteroidGeneration : MonoBehaviour
     int maxAsteroidsX = 50;
 
     [SerializeField]
+    int maxAsteroidsY = 1;
+
+    [SerializeField]
     int maxAsteroidsZ = 50;
 
     [SerializeField]
@@ -48,14 +51,17 @@ public class TimeAsteroidGeneration : MonoBehaviour
         // make a grid of maxAsteroids
         for (int x = 0; x < maxAsteroidsX * spacing; x += spacing)
         {
-            for (int z = 0; z < maxAsteroidsZ * spacing; z += spacing)
+            for (int y = 0; y < maxAsteroidsY * spacing; y += spacing)
             {
-                bool isBig = false;
-                // random chance to spawn a big asteroid
-                if (Random.Range(0, 100) < 10)
-                    isBig = true;
-                asteroidSpawnManager.AddToQueue(new Vector3(x, 0, z));
-                numAsteroids++;
+                for (int z = 0; z < maxAsteroidsZ * spacing; z += spacing)
+                {
+                    bool isBig = false;
+                    // random chance to spawn a big asteroid
+                    if (Random.Range(0, 100) < 10)
+                        isBig = true;
+                    asteroidSpawnManager.AddToQueue(new Vector3(x, y, z));
+                    numAsteroids++;
+                }
             }
         }
     }
