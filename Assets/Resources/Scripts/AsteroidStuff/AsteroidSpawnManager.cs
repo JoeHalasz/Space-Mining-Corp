@@ -10,7 +10,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     [SerializeField]
     GameObject asteroidPrefab;
     private bool lastEmptyCheck = true;
-    bool initialLoadFinished = false;
+    public bool initialLoadFinished = false;
 
     System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
@@ -61,7 +61,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 
             if (initialLoadFinished)
                 // wait 7 frames
-                yield return WaitForFrames(7);
+                yield return WaitForFrames(1);
             else if (AsteroidPositionsSpawnQueue.Count % 100 == 0)
                 yield return 0;
                 

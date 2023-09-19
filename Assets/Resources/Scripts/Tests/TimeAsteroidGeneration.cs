@@ -32,8 +32,9 @@ public class TimeAsteroidGeneration : MonoBehaviour
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
     }
 
-    IEnumerator doTest()
+    void doTest()
     {
+        asteroidSpawnManager.initialLoadFinished = false;
         // delete all asteroids
         foreach (GameObject asteroid in allAsteroids)
         {
@@ -44,9 +45,6 @@ public class TimeAsteroidGeneration : MonoBehaviour
         minerals = new Minerals();
         minerals.SetUp();
 
-        // time how long it takes to generate the asteroids
-        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-        stopwatch.Start();
         // make a grid of maxAsteroids
         for (int x = 0; x < maxAsteroidsX * spacing; x += spacing)
         {
@@ -58,26 +56,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
                     isBig = true;
                 asteroidSpawnManager.AddToQueue(new Vector3(x, 0, z));
                 numAsteroids++;
-
-                yield return WaitForFrames(7);
             }
-        }
-        stopwatch.Stop();
-        Debug.Log("Time to generate " + maxAsteroidsX * maxAsteroidsZ + " asteroids: " + stopwatch.ElapsedMilliseconds + "ms");
-        yield break;
-    }
-
-    public static IEnumerator WaitForFrames(int frameCount)
-    {
-        if (frameCount <= 0)
-        {
-            yield break;
-        }
-
-        while (frameCount > 0)
-        {
-            frameCount--;
-            yield return null;
         }
     }
 
@@ -86,8 +65,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
         if (redoTest)
         {
             redoTest = false;
-            IEnumerator coroutine = doTest();
-            StartCoroutine(coroutine);
+            doTest();
         }
     }
 

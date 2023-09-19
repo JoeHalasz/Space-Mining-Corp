@@ -908,14 +908,22 @@ using UnityEngine;
             }
         }
 
-        /// <summary>
-        ///   Final step in algorithm, export the faces of the convex hull in a
-        ///   mesh-friendly format.
-        ///
-        ///   TODO normals calculation for non-split vertices. Right now it just
-        ///   leaves the normal array empty.
-        /// </summary>
-        void ExportMesh(
+        Vector3 CalculateFaceNormal(Vector3 p0, Vector3 p1, Vector3 p2)
+        {
+            // Calculate the face normal using the cross product of two edges
+            Vector3 edge1 = p1 - p0;
+            Vector3 edge2 = p2 - p0;
+            return Vector3.Cross(edge1, edge2).normalized;
+        }
+
+    /// <summary>
+    ///   Final step in algorithm, export the faces of the convex hull in a
+    ///   mesh-friendly format.
+    ///
+    ///   TODO normals calculation for non-split vertices. Right now it just
+    ///   leaves the normal array empty.
+    /// </summary>
+    void ExportMesh(
             List<Vector3> points,
             bool splitVerts,
             ref List<Vector3> verts,
@@ -985,11 +993,14 @@ using UnityEngine;
                         hullVerts[face.Vertex2] = vi2;
                         verts.Add(points[face.Vertex2]);
                     }
-                }
+                    //Vector3 normal = CalculateFaceNormal(points[face.Vertex0], points[face.Vertex1], points[face.Vertex2]);
+                    //normals.Add(normal);
+            }
 
                 tris.Add(vi0);
                 tris.Add(vi1);
                 tris.Add(vi2);
+
             }
         }
 
