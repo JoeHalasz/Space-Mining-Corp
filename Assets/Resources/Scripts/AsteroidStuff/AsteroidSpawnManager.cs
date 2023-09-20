@@ -123,6 +123,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         
         // make a copy of the asteroid
         GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
+        newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
         newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.outsidePoints, o.pointColors,
                         o.pointToCubes, o.mesh, o.increment, o.pointsSetPositions, o.cubesPointIndecies, o.allVerts, o.allTris, o.allNormals);
