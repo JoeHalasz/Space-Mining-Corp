@@ -55,10 +55,6 @@ public class TimeAsteroidGeneration : MonoBehaviour
             {
                 for (int z = 0; z < maxAsteroidsZ * spacing; z += spacing)
                 {
-                    bool isBig = false;
-                    // random chance to spawn a big asteroid
-                    if (Random.Range(0, 100) < 10)
-                        isBig = true;
                     asteroidSpawnManager.AddToQueue(new Vector3(x, y, z));
                     numAsteroids++;
                 }

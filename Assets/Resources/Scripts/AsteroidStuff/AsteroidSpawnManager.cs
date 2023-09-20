@@ -33,12 +33,12 @@ public class AsteroidSpawnManager : MonoBehaviour
     void MakePregeneratedAsteroids()
     {
         // make 100 normal asteroids
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 1; i++)
         {
             AllPregeneratedAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), false));
         }
         // make 100 big asteroids
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 1; i++)
         {
             AllPregeneratedBigAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), true));
         }
@@ -77,10 +77,10 @@ public class AsteroidSpawnManager : MonoBehaviour
                 Debug.Log("Initial load took: " + stopwatch.ElapsedMilliseconds/1000f + "s");
             }
 
-            if (initialLoadFinished)
+            if (initialLoadFinished && AsteroidPositionsSpawnQueue.Count % 50 == 0)
                 // wait 7 frames
-                yield return WaitForFrames(1);
-            else if (AsteroidPositionsSpawnQueue.Count % 100 == 0)
+                yield return 0;
+            else if (AsteroidPositionsSpawnQueue.Count % 1000 == 0)
                 yield return 0;
                 
         }
@@ -123,9 +123,15 @@ public class AsteroidSpawnManager : MonoBehaviour
         
         // make a copy of the asteroid
         GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
+        AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
+        newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.outsidePoints, o.pointColors,
+                        o.pointToCubes, o.mesh, o.increment, o.pointsSetPositions, o.cubesPointIndecies, o.allVerts, o.allTris, o.allNormals);
+
+        // make it a different mineral
         Item mineralType = minerals.GetMineralTypeFromPos(position, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
+
         newAsteroid.SetActive(true);
     }
 

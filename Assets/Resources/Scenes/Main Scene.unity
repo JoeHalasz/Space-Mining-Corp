@@ -5031,6 +5031,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asteroidPrefab: {fileID: 193283059148315025, guid: 0ef98c27a31240546a3fc8e263c19bad, type: 3}
   maxAsteroidsX: 1
+  maxAsteroidsY: 1
   maxAsteroidsZ: 1
   spacing: 20
   redoTest: 1
