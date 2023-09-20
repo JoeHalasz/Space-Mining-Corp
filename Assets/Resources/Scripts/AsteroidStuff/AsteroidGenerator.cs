@@ -210,6 +210,60 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
+    Mesh GetSimplifiedMesh()
+    {
+        Mesh mesh = new Mesh();
+        mesh.subMeshCount = 2;
+        ConvexHullCalculator ConvexHullCalc = new ConvexHullCalculator();
+        
+        List<Vector3> simpleVerts = new List<Vector3>();
+        List<int> simpleTris = new List<int>();
+        List<Vector3> simpleNormals = new List<Vector3>();
+
+        ConvexHullCalc.GenerateHull(points, true, ref simpleVerts, ref simpleTris, ref simpleNormals);
+        
+        mesh.vertices = simpleVerts.ToArray();
+
+        List<int> oreTris = new List<int>();
+        List<int> otherTris = new List<int>();
+        for (int i = 0; i < simpleTris.Count; i += 3)
+        {
+            // if the point is in the ore group
+            if (pointColors[simpleVerts[simpleTris[i]]] == 1)
+            {
+                // add the tris to the ore group
+                oreTris.Add(simpleTris[i]);
+                oreTris.Add(simpleTris[i + 1]);
+                oreTris.Add(simpleTris[i + 2]);
+            }
+            else
+            {
+                // add the tris to the other group
+                otherTris.Add(simpleTris[i]);
+                otherTris.Add(simpleTris[i + 1]);
+                otherTris.Add(simpleTris[i + 2]);
+            }
+        }
+
+        // add the ore tris to the submesh
+        mesh.SetTriangles(oreTris.ToArray(), 0);
+        // set the rest of the tris to the other submesh
+        mesh.SetTriangles(otherTris.ToArray(), 1);
+
+        mesh.normals = simpleNormals.ToArray();
+        Vector2[] uvs = new Vector2[simpleVerts.Count];
+        for (int i = 0; i < simpleVerts.Count; i++)
+        {
+            uvs[i] = new Vector2(simpleVerts[i].x, simpleVerts[i].z);
+        }
+        mesh.uv = uvs;
+        mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
+
+        return mesh;
+    }
+
+
     void GenerateMesh()
     {
         allVerts = new List<Vector3>();
@@ -265,9 +319,31 @@ public class AsteroidGenerator : MonoBehaviour
         }
         mesh.uv = uvs;
 
-        GetComponent<MeshCollider>().sharedMesh = mesh;
+        
+        // TODO try lods on asteroids
+        //// add lod group
+        //LODGroup lodGroup = GetComponent<LODGroup>();
+        //if (lodGroup == null)
+        //{
+        //    lodGroup = gameObject.AddComponent<LODGroup>();
+        //}
 
+        //LOD[] lods = new LOD[3];
+        //lods[0] = new LOD(1f, new Renderer[] { GetComponent<Renderer>() });
+        //lods[1] = new LOD(.25f, new Renderer[] { GetComponent<Renderer>() });
+        //lods[2] = new LOD(.005f, new Renderer[] { GetComponent<Renderer>() });
+
+        //Mesh simpleMesh = GetSimplifiedMesh();
+        
+        //lods[0].renderers[0].GetComponent<MeshFilter>().mesh = mesh;
+        //lods[1].renderers[0].GetComponent<MeshFilter>().mesh = simpleMesh;
+
+        //lodGroup.SetLODs(lods);
+        //lodGroup.RecalculateBounds();
+
+        GetComponent<MeshCollider>().sharedMesh = mesh;
         GetComponent<MeshFilter>().mesh = mesh;
+        mesh.RecalculateBounds();
     }
 
 

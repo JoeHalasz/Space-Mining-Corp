@@ -33,12 +33,12 @@ public class AsteroidSpawnManager : MonoBehaviour
     void MakePregeneratedAsteroids()
     {
         // make 100 normal asteroids
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 100; i++)
         {
             AllPregeneratedAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), false));
         }
         // make 100 big asteroids
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 100; i++)
         {
             AllPregeneratedBigAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), true));
         }
