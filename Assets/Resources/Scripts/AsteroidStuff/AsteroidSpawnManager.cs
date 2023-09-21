@@ -69,7 +69,7 @@ public class AsteroidSpawnManager : MonoBehaviour
             if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0)
                 Debug.Log("Num asteroids left in queue " + AsteroidPositionsSpawnQueue.Count);
 
-            if (AsteroidPositionsSpawnQueue.Count == 1)
+            if (!initialLoadFinished && AsteroidPositionsSpawnQueue.Count == 1)
             { // cant be 0 because it starts at 0
                 Debug.Log("Initial load finished");
                 initialLoadFinished = true;

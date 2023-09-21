@@ -50,23 +50,16 @@ public class NPCmanager : MonoBehaviour
         {
             missionUI.SetActive(false);
             playerMissionUI.SetActive(false);
-            playerMovement.UnlockPlayerMovement();
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            player.GetComponent<UIManager>().UIOpen = false;
+            player.GetComponent<UIManager>().closeAnyUI();
             hideAllMissions();
         }
         else // open inv
         {
-            if (!player.GetComponent<UIManager>().UIOpen)
+            if (!player.GetComponent<UIManager>().getUIOpen())
             {
                 missionUI.SetActive(true);
                 playerMissionUI.SetActive(true);
-                playerMovement.LockPlayerInputs(this.gameObject);
-                player.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-                player.GetComponent<UIManager>().UIOpen = true;
+                player.GetComponent<UIManager>().openAnyUI(this.gameObject);
                 showAllMissions();
             }
         }

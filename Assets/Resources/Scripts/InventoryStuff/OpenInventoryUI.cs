@@ -13,8 +13,6 @@ public class OpenInventoryUI : MonoBehaviour
 
     public bool inventoryOpen = false;
 
-    PlayerMovement playerMovement;
-
     int backgroundSize;
     int iconSize;
     int diff;
@@ -59,7 +57,6 @@ public class OpenInventoryUI : MonoBehaviour
         inventoryTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryTile");
         inventoryBackgroundTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryBackgroundTile");
 
-        playerMovement = GetComponent<PlayerMovement>();
         if (inventoryUI == null)
             Debug.LogError("Inventory UI is null in OpenInventoryUI script on " + this.gameObject);
 
@@ -76,21 +73,14 @@ public class OpenInventoryUI : MonoBehaviour
             numRows = inventory.numRows;
             numCols = inventory.numCols;
             leftOver = inventory.leftOver;
-            // lock the players movement
-            if (playerMovement != null)
-                playerMovement.LockPlayerInputs(caller);
+
             LastCaller = caller;
             // set lastCallers lastCaller to this game object
             if (LastCaller.GetComponent<OpenInventoryUI>() != null)
             {
                 LastCaller.GetComponent<OpenInventoryUI>().LastCaller = this.gameObject;
             }
-            // set the players velocity to 0
-            player.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            // show the mouse
-            Cursor.visible = true;
-            // move the mouse to the center of the screen
-            Cursor.lockState = CursorLockMode.None;
+
             inventoryOpen = true;
             GenerateInventoryUI();
         }
@@ -111,11 +101,6 @@ public class OpenInventoryUI : MonoBehaviour
                 }
             }
             LastCaller = null;
-            // unlock the players movement
-            playerMovement.UnlockPlayerInputs();
-            // hide the mouse
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
             inventoryOpen = false;
         }
     }
@@ -135,15 +120,15 @@ public class OpenInventoryUI : MonoBehaviour
     public void ShowOrHideUI(InputAction.CallbackContext context)
     {
         // if the player presses tab and the inventory is not open, open it else close it
-        if (IsOnPlayer && !inventoryUI.activeSelf && !GetComponent<UIManager>().UIOpen)
+        if (IsOnPlayer && !inventoryUI.activeSelf && !GetComponent<UIManager>().getUIOpen())
         {
             ShowInventory(this.gameObject);
-            GetComponent<UIManager>().UIOpen = true;
+            GetComponent<UIManager>().openAnyUI(this.gameObject);
         }
         else if (IsOnPlayer && inventoryUI.activeSelf)
         {
             HideInventory();
-            GetComponent<UIManager>().UIOpen = false;
+            GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
         }
     }
 

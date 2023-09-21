@@ -17,20 +17,27 @@ public class Inventory : MonoBehaviour
     public int numRows;
     public int numCols;
     public int leftOver;
+
+    bool calculatedSize = false;
+
+    GameObject player;
     
     // Start is called before the first frame update
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player");
         inventoryUIScript = GetComponent<OpenInventoryUI>();
 
         // if this gameObject has a shipManager, then get the numslots from it
         if (GetComponent<ShipManager>() != null)
         {
             totalInvSlots = GetComponent<ShipManager>().GetNumCargoSlots();
+            calculatedSize = true;
         }
         else if (GetComponent<PlayerStats>() != null)
         {
             totalInvSlots = GetComponent<PlayerStats>().GetNumCargoSlots();
+            calculatedSize = true;
         }
 
         if (inventoryUIScript == null)
@@ -45,20 +52,22 @@ public class Inventory : MonoBehaviour
     {
         if (totalInvSlots < 0)
         {
-            Debug.Log("Error in Inventory.cs. totalInvSlots has not been set");
+            totalInvSlots = numRows * numCols;
         }
-        SetNumSlots(totalInvSlots);
-        if (isEmpty())
-        {
-            totalInvSlots = numRows * numCols + leftOver;
-            for (int i = 0; i < totalInvSlots; i++)
+        if (calculatedSize) {
+            SetNumSlots(totalInvSlots);
+            if (isEmpty())
             {
-                items.Add(null);
+                totalInvSlots = numRows * numCols + leftOver;
+                for (int i = 0; i < totalInvSlots; i++)
+                {
+                    items.Add(null);
+                }
             }
-        }
-        else
-        {
-            Debug.Log("Cant update inventory size, its not empty");
+            else
+            {
+                Debug.Log("Cant update inventory size, its not empty");
+            }
         }
     }
 
@@ -114,7 +123,11 @@ public class Inventory : MonoBehaviour
             inventoryUIScript.ShowInventory(this.gameObject);
             if (other != null)
                 other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject);
+            else
+                Debug.LogError("Error in Inventory.cs, other is null");
+
             inventoryUIScript.UpdateInventory();
+            player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
         }
     }
 
@@ -124,6 +137,7 @@ public class Inventory : MonoBehaviour
         {
             // close all inventorys
             player.GetComponent<OpenInventoryUI>().HideInventory();
+            player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
         }
     }
 
@@ -165,6 +179,7 @@ public class Inventory : MonoBehaviour
         return num;
     }
 
+    // will return the leftover
     public ItemPair addItem(Item item, float amount, int pos) // if pos is -1, add to first available slot
     {
         PrintInv();
@@ -272,6 +287,8 @@ public class Inventory : MonoBehaviour
 
     public ItemPair getItemAtPos(int index)
     {
+        if (items.Count <= index)
+            return null;
         return items[index];
     }
 

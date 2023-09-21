@@ -33,7 +33,6 @@ public class Interact : MonoBehaviour
                 if (reason != null)
                 {
                     reason.GetComponent<Inventory>().closeInventory(this.gameObject);
-                    GetComponent<UIManager>().UIOpen = false;
                 }
                 // player is in a menu, so close it
                 playerMovement.UnlockPlayerInputs();
@@ -73,7 +72,7 @@ public class Interact : MonoBehaviour
     public void HandleValidHit(Ray ray, RaycastHit hit)
     {
         // if we hit cargo
-        if (hit.collider.transform.tag == "Cargo")
+        if (hit.collider.transform.tag == "Cargo" || hit.collider.transform.tag == "OreRefinery")
             inventoryHitHandler.HandleHit(ray, hit);
         
         // if we hit a Seat
@@ -82,7 +81,6 @@ public class Interact : MonoBehaviour
 
         else if (hit.collider.transform.tag == "NPC")
             hit.collider.transform.GetComponent<NPCmanager>().InteractWithPlayer(gameObject);
-        
-        
+
     }
 }

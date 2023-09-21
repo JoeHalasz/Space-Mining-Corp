@@ -42,7 +42,7 @@ public class MineAsteroid : MonoBehaviour
         // if it has been .2 seconds
         if (currentTime - lastMineTime > .2f)
         {
-            if (!uiManager.UIOpen)
+            if (!uiManager.getUIOpen())
             {
                 lastMineTime = currentTime;
                 // cast a ray that stops at the first object it hits

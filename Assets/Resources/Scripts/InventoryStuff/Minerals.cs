@@ -34,6 +34,13 @@ public class Minerals
         return newItem;
     }
 
+    public Item GetMineralByOre(Item ore)
+    {
+        // remove " Ore" from the name
+        string name = ore.getName().Substring(0, ore.getName().Length - 4);
+        return GetMineralByName(name);
+    }
+
     public Item GetMineralByName(string name)
     {
         if (MineralsList.ContainsKey(name))

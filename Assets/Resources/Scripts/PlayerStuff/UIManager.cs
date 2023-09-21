@@ -5,12 +5,16 @@ using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
-    public bool UIOpen = false;
+    bool UIOpen = false;
     GameObject missionPrefab;
     GameObject PlayerMissionsUIFolder;
 
     [SerializeField]
     GameObject playerMissionUI;
+    [SerializeField]
+    GameObject leftInventory;
+    [SerializeField]
+    GameObject rightInventory;
 
     PlayerMovement playerMovement;
 
@@ -23,6 +27,8 @@ public class UIManager : MonoBehaviour
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
         playerMovement = GetComponent<PlayerMovement>();
     }
+
+    public bool getUIOpen() { return UIOpen; }
 
     bool updateState = false;
 
@@ -43,17 +49,33 @@ public class UIManager : MonoBehaviour
 
     bool doneByThis = false;
 
+    public void closeAnyUI()
+    {
+        Debug.Log("Closing UI");
+        playerMovement.UnlockPlayerMovement();
+        playerMovement.UnlockPlayerInputs();
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        UIOpen = false;
+    }
+
+    public void openAnyUI(GameObject caller)
+    {
+        Debug.Log("Opening UI");
+        playerMovement.LockPlayerInputs(caller);
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        UIOpen = true;
+    }
+
     public void OpenOrCloseMissionsMenu()
     {
 
         if (playerMissionUI.activeSelf && doneByThis) // close inv
         {
             playerMissionUI.SetActive(false);
-            playerMovement.UnlockPlayerMovement();
-            playerMovement.UnlockPlayerInputs();
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-            UIOpen = false;
+            closeAnyUI();
             hideAllMissions();
             doneByThis = false;
         }
@@ -62,14 +84,28 @@ public class UIManager : MonoBehaviour
             if (!UIOpen)
             {
                 playerMissionUI.SetActive(true);
-                playerMovement.LockPlayerInputs(this.gameObject);
-                GetComponent<Rigidbody>().velocity = Vector3.zero;
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-                UIOpen = true;
+                openAnyUI(this.gameObject);
                 showPlayerMissions();
                 doneByThis = true;
             }
+        }
+    }
+
+    public void OpenOrCloseInventory(GameObject caller)
+    {
+        Debug.Log("Opening or closing inventory");
+        if (UIOpen)
+        {
+            // close the inv
+            leftInventory.SetActive(false);
+            rightInventory.SetActive(false);
+            closeAnyUI();
+        }
+        else
+        {
+            leftInventory.SetActive(true);
+            rightInventory.SetActive(true);
+            openAnyUI(caller);
         }
     }
 
