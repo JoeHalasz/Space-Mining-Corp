@@ -36,18 +36,20 @@ public class OreRefinery : MonoBehaviour
             // loop through all the items and look for the word "Ore" in the name
             foreach (ItemPair item in allItems)
             {
-
-                if (item != null && item.item.getName().Contains("Ore") && item.getAmount() > 0)
+                if (item != null && item.item.getName().Contains("Ore") && item.getAmount() >= 1)
                 {
+                    Debug.Log(item.item.getName() + " is an ore");
                     // if the item is an ore, then move it to the mineral inv
                     oreToRefine = item;
+                    break;
                 }
             }
 
             // this will return the remainder of the item if it cant be added, because we are trying to move only 1, this must return null for it to move any items
             if (oreToRefine != null && inventory.addItem(minerals.GetMineralByOre(oreToRefine.item), 1, -1) == null)
             {
-                inventory.removeItemAmount(inventory.getItemAtPos(0).item, 1);
+                inventory.removeItemAmount(oreToRefine.item, 1);
+                Debug.Log("Refined 1 " + oreToRefine.item.getName() + " into 1 " + minerals.GetMineralByOre(oreToRefine.item).getName());
             }
         }
     }

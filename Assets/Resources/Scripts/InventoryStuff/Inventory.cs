@@ -325,7 +325,6 @@ public class Inventory : MonoBehaviour
                     removeItem(items.IndexOf(pair));
                 }
                 totalLeft -= removeAmount;
-                Debug.Log(totalLeft);
                 if (totalLeft == 0)
                     return true;
                 
