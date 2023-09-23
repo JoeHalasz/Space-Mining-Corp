@@ -78,10 +78,8 @@ public class FactionManager : MonoBehaviour
         while (currentMissions.Count < numberOfMissionsToMake)
         {
             if (tries++ > 100)
-            {
-                Debug.Log("Oh fuck oh god FactionManager.cs");
                 break;
-            }
+            
             // get a random number from 1 to 3.
             int numMissionsToCombine = Random.Range(1, 4);
             List<Mission> missionsToCombine = new List<Mission>();

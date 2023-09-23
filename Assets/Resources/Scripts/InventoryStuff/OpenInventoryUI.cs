@@ -5,8 +5,9 @@ using UnityEngine.InputSystem;
 public class OpenInventoryUI : MonoBehaviour
 {
 
-    [SerializeField]
-    public GameObject inventoryUI;
+    GameObject inventoryUILeft;
+    GameObject inventoryUIRight;
+    GameObject currentInventoryUI = null;
 
     GameObject inventoryTilePrefab;
     GameObject inventoryBackgroundTilePrefab;
@@ -40,6 +41,8 @@ public class OpenInventoryUI : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player");
         inventory = GetComponent<Inventory>();
+        inventoryUILeft = GameObject.Find("LeftInventory");
+        inventoryUIRight = GameObject.Find("RightInventory");
 
         if (inventoryBackgroundTilePrefab == null)
             inventoryBackgroundTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryBackgroundTile");
@@ -57,18 +60,16 @@ public class OpenInventoryUI : MonoBehaviour
         inventoryTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryTile");
         inventoryBackgroundTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryBackgroundTile");
 
-        if (inventoryUI == null)
-            Debug.LogError("Inventory UI is null in OpenInventoryUI script on " + this.gameObject);
-
     }
 
     public GameObject LastCaller = null;
 
-    public void ShowInventory(GameObject caller)
+    public void ShowInventory(GameObject caller, bool isLeft)
     {
-        if (inventoryUI != null)
+        currentInventoryUI = isLeft ? inventoryUILeft : inventoryUIRight;
+        if (currentInventoryUI != null)
         {
-            inventoryUI.SetActive(true);
+            currentInventoryUI.SetActive(true);
             // get the numRows and numCols and extra from the inventory script
             numRows = inventory.numRows;
             numCols = inventory.numCols;
@@ -82,27 +83,25 @@ public class OpenInventoryUI : MonoBehaviour
             }
 
             inventoryOpen = true;
-            GenerateInventoryUI();
+            GenerateInventoryUI(isLeft);
         }
     }
 
-    public void HideInventory()
+    public void HideInventory(bool isLeft)
     {
-        if (inventoryUI != null)
+        inventoryUILeft.SetActive(false);
+        inventoryUIRight.SetActive(false);
+        currentInventoryUI = null;
+        // if the LastCaller has an inventoryui then set it as not active
+        if (LastCaller != null)
         {
-            inventoryUI.SetActive(false);
-            // if the LastCaller has an inventoryui then set it as not active
-            if (LastCaller != null)
+            if (LastCaller.GetComponent<OpenInventoryUI>() != null)
             {
-                if (LastCaller.GetComponent<OpenInventoryUI>() != null)
-                {
-                    LastCaller.GetComponent<OpenInventoryUI>().inventoryUI.SetActive(false);
-                    LastCaller.GetComponent<OpenInventoryUI>().LastCaller = null;
-                }
+                LastCaller.GetComponent<OpenInventoryUI>().LastCaller = null;
             }
-            LastCaller = null;
-            inventoryOpen = false;
         }
+        LastCaller = null;
+        inventoryOpen = false;   
     }
 
     int mouseDownFrames = 0;
@@ -120,14 +119,14 @@ public class OpenInventoryUI : MonoBehaviour
     public void ShowOrHideUI(InputAction.CallbackContext context)
     {
         // if the player presses tab and the inventory is not open, open it else close it
-        if (IsOnPlayer && !inventoryUI.activeSelf && !GetComponent<UIManager>().getUIOpen())
+        if (IsOnPlayer && !inventoryUILeft.activeSelf && !GetComponent<UIManager>().getUIOpen())
         {
-            ShowInventory(this.gameObject);
+            ShowInventory(this.gameObject, true);
             GetComponent<UIManager>().openAnyUI(this.gameObject);
         }
-        else if (IsOnPlayer && inventoryUI.activeSelf)
+        else if (IsOnPlayer && inventoryUILeft.activeSelf)
         {
-            HideInventory();
+            HideInventory(true);
             GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
         }
     }
@@ -150,11 +149,11 @@ public class OpenInventoryUI : MonoBehaviour
                 if (leftOver != 0)
                     localNumCols++;
 
-                float xMinCheck = inventoryUI.transform.position.x - iconSize / 2;
+                float xMinCheck = currentInventoryUI.transform.position.x - iconSize / 2;
 
                 float xMaxCheck = xMinCheck + numRows * spaceBetween - diff / 2;
 
-                float yMaxCheck = inventoryUI.transform.position.y + iconSize / 2;
+                float yMaxCheck = currentInventoryUI.transform.position.y + iconSize / 2;
                 float yMinCheck = yMaxCheck - localNumCols * spaceBetween + diff / 2;
 
                 bool InSquare = false;
@@ -302,7 +301,7 @@ public class OpenInventoryUI : MonoBehaviour
                     UpdateInventory();
                 }
             }
-            if (heldItem != null)
+            if (heldItem != null && heldItemSprite != null)
             {
                 // set its position to the mouse position
                 Vector3 mousePos = Input.mousePosition;
@@ -335,10 +334,10 @@ public class OpenInventoryUI : MonoBehaviour
         return col * numRows + row;
     }
 
-    void GenerateInventoryUI()
+    void GenerateInventoryUI(bool isLeft)
     {
         // delete all children of the inventoryUI
-        foreach (Transform child in inventoryUI.transform)
+        foreach (Transform child in currentInventoryUI.transform)
         {
             GameObject.Destroy(child.gameObject);
         }
@@ -355,17 +354,17 @@ public class OpenInventoryUI : MonoBehaviour
                     break;
                 
                 // spawn an inventory tile prefab at the correct position
-                GameObject tile = Instantiate(inventoryBackgroundTilePrefab, inventoryUI.transform);
+                GameObject tile = Instantiate(inventoryBackgroundTilePrefab, currentInventoryUI.transform);
                 // set its parent
-                tile.transform.SetParent(inventoryUI.transform, true);
+                tile.transform.SetParent(currentInventoryUI.transform, true);
                 tile.transform.localPosition = new Vector3(j * spaceBetween, -i * spaceBetween, 0);
                 // set the width and height to size
                 tile.GetComponent<RectTransform>().sizeDelta = new Vector2(backgroundSize, backgroundSize);
                 BackgroundTiles.Add(tile);
                 // make another tile in the same spot for the item sprites
-                GameObject icon = Instantiate(inventoryTilePrefab, inventoryUI.transform);
+                GameObject icon = Instantiate(inventoryTilePrefab, currentInventoryUI.transform);
                 // set its parent
-                icon.transform.SetParent(inventoryUI.transform, true);
+                icon.transform.SetParent(currentInventoryUI.transform, true);
                 icon.transform.localPosition = new Vector3(j * spaceBetween, -i * spaceBetween, 0);
                 // set the width and height to size
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(iconSize, iconSize);
@@ -377,8 +376,8 @@ public class OpenInventoryUI : MonoBehaviour
             }
         }
         // make a sprite for the held item
-        heldItemSprite = Instantiate(inventoryTilePrefab, inventoryUI.transform);
-        heldItemSprite.transform.SetParent(inventoryUI.transform, true);
+        heldItemSprite = Instantiate(inventoryTilePrefab, currentInventoryUI.transform);
+        heldItemSprite.transform.SetParent(currentInventoryUI.transform, true);
         heldItemSprite.GetComponent<RectTransform>().sizeDelta = new Vector2(iconSize, iconSize);
         heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
         heldItemSprite.name = "HeldItemSprite";

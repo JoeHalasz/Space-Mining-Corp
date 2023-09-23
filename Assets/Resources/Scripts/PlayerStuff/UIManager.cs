@@ -51,7 +51,6 @@ public class UIManager : MonoBehaviour
 
     public void closeAnyUI()
     {
-        Debug.Log("Closing UI");
         playerMovement.UnlockPlayerMovement();
         playerMovement.UnlockPlayerInputs();
         Cursor.visible = false;
@@ -61,7 +60,6 @@ public class UIManager : MonoBehaviour
 
     public void openAnyUI(GameObject caller)
     {
-        Debug.Log("Opening UI");
         playerMovement.LockPlayerInputs(caller);
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         Cursor.visible = true;
@@ -93,7 +91,6 @@ public class UIManager : MonoBehaviour
 
     public void OpenOrCloseInventory(GameObject caller)
     {
-        Debug.Log("Opening or closing inventory");
         if (UIOpen)
         {
             // close the inv

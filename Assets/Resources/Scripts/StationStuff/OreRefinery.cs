@@ -8,7 +8,7 @@ public class OreRefinery : MonoBehaviour
     // get the inventory script of this object
     private Inventory inventory;
 
-    int waitFrames = 10;
+    int waitFrames = 5;
     int count = 0;
 
     Minerals minerals = new Minerals();
@@ -16,6 +16,7 @@ public class OreRefinery : MonoBehaviour
     void Start()
     {
         minerals.SetUp();
+        inventory = GetComponent<Inventory>();
     }
 
     // 60 times a second
@@ -35,7 +36,8 @@ public class OreRefinery : MonoBehaviour
             // loop through all the items and look for the word "Ore" in the name
             foreach (ItemPair item in allItems)
             {
-                if (item.item.getName().Contains("Ore"))
+
+                if (item != null && item.item.getName().Contains("Ore") && item.getAmount() > 0)
                 {
                     // if the item is an ore, then move it to the mineral inv
                     oreToRefine = item;

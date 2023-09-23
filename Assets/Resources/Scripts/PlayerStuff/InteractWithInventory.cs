@@ -23,11 +23,12 @@ public class InteractWithInventory : MonoBehaviour
         {
             if (hit.collider.transform.name == "OreRefinery")
             {
-                hitInventory.openInventory(GetComponent<PlayerStats>().playerCurrentShip);
+                Debug.Log("Trying to open refinery inventory and ship inventory");
+                hitInventory.openInventory(GetComponent<PlayerStats>().playerCurrentShip, false);
             }
             else
             {
-                hitInventory.openInventory(this.gameObject);
+                hitInventory.openInventory(this.gameObject, false);
             }
             return;
         }
@@ -39,7 +40,7 @@ public class InteractWithInventory : MonoBehaviour
             hitInventory = hit.collider.transform.parent.GetComponent<Inventory>();
             if (hitInventory != null)
             {
-                hitInventory.openInventory(this.gameObject);
+                hitInventory.openInventory(this.gameObject, false);
             }
         }
     }

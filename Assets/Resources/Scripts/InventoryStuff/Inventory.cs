@@ -53,6 +53,10 @@ public class Inventory : MonoBehaviour
         if (totalInvSlots < 0)
         {
             totalInvSlots = numRows * numCols;
+            for (int i = 0; i < totalInvSlots; i++)
+            {
+                items.Add(null);
+            }
         }
         if (calculatedSize) {
             SetNumSlots(totalInvSlots);
@@ -115,14 +119,17 @@ public class Inventory : MonoBehaviour
         return true;
     }
 
-    public void openInventory(GameObject other)
+    bool localIsLeft = true;
+
+    public void openInventory(GameObject other, bool isLeft)
     {
         if (inventoryUIScript != null)
         {
+            localIsLeft = isLeft;
             // open the other inventory
-            inventoryUIScript.ShowInventory(this.gameObject);
+            inventoryUIScript.ShowInventory(this.gameObject, isLeft);
             if (other != null)
-                other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject);
+                other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject, !isLeft);
             else
                 Debug.LogError("Error in Inventory.cs, other is null");
 
@@ -136,7 +143,7 @@ public class Inventory : MonoBehaviour
         if (inventoryUIScript != null)
         {
             // close all inventorys
-            player.GetComponent<OpenInventoryUI>().HideInventory();
+            player.GetComponent<OpenInventoryUI>().HideInventory(localIsLeft);
             player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
         }
     }
@@ -313,6 +320,10 @@ public class Inventory : MonoBehaviour
             {
                 float removeAmount = Mathf.Min(totalLeft, pair.amount);
                 pair.amount -= removeAmount;
+                if (pair.amount == 0)
+                {
+                    removeItem(items.IndexOf(pair));
+                }
                 totalLeft -= removeAmount;
                 Debug.Log(totalLeft);
                 if (totalLeft == 0)
