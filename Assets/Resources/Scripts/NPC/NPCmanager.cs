@@ -133,7 +133,7 @@ public class NPCmanager : MonoBehaviour
         {
             Transform image = newMission.transform.Find("Image" + x++);
             image.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-            image.GetComponent<UnityEngine.UI.Image>().sprite = itemPair.item.getSprite();
+            //image.GetComponent<UnityEngine.UI.Image>().sprite = itemPair.item.getSpriteGameObject();
             image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = "" + itemPair.getAmount();
         }
 
