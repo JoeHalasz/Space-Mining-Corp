@@ -221,6 +221,12 @@ public class Minerals
         List<Item> values = Enumerable.ToList(OresList.Values);
 
         // get a random value from OresList
+        Item randomPick = values[Random.Range(0, values.Count)];
+        // remove from list if there is more than one thing in the list
+        if (values.Count > 1)
+        {
+            values.Remove(randomPick);
+        }
         return values[Random.Range(0, values.Count)];
 
 
