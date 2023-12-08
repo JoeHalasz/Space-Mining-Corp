@@ -13,6 +13,5 @@ public class MoveRandomly : MonoBehaviour
     {
         // move the object this is attached to around randomly
         transform.position += new Vector3(Random.Range(-.05f, .05f), Random.Range(-.05f, .05f), Random.Range(-.05f, .05f));
-        Debug.Log("here");
     }
 }
