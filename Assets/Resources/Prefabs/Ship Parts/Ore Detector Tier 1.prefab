@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3730530585698411902}
   - component: {fileID: 8262197499903775734}
   - component: {fileID: 8360159102876380409}
+  - component: {fileID: 7405853157123103476}
   m_Layer: 0
   m_Name: Ore Detector Tier 1
   m_TagString: Ore Detector
@@ -32,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3730530585698411902
 MeshFilter:
@@ -105,3 +106,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7405853157123103476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8153557801287306366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76625f19e23aae044baf4d02ba01b6e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

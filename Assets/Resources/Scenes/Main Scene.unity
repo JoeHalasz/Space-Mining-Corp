@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.004772879, g: 0.006935875, b: 0.010846077, a: 1}
+  m_IndirectSpecularColor: {r: 0.0047743637, g: 0.0069958186, b: 0.010906177, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4601,7 +4601,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1103885746802642427, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_Name
-      value: Ship Engine Tier 1 (2)
+      value: Ship Thruster Tier 1
       objectReference: {fileID: 0}
     - target: {fileID: 1938424186477330516, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_RootOrder
@@ -13517,7 +13517,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1103885746802642427, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_Name
-      value: Ship Engine Tier 1
+      value: Ship Thruster Tier 1
       objectReference: {fileID: 0}
     - target: {fileID: 1938424186477330516, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_RootOrder
@@ -20333,7 +20333,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1103885746802642427, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_Name
-      value: Ship Engine Tier 1 (1)
+      value: Ship Thruster Tier 1
       objectReference: {fileID: 0}
     - target: {fileID: 1938424186477330516, guid: 437416161b73680469420faa89050843, type: 3}
       propertyPath: m_RootOrder

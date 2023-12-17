@@ -34,6 +34,8 @@ public class ShipBuilderCore : MonoBehaviour
     Color selectedObjectColor = Color.white;
     Color hoveredObjectColor = Color.white;
 
+    ShipBuilderUIHandler UIHandler;
+
 
     // DONE This should be in its own scene
     // DONE User should be able to move the camera freely
@@ -79,6 +81,7 @@ public class ShipBuilderCore : MonoBehaviour
 
         OnCenterCameraPress();
 
+        UIHandler = GetComponent<ShipBuilderUIHandler>();
     }
 
     void OnDestroy()
@@ -194,7 +197,7 @@ public class ShipBuilderCore : MonoBehaviour
         {
             bool clicked = false;
             // TODO check if the player clicked an object
-            if (Input.GetMouseButton(0) == false && mouseDownFrames != 0 && mouseDownFrames < mouseHoldThreshhold)
+            if (Input.GetMouseButton(0) == false && mouseDownFrames != 0 && mouseDownFrames < mouseHoldThreshhold && !UIHandler.GetJustClickedUI())
             {
                 clicked = true;
             }

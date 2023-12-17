@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PowerGenerator : MonoBehaviour
+public class PowerGenerator : ShipPart
 {
 
     // get the inventory script of this object
@@ -13,6 +13,9 @@ public class PowerGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        name = "PowerGenerator";
+        addBottomConnection();
+
         inventory = transform.parent.GetComponent<Inventory>();
         if (inventory == null)
         {
@@ -25,8 +28,7 @@ public class PowerGenerator : MonoBehaviour
         }
     }
 
-    // 60 times a second
-    void FixedUpdate()
+    void Execute()
     {
         // if the ship has fuel in the inventory, and isnt at max energy, then add energy and use fuel
         if (shipManager != null && inventory != null && shipManager.GetEnergy() < shipManager.GetMaxEnergy())
@@ -37,6 +39,12 @@ public class PowerGenerator : MonoBehaviour
                 inventory.removeItemAmount(fuel.item, .05f);
                 shipManager.AddEnergy(1f);
             }
-        }
+        }   
+    }
+
+    // 60 times a second
+    void FixedUpdate()
+    {
+        Execute();
     }
 }
