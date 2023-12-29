@@ -7,7 +7,11 @@ public class OpenInventoryUI : MonoBehaviour
 
     GameObject inventoryUILeft;
     GameObject inventoryUIRight;
+    GameObject inventoryUILeftBackground;
+    GameObject inventoryUIRightBackground;
+
     GameObject currentInventoryUI = null;
+    GameObject currentInventoryUIBackground = null;
 
     GameObject inventoryTilePrefab;
     GameObject inventoryBackgroundTilePrefab;
@@ -43,11 +47,8 @@ public class OpenInventoryUI : MonoBehaviour
         inventory = GetComponent<Inventory>();
         inventoryUILeft = GameObject.Find("LeftInventory");
         inventoryUIRight = GameObject.Find("RightInventory");
-
-        if (inventoryBackgroundTilePrefab == null)
-            inventoryBackgroundTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryBackgroundTile");
-        if (inventoryTilePrefab == null)
-            inventoryTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryTile");
+        inventoryUILeftBackground = GameObject.Find("LeftInventoryBackground");
+        inventoryUIRightBackground = GameObject.Find("RightInventoryBackground");
 
         if (this.gameObject.tag == "Player")
             IsOnPlayer = true;
@@ -67,9 +68,12 @@ public class OpenInventoryUI : MonoBehaviour
     public void ShowInventory(GameObject caller, bool isLeft)
     {
         currentInventoryUI = isLeft ? inventoryUILeft : inventoryUIRight;
+        currentInventoryUIBackground = isLeft ? inventoryUILeftBackground : inventoryUIRightBackground;
+
         if (currentInventoryUI != null)
         {
             currentInventoryUI.SetActive(true);
+            currentInventoryUIBackground.SetActive(true);
             // get the numRows and numCols and extra from the inventory script
             numRows = inventory.numRows;
             numCols = inventory.numCols;
@@ -91,6 +95,9 @@ public class OpenInventoryUI : MonoBehaviour
     {
         inventoryUILeft.SetActive(false);
         inventoryUIRight.SetActive(false);
+        inventoryUILeftBackground.SetActive(false);
+        inventoryUIRightBackground.SetActive(false);
+
         currentInventoryUI = null;
         // if the LastCaller has an inventoryui then set it as not active
         if (LastCaller != null)
@@ -174,6 +181,7 @@ public class OpenInventoryUI : MonoBehaviour
                         ySquare = (int)y;
                     }
                 }
+
                 if (InSquare)
                 {
                     int pos = getFlatPos(xSquare, ySquare);
@@ -341,6 +349,10 @@ public class OpenInventoryUI : MonoBehaviour
         {
             GameObject.Destroy(child.gameObject);
         }
+        foreach (Transform child in currentInventoryUIBackground.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
         BackgroundTiles.Clear();
         Icons.Clear();
 
@@ -354,9 +366,9 @@ public class OpenInventoryUI : MonoBehaviour
                     break;
                 
                 // spawn an inventory tile prefab at the correct position
-                GameObject tile = Instantiate(inventoryBackgroundTilePrefab, currentInventoryUI.transform);
+                GameObject tile = Instantiate(inventoryBackgroundTilePrefab, currentInventoryUIBackground.transform);
                 // set its parent
-                tile.transform.SetParent(currentInventoryUI.transform, true);
+                tile.transform.SetParent(currentInventoryUIBackground.transform, true);
                 tile.transform.localPosition = new Vector3(j * spaceBetween, -i * spaceBetween, 0);
                 // set the width and height to size
                 tile.GetComponent<RectTransform>().sizeDelta = new Vector2(backgroundSize, backgroundSize);

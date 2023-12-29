@@ -40,7 +40,7 @@ public class ShipBuilderCore : MonoBehaviour
     // DONE This should be in its own scene
     // DONE User should be able to move the camera freely
     // TODO Attach parts to other parts
-    // TODO Remove parts 
+    // DONE Remove parts 
     // TODO See the current price in ore or credits for the ship with the changed parts
 
     // DONE On mouse over a part it should highlight it light gray
@@ -125,6 +125,12 @@ public class ShipBuilderCore : MonoBehaviour
                 Debug.Log("Camera Zoomed Out (DELETE ME)"); // dont just delete the comment. Make this a real control
                 OnZoomOutPress();
             }
+            // delete key
+            if (Input.GetKeyDown("delete"))
+            {
+                Debug.Log("Part Deleted (DELETE ME)"); // dont just delete the comment. Make this a real control
+                OnDeletePress();
+            }
         }
 
         playerMouseInputs();
@@ -162,6 +168,18 @@ public class ShipBuilderCore : MonoBehaviour
         Vector3 newPos = lookAtPos - (currentZoom * MainCamera.transform.forward);
         currentlyLerping = true;
         lerpTo = newPos;
+    }
+
+    void OnDeletePress()
+    {
+        if (selectedObject != null)
+        {
+            GameObject temp = selectedObject;
+            deselectObject();
+            if (Ship != null)
+                Ship.GetComponent<ShipManager>().UpdateShipPartsDictionary();
+            Destroy(temp);
+        }
     }
 
     void checkAndLerpCamera()

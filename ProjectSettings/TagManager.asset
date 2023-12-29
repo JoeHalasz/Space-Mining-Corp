@@ -30,6 +30,7 @@ TagManager:
   - Color5
   - DefaultButton
   - DefaultButtonOutline
+  - TitleScreenCam
   layers:
   - Default
   - TransparentFX

@@ -39,7 +39,7 @@ public class ShipManager : MonoBehaviour
     }
 
 
-    void UpdateShipPartsDictionary()
+    public void UpdateShipPartsDictionary()
     {
         shipPartsDictionary = new Dictionary<string, List<GameObject>>();
         // go through all this game objects children and if they have the correct tag then add them to the list
