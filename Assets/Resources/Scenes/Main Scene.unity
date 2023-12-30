@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.004772879, g: 0.006935875, b: 0.010846077, a: 1}
+  m_IndirectSpecularColor: {r: 0.0047743637, g: 0.0069958186, b: 0.010906177, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4510,7 +4510,6 @@ GameObject:
   m_Component:
   - component: {fileID: 388989019}
   - component: {fileID: 388989022}
-  - component: {fileID: 388989021}
   - component: {fileID: 388989020}
   m_Layer: 7
   m_Name: TitleScreenCam5
@@ -4578,14 +4577,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &388989021
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388989018}
-  m_Enabled: 1
 --- !u!20 &388989022
 Camera:
   m_ObjectHideFlags: 0
@@ -8051,7 +8042,6 @@ GameObject:
   m_Component:
   - component: {fileID: 703022766}
   - component: {fileID: 703022769}
-  - component: {fileID: 703022768}
   - component: {fileID: 703022767}
   m_Layer: 7
   m_Name: TitleScreenCam1
@@ -8119,14 +8109,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &703022768
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 703022765}
-  m_Enabled: 1
 --- !u!20 &703022769
 Camera:
   m_ObjectHideFlags: 0
@@ -12985,7 +12967,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1235197161}
   - component: {fileID: 1235197164}
-  - component: {fileID: 1235197163}
   - component: {fileID: 1235197162}
   m_Layer: 7
   m_Name: TitleScreenCam4
@@ -13053,14 +13034,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &1235197163
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1235197160}
-  m_Enabled: 1
 --- !u!20 &1235197164
 Camera:
   m_ObjectHideFlags: 0
@@ -13578,7 +13551,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1275712404}
   - component: {fileID: 1275712407}
-  - component: {fileID: 1275712406}
   - component: {fileID: 1275712405}
   m_Layer: 7
   m_Name: TitleScreenCam3
@@ -13646,14 +13618,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &1275712406
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1275712403}
-  m_Enabled: 1
 --- !u!20 &1275712407
 Camera:
   m_ObjectHideFlags: 0
@@ -17181,7 +17145,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1621415544}
   - component: {fileID: 1621415547}
-  - component: {fileID: 1621415546}
   - component: {fileID: 1621415545}
   m_Layer: 7
   m_Name: TitleScreenCam2
@@ -17249,14 +17212,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!81 &1621415546
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621415543}
-  m_Enabled: 1
 --- !u!20 &1621415547
 Camera:
   m_ObjectHideFlags: 0
