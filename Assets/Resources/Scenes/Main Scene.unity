@@ -1353,53 +1353,6 @@ Transform:
   m_Father: {fileID: 1455468293}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &123783278
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 123783280}
-  - component: {fileID: 123783279}
-  m_Layer: 0
-  m_Name: Scene Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &123783279
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 123783278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5c033fe657a84a4690cd9f412f811cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Player: {fileID: 0}
-  Stats: {fileID: 0}
-  CurrentShip: {fileID: 0}
---- !u!4 &123783280
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 123783278}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 14
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &135072565
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5831,7 +5784,7 @@ MonoBehaviour:
   maxAsteroidsY: 5
   maxAsteroidsZ: 10
   spacing: 20
-  redoTest: 1
+  redoTest: 0
 --- !u!1001 &510467465
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14071,6 +14024,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1332185595}
+  - component: {fileID: 1332185596}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -14091,8 +14045,21 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1332185596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332185594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c477e6e4986a2458dcf583930b53d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  seed: 0
 --- !u!4 &1341848037 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2150331711913100268, guid: 12e99118e0494e749bf5fbf981a49df1, type: 3}
