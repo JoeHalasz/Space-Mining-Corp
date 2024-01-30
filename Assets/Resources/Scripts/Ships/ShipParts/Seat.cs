@@ -3,15 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Seat : ShipPart
-{
 
-    void Start()
-    {
-        name = "Seat";
-        addBottomConnection();
-        addBackConnection();
-    }
+public class Seat : MonoBehaviour
+{
 
     public void MakePlayerSitOrUnsit(GameObject player)
     {

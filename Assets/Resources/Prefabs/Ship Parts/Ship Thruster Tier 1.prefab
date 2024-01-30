@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2903090723762241202}
   - component: {fileID: 5421313559841331103}
   - component: {fileID: 8566239330395392394}
-  - component: {fileID: 247102181813208633}
   m_Layer: 0
   m_Name: Ship Thruster Tier 1
   m_TagString: Engine
@@ -106,15 +105,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &247102181813208633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1103885746802642427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09a8fc70fecdeea4995cd14ccd2592b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

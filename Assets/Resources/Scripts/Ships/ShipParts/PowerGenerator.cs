@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PowerGenerator : ShipPart
+public class PowerGenerator : MonoBehaviour
 {
 
     // get the inventory script of this object
@@ -13,9 +13,6 @@ public class PowerGenerator : ShipPart
     // Start is called before the first frame update
     void Start()
     {
-        name = "PowerGenerator";
-        addBottomConnection();
-
         inventory = transform.parent.GetComponent<Inventory>();
         if (inventory == null)
         {

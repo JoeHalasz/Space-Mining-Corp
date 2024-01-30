@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class ShipManager : MonoBehaviour
 {
-
     // dictionary of string and a list of gameobjects
     public Dictionary<string, List<GameObject>> shipPartsDictionary;
 
@@ -20,14 +19,12 @@ public class ShipManager : MonoBehaviour
     private OpenInventoryUI inventoryUI;
 
     int numCargoSlots = -1;
-    public int GetNumCargoSlots() { MaxCargoCalculation(); return numCargoSlots; }
+    public int GetNumCargoSlots() { return numCargoSlots; }
     
 
     // Start is called before the first frame update
     void Start()
     {
-        if (shipPartsDictionary == null)
-            UpdateShipPartsDictionary();
         inventory = GetComponent<Inventory>();
         inventoryUI = GetComponent<OpenInventoryUI>();
         if (inventory == null )
@@ -35,49 +32,6 @@ public class ShipManager : MonoBehaviour
         if (inventoryUI == null)
             Debug.Log(gameObject.name + " has no inventory UI script attached");
 
-        ShipMaxCalculations();
-    }
-
-
-    public void UpdateShipPartsDictionary()
-    {
-        shipPartsDictionary = new Dictionary<string, List<GameObject>>();
-        // go through all this game objects children and if they have the correct tag then add them to the list
-        foreach (Transform child in transform)
-        {
-            if (child.tag != "Untagged")
-            {
-                // if the tag isnt in the dictionary then add it as an empty list
-                if (!shipPartsDictionary.ContainsKey(child.tag))
-                {
-                    shipPartsDictionary.Add(child.tag, new List<GameObject>());
-                }
-                shipPartsDictionary[child.tag].Add(child.gameObject);
-            }
-        }
-    }
-
-    void ShipMaxCalculations()
-    {
-        MaxCargoCalculation();
-        MaxPowerCalculation();
-    }
-
-    void MaxCargoCalculation()
-    {
-        if (shipPartsDictionary == null)
-            UpdateShipPartsDictionary();
-        numCargoSlots = shipPartsDictionary["Cargo"].Count;
-    }
-
-    void MaxPowerCalculation()
-    {
-        // loop thje list at power in shipPartsDictionary
-        foreach (GameObject power in shipPartsDictionary["Battery"])
-        {
-            // add 100* the scale of the power to the max energy
-            maxEnergy += 100 * power.transform.localScale.x * power.transform.localScale.y * power.transform.localScale.z;
-        }
     }
 
     public bool UseEnergy(float useEnergy)

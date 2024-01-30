@@ -2,11 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MiningLaser : ShipPart
+public class MiningLaser : MonoBehaviour
 {
-    void Start()
-    {
-        name = "MiningLaser";
-        addTopConnection();
-    }
+    // TODO
 }

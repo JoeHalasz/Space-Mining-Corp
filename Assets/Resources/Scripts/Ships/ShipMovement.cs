@@ -2,9 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 
-/* Note: animations are called via the controller for both the character and capsule using animator null checks
- */
-
+// TODO make this only change based on the ship level, which should be based on what point the player is at in the story. 
 
 public class ShipMovement : MonoBehaviour
 {

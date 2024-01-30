@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 4434558323359999704}
   - component: {fileID: 7961634238358520305}
   - component: {fileID: 7841957056357918056}
-  - component: {fileID: 1007760891380864265}
   m_Layer: 0
   m_Name: Ship Cargo Tier 1
   m_TagString: Cargo
@@ -106,15 +105,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1007760891380864265
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3257658827624182418}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e99edf83a526d124584e49f5b5e9ade2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

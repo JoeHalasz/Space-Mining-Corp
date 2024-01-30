@@ -2,11 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OreDetector : ShipPart
+public class OreDetector : MonoBehaviour
 {
-    void Start()
-    {
-        name = "OreDetector";
-        addBottomConnection();
-    }
+    // TODO
 }
