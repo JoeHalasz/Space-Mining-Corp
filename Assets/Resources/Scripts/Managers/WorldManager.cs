@@ -7,70 +7,46 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public class WorldManager : MonoBehaviour
 {
-    public int seed;
+    int seed = 123456789;
 
+    public int getSeed() { return seed; }
+    public void setSeed(int value) { seed = value; }
     // make a hashset for all the removed asteroids
     public HashSet<Vector3> removedAsteroids = new HashSet<Vector3>();
     
     // make a dictionary for all the edited asteroids where the key is Vector3 and the value is a list of edits
-    public Dictionary<Vector3, List<Vector3>> editedAsteroids = new Dictionary<Vector3, List<Vector3>>();
-    
+    public Dictionary<Vector3, List<List<int>>> editedAsteroids = new Dictionary<Vector3, List<List<int>>>();
+
+    AsteroidSpawnManager asteroidSpawnManager;
 
     void Start()
     {
-        TestSave();
+        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
     }
 
-    void TestSave()
+    void Update()
     {
-        seed = 123456789;
-        // add 100 random removed asteroids
-        for (int i = 0; i < 1000; i++)
+        // when the user presses F5, save the game and F9 to load the game
+        if (Input.GetKeyDown(KeyCode.F5))
         {
-            removedAsteroids.Add(new Vector3(Random.Range(0, 1000), Random.Range(0, 1000), Random.Range(0, 1000)));
+            Save("test");
+        }
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            Load("test");
         }
         
-        // add 100 random edited asteroids
-        for (int i = 0; i < 10000; i++)
-        {
-            Vector3 pos = new Vector3(Random.Range(0, 1000), Random.Range(0, 1000), Random.Range(0, 1000));
-            List<Vector3> edits = new List<Vector3>();
-            for (int j = 0; j < 50; j++)
-            {
-                edits.Add(new Vector3(Random.Range(0, 1000), Random.Range(0, 1000), Random.Range(0, 1000)));
-            }
-            editedAsteroids.Add(pos, edits);
-        }
-        
-        // save and load
-        // time how long it takes to save and load
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-        Save("test");
-        watch.Stop();
-        var elapsedMs = watch.ElapsedMilliseconds;
-        Debug.Log("Save time: " + elapsedMs);
-        // clear the data we have 
-        seed = 0;
-        removedAsteroids.Clear();
-        editedAsteroids.Clear();
-        // load the data
-        watch = System.Diagnostics.Stopwatch.StartNew();
-        Load("test");
-        watch.Stop();
-        elapsedMs = watch.ElapsedMilliseconds;
-        Debug.Log("Load time: " + elapsedMs);
-        // print the data
-        Debug.Log("Seed: " + seed);
-        Debug.Log("num Removed Asteroids: " + removedAsteroids.Count);
-        
-        Debug.Log("num Edited Asteroids: " + editedAsteroids.Count);
-        
-        
-
     }
 
     public void Save(string name)
     {
+        // time it
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        watch.Start();
+        
+        getRemovedAsteroids();
+        getEditedAsteroids();
+
         if(!Directory.Exists("saves"))
         {
             Directory.CreateDirectory("saves");
@@ -99,10 +75,21 @@ public class WorldManager : MonoBehaviour
         saveAllAsteroidData(file);
         file.Close();
 
+        watch.Stop();
+        Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
+
     }
 
     public void Load(string name)
     {
+        // time it
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        watch.Start();
+
+        // clear the data we have
+        removedAsteroids = new HashSet<Vector3>();
+        editedAsteroids = new Dictionary<Vector3, List<List<int>>>();
+
         // load a file under saves/{name}.dat
         string filePath = "saves/" + name + ".dat";
         if (File.Exists(filePath))
@@ -123,18 +110,14 @@ public class WorldManager : MonoBehaviour
         // load the asteroid data
         loadAllAsteroidData(file);
         file.Close();
-    }
 
-    public void addRemovedAsteroid(Vector3 pos)
-    {
-        removedAsteroids.Add(pos);
-    }
+        setRemovedAsteroids();
+        asteroidSpawnManager.reloadAllNonEditedAsteroids();
+        setEditedAsteroids();
 
-    public void addEditedAsteroid(Vector3 pos, List<Vector3> removedPoints)
-    {
-        editedAsteroids.Add(pos, removedPoints);
+        watch.Stop();
+        Debug.Log("Loaded game in " + watch.ElapsedMilliseconds + "ms");
     }
-
 
     // file stream is already open
     void savePlayer(FileStream file)
@@ -158,33 +141,36 @@ public class WorldManager : MonoBehaviour
         // so the only thing that needs to be saved is the edits to the asteroid.
 
         // to save edits to an asteroid use the removed blocks list. 
-        // Format: 
-            // position of asteroid
-            // num of edits
-            // list of edits
-        
-        
+
         BinaryFormatter bf = new BinaryFormatter();
         // make removed asteroids into a list
         List<Vector3> removedAsteroidsList = new List<Vector3>(removedAsteroids);
-        // make removed asteroids into a vector of floats
-        List<float> removedAsteroidsVector = ListVec3ToListFloat(removedAsteroidsList);
+        // make removed asteroids into a vector of ints
+        List<int> removedAsteroidsVector = ListVec3ToListInt(removedAsteroidsList);
         // save the removed asteroids
         bf.Serialize(file, removedAsteroidsVector);
         // save the amount of edited asteroids
         bf.Serialize(file, editedAsteroids.Count);
+        List<int> bigList = new List<int>();
         // save the edited asteroids
-        foreach (KeyValuePair<Vector3, List<Vector3>> asteroid in editedAsteroids)
+        foreach (KeyValuePair<Vector3, List<List<int>>> asteroid in editedAsteroids)
         {
-            // Vec3ToListFloat for the pos of the asteroid
-            List<float> pos = Vec3ToListFloat(asteroid.Key);
-            // Vec3ToListFloat for the edits
-            List<float> edits = ListVec3ToListFloat(asteroid.Value);
-            // save the pos
-            bf.Serialize(file, pos);
-            // save the edits
-            bf.Serialize(file, edits);
+            List<int> pos = Vec3ToListInt(asteroid.Key);
+            // add the pos to the big list
+            bigList.AddRange(pos);
+            // add the number of edits to the big list
+            bigList.Add(asteroid.Value.Count);
+            
+            // add the edits to the big list
+            foreach (List<int> index in asteroid.Value)
+            {
+                // add the number of indecies to the big list
+                bigList.Add(index.Count);
+                // add the indecies to the big list
+                bigList.AddRange(index);
+            }
         }
+        bf.Serialize(file, bigList);
         
         
     }
@@ -195,9 +181,9 @@ public class WorldManager : MonoBehaviour
         // has to be the same order as save
         BinaryFormatter bf = new BinaryFormatter();
         // load the removed asteroids
-        List<float> removedAsteroidsVector = (List<float>)bf.Deserialize(file);
+        List<int> removedAsteroidsVector = (List<int>)bf.Deserialize(file);
         // make removed asteroids into a list
-        List<Vector3> removedAsteroidsList = ListFloatToListVec3(removedAsteroidsVector);
+        List<Vector3> removedAsteroidsList = ListIntToListVec3(removedAsteroidsVector);
         // add the removed asteroids to the hashset
         foreach (Vector3 pos in removedAsteroidsList)
         {
@@ -206,45 +192,80 @@ public class WorldManager : MonoBehaviour
 
         // load the edited asteroids
         int numEditedAsteroids = (int)bf.Deserialize(file);
+        // load the big list
+        List<int> bigList = (List<int>)bf.Deserialize(file);
+        // loop through the big list and get the pos, numedits, and edits
+        int count = 0;
         for (int i = 0; i < numEditedAsteroids; i++)
         {
-            // load the pos
-            List<float> pos = (List<float>)bf.Deserialize(file);
-            // load the edits
-            List<float> edits = (List<float>)bf.Deserialize(file);
-            // make the pos into a vector3
-            Vector3 posVec3 = new Vector3(pos[0], pos[1], pos[2]);
-            // make the edits into a list of vector3
-            List<Vector3> editsVec3 = ListFloatToListVec3(edits);
+            // get the pos
+            Vector3 pos = new Vector3(bigList[count], bigList[count+1], bigList[count+2]);
+            count += 3;
+            // get the num edits
+            int numEdits = bigList[count++];
+
+            // get the edits
+            List<List<int>> edits = new List<List<int>>();
+            for (int j = 0; j < numEdits; j++)
+            {
+                // get the num indecies
+                int numIndecies = bigList[count++];
+                // get the indecies
+                List<int> indecies = new List<int>();
+                for (int k = 0; k < numIndecies; k++)
+                {
+                    indecies.Add(bigList[count++]);
+                }
+                edits.Add(indecies);
+            }
             // add the asteroid to the dictionary
-            editedAsteroids.Add(posVec3, editsVec3);
+            editedAsteroids.Add(pos, edits);
         }
-        
         
     }
 
-    List<float> Vec3ToListFloat(Vector3 vec)
+    void getRemovedAsteroids(){
+        removedAsteroids = asteroidSpawnManager.getAllRemovedAsteroids();
+    }
+    
+    void setRemovedAsteroids()
     {
-        List<float> list = new List<float>();
-        list.Add(vec.x);
-        list.Add(vec.y);
-        list.Add(vec.z);
+        asteroidSpawnManager.setAllRemovedAsteroids(removedAsteroids);
+    }
+
+    void getEditedAsteroids()
+    {
+        editedAsteroids = asteroidSpawnManager.getAllEditedAsteroids();
+    }
+
+    void setEditedAsteroids()
+    {
+        asteroidSpawnManager.setAllEditedAsteroids(editedAsteroids);
+    }
+
+
+    List<int> Vec3ToListInt(Vector3 vec)
+    {
+        List<int> list = new List<int>();
+        list.Add((int)vec.x);
+        list.Add((int)vec.y);
+        list.Add((int)vec.z);
         return list;
     }
 
-    List<float> ListVec3ToListFloat(List<Vector3> vecs)
+    List<int> ListVec3ToListInt(List<Vector3> vecs)
     {
-        List<float> vec = new List<float>();
+        List<int> vec = new List<int>();
         foreach (Vector3 v in vecs)
         {
-            vec.Add(v.x);
-            vec.Add(v.y);
-            vec.Add(v.z);
+            vec.Add((int)v.x);
+            vec.Add((int)v.y);
+            vec.Add((int)v.z);
         }
         return vec;
     }
 
-    List<Vector3> ListFloatToListVec3(List<float> vec)
+    List<Vector3> ListIntToListVec3(List<int> vec)
     {
         List<Vector3> vecs = new List<Vector3>();
         for (int i = 0; i < vec.Count; i += 3)

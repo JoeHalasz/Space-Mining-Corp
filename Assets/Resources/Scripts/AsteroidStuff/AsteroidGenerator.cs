@@ -28,10 +28,12 @@ public class AsteroidGenerator : MonoBehaviour
     public IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
 
     public List<List<int>> cubesPointIndecies = new List<List<int>>();
-
+    public List<List<int>> originalCubesPointIndecies = new List<List<int>>();
     public List<Vector3> allVerts;
     public List<int> allTris;
     public List<Vector3> allNormals;
+
+    AsteroidSpawnManager asteroidSpawnManager;
 
     IDictionary<T1, T2> copyIDict<T1, T2>(IDictionary<T1, T2> oldDict) { 
         // for all the keys in the old dict, add them to the new dict
@@ -41,6 +43,12 @@ public class AsteroidGenerator : MonoBehaviour
             newDict.Add(key, oldDict[key]);
         }
         return newDict;
+    }
+
+    void Start()
+    {
+        // find the AsteroidSpawnManager
+        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
     }
 
     List<List<T>> copyListOfLists<T>(List<List<T>> list)
@@ -55,7 +63,8 @@ public class AsteroidGenerator : MonoBehaviour
 
     // function takes in all the above variables and sets them in this script
     public void copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, List<Vector3> _outsidePoints, IDictionary<Vector3, int> _pointColors,
-                            IDictionary<Vector3, List<Vector3>> _pointToCubes, Mesh _mesh, float _increment, IDictionary<Vector3, int> _pointsSetPositions, List<List<int>> _cubesPointIndecies,
+                            IDictionary<Vector3, List<Vector3>> _pointToCubes, Mesh _mesh, float _increment, IDictionary<Vector3, int> _pointsSetPositions, 
+                            List<List<int>> _cubesPointIndecies, List<List<int>> _originalCubesPointIndecies,
                             List<Vector3> _allVerts, List<int> _allTris, List<Vector3> _allNormals)
     {
         mineralType =           _mineralType;
@@ -68,6 +77,7 @@ public class AsteroidGenerator : MonoBehaviour
         increment =             _increment;
         pointsSetPositions =    copyIDict(_pointsSetPositions);
         cubesPointIndecies =    copyListOfLists(_cubesPointIndecies);
+        originalCubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
         allVerts =              new List<Vector3>(_allVerts);
         allTris =               new List<int>(_allTris);
         allNormals =            new List<Vector3>(_allNormals);
@@ -130,6 +140,7 @@ public class AsteroidGenerator : MonoBehaviour
                         if (newCubePointIndecies.Count >= 5)
                         {
                             cubesPointIndecies.Add(newCubePointIndecies);
+                            originalCubesPointIndecies.Add(newCubePointIndecies);
                         }
                     }
                 }
@@ -422,10 +433,10 @@ public class AsteroidGenerator : MonoBehaviour
         }
         else
         {
-            Destroy(this);
+            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
         }
     }
-
+    
     // check dist every .2f on the ray
     void RemoveCubesClosestToRay(Ray ray, RaycastHit hit)
     {
@@ -502,8 +513,10 @@ public class AsteroidGenerator : MonoBehaviour
                     float currentDistance = Vector3.Distance(rayPoint, closestCubeMidPoint + asteroidCurrentPosition);
                     if (currentDistance > lastClosestDist)
                     {
+                        List<int> lastClosestCopy = new List<int>(lastClosest);
                         // remove the last closest cube from cubePointIndecies
                         cubesPointIndecies.Remove(lastClosest);
+                        asteroidSpawnManager.setIndeciesForAsteroid(transform.position, cubesPointIndecies);
                         return;
                     }
                 }
@@ -530,6 +543,42 @@ public class AsteroidGenerator : MonoBehaviour
             rayPoint += rayDirection * .2f;
         }
 
+    }
+
+    public void setIndecies(List<List<int>> AllIndecies)
+    {
+        cubesPointIndecies = new List<List<int>>();
+        foreach (List<int> indecies in AllIndecies)
+        {
+            cubesPointIndecies.Add(new List<int>(indecies));
+        }
+            
+        if (cubesPointIndecies.Count > 1)
+        {
+            GenerateMesh();
+        }
+        else
+        {
+            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
+        }
+    }
+
+    public void regenerateAsteroid()
+    {
+        // copy originalCubesPointIndecies into cubesPointIndecies
+        cubesPointIndecies = new List<List<int>>();
+        foreach (List<int> indecies in originalCubesPointIndecies)
+        {
+            cubesPointIndecies.Add(new List<int>(indecies));
+        }
+        if (cubesPointIndecies.Count > 1)
+        {
+            GenerateMesh();
+        }
+        else
+        {
+            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
+        }
     }
 
 }

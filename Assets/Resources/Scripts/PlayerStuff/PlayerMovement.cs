@@ -15,8 +15,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
     public bool Grounded = true;
 
-    float GroundedOffset = 0f;
-
     [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
     public float GroundedRadius = 0.28f;
 

@@ -8,11 +8,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
     public List<GameObject> AsteroidField;
 
     // defaults are 1000 asteroids in a 1000m radius
-    [SerializeField]
-    [Range(1, 15)]
-    public float density = 3f;
-
-    int sizeOfPartitions = 500;
+    
+    // change this for more or less asteroids
+    int sizeOfPartitions = 400;
 
     [SerializeField]
     [Range(1000, 100000)]
@@ -25,8 +23,8 @@ public class AsteroidFieldGenerator : MonoBehaviour
     [SerializeField]
     bool SpawnAsteroidField = true;
 
-    // dictionary of all area positions
-    public Dictionary<Vector3, bool> areaPositions = new Dictionary<Vector3, bool>();
+    // HashSet of all area positions
+    public HashSet<Vector3> areaPositions = new HashSet<Vector3>();
 
     public Minerals minerals;
 
@@ -47,7 +45,6 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
             // generate an asteroid field around this object
             SpawnNewArea(transform.position);
-            SpawnNewArea(new Vector3(0, 0, 3000000));
         }
     }
 
@@ -78,33 +75,37 @@ public class AsteroidFieldGenerator : MonoBehaviour
         // set the parent to this object
         newAsteroidArea.transform.parent = gameObject.transform;
         // set newAsteroidAreas density, radius, and height
-        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().density = density * (sizeOfPartitions / 1000f);
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().height = (height / ((height - negativeHeight) / sizeOfPartitions));
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(asteroidSpawnManager);
-        // add to the dictionary
-        areaPositions.Add(pos, true);
+        // add to the HashSet
+        areaPositions.Add(pos);
     }
 
     public void SpawnMoreAreasAt(Vector3 middlePos)
     {
         int s = sizeOfPartitions;
-        // if the 6 spots around middlePos are not in the dictionary, spawn a new area there and add it to the dictionary
-        // if they are in the dictionary, do nothing
+        // if the 6 spots around middlePos are not in the HashSet, spawn a new area there and add it to the HashSet
+        // if they are in the HashSet, do nothing
 
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(s, 0, 0)))
+        if (!areaPositions.Contains(middlePos + new Vector3(s, 0, 0)))
             SpawnNewArea(middlePos + new Vector3(s, 0, 0));
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(-1*s, 0, 0)))
+        if (!areaPositions.Contains(middlePos + new Vector3(-1*s, 0, 0)))
             SpawnNewArea(middlePos + new Vector3(-1 * s, 0, 0));
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(0, s, 0)))
+        if (!areaPositions.Contains(middlePos + new Vector3(0, s, 0)))
             SpawnNewArea(middlePos + new Vector3(0, s, 0));
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(0, -1 * s, 0)))
+        if (!areaPositions.Contains(middlePos + new Vector3(0, -1 * s, 0)))
             SpawnNewArea(middlePos + new Vector3(0, -1 * s, 0));
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(0, 0, s)))
+        if (!areaPositions.Contains(middlePos + new Vector3(0, 0, s)))
             SpawnNewArea(middlePos + new Vector3(0, 0, s));
-        if (!areaPositions.ContainsKey(middlePos + new Vector3(0, 0, -1 * s)))
+        if (!areaPositions.Contains(middlePos + new Vector3(0, 0, -1 * s)))
             SpawnNewArea(middlePos + new Vector3(0, 0, -1 * s));
 
+    }
+
+    public void removeSpawnAreaAt(Vector3 pos)
+    {
+        areaPositions.Remove(pos);
     }
 
 

@@ -17,7 +17,7 @@ public class CreateNewWorld : MonoBehaviour
         
 
         // save the seed to the manager so it can be used to generate things in the world, and so the world can be loaded
-        GameObject.Find("WorldManager").GetComponent<WorldManager>().seed = seed;
+        GameObject.Find("WorldManager").GetComponent<WorldManager>().setSeed(seed);
 
     }
 }

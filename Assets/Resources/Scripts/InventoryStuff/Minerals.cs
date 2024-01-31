@@ -229,8 +229,6 @@ public class Minerals
         }
         return values[Random.Range(0, values.Count)];
 
-
-
         int zone = CalculateZone(WorldPos);
 
         // 90% chance of stone
