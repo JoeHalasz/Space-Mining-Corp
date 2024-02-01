@@ -10,7 +10,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
     // defaults are 1000 asteroids in a 1000m radius
     
     // change this for more or less asteroids
-    int sizeOfPartitions = 400;
+    int sizeOfPartitions = 390;
 
     [SerializeField]
     [Range(1000, 100000)]
@@ -46,6 +46,14 @@ public class AsteroidFieldGenerator : MonoBehaviour
             // generate an asteroid field around this object
             SpawnNewArea(transform.position);
         }
+
+        // every second debug.log how many children this object has
+        InvokeRepeating("DebugChildren", 1, 1);
+    }
+
+    void DebugChildren()
+    {
+        UnityEngine.Debug.Log("AsteroidFieldGenerator has " + transform.childCount + " children");
     }
 
 

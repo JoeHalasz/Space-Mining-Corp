@@ -49,6 +49,8 @@ public class AsteroidGenerator : MonoBehaviour
     {
         // find the AsteroidSpawnManager
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
+        // set the layer to 8 (asteroid)
+        gameObject.layer = 8;
     }
 
     List<List<T>> copyListOfLists<T>(List<List<T>> list)
@@ -183,7 +185,6 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateVertsTrisAndNormalsForList(List<List<int>> cubes)
     {
-        ConvexHullCalculator ConvexHullCalc = new ConvexHullCalculator();
         foreach (List<int> cube in cubes){
             List<Vector3> verts = new List<Vector3>();
             List<int> tris = new List<int>();
@@ -194,7 +195,7 @@ public class AsteroidGenerator : MonoBehaviour
             {
                 pointInThisCube.Add(points[index]);
             }
-            ConvexHullCalc.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
+            ConvexHullCalcGlobal.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
             // add the verts and tris to the allVerts and allTris
             AddToArrays(verts, tris, normals);
         }
@@ -220,58 +221,57 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
-    Mesh GetSimplifiedMesh()
-    {
-        Mesh mesh = new Mesh();
-        mesh.subMeshCount = 2;
-        ConvexHullCalculator ConvexHullCalc = new ConvexHullCalculator();
+    // Mesh GetSimplifiedMesh()
+    // {
+    //     Mesh mesh = new Mesh();
+    //     mesh.subMeshCount = 2;
         
-        List<Vector3> simpleVerts = new List<Vector3>();
-        List<int> simpleTris = new List<int>();
-        List<Vector3> simpleNormals = new List<Vector3>();
+    //     List<Vector3> simpleVerts = new List<Vector3>();
+    //     List<int> simpleTris = new List<int>();
+    //     List<Vector3> simpleNormals = new List<Vector3>();
 
-        ConvexHullCalc.GenerateHull(points, true, ref simpleVerts, ref simpleTris, ref simpleNormals);
+    //     ConvexHullCalcGlobal.GenerateHull(points, true, ref simpleVerts, ref simpleTris, ref simpleNormals);
         
-        mesh.vertices = simpleVerts.ToArray();
+    //     mesh.vertices = simpleVerts.ToArray();
 
-        List<int> oreTris = new List<int>();
-        List<int> otherTris = new List<int>();
-        for (int i = 0; i < simpleTris.Count; i += 3)
-        {
-            // if the point is in the ore group
-            if (pointColors[simpleVerts[simpleTris[i]]] == 1)
-            {
-                // add the tris to the ore group
-                oreTris.Add(simpleTris[i]);
-                oreTris.Add(simpleTris[i + 1]);
-                oreTris.Add(simpleTris[i + 2]);
-            }
-            else
-            {
-                // add the tris to the other group
-                otherTris.Add(simpleTris[i]);
-                otherTris.Add(simpleTris[i + 1]);
-                otherTris.Add(simpleTris[i + 2]);
-            }
-        }
+    //     List<int> oreTris = new List<int>();
+    //     List<int> otherTris = new List<int>();
+    //     for (int i = 0; i < simpleTris.Count; i += 3)
+    //     {
+    //         // if the point is in the ore group
+    //         if (pointColors[simpleVerts[simpleTris[i]]] == 1)
+    //         {
+    //             // add the tris to the ore group
+    //             oreTris.Add(simpleTris[i]);
+    //             oreTris.Add(simpleTris[i + 1]);
+    //             oreTris.Add(simpleTris[i + 2]);
+    //         }
+    //         else
+    //         {
+    //             // add the tris to the other group
+    //             otherTris.Add(simpleTris[i]);
+    //             otherTris.Add(simpleTris[i + 1]);
+    //             otherTris.Add(simpleTris[i + 2]);
+    //         }
+    //     }
 
-        // add the ore tris to the submesh
-        mesh.SetTriangles(oreTris.ToArray(), 0);
-        // set the rest of the tris to the other submesh
-        mesh.SetTriangles(otherTris.ToArray(), 1);
+    //     // add the ore tris to the submesh
+    //     mesh.SetTriangles(oreTris.ToArray(), 0);
+    //     // set the rest of the tris to the other submesh
+    //     mesh.SetTriangles(otherTris.ToArray(), 1);
 
-        mesh.normals = simpleNormals.ToArray();
-        Vector2[] uvs = new Vector2[simpleVerts.Count];
-        for (int i = 0; i < simpleVerts.Count; i++)
-        {
-            uvs[i] = new Vector2(simpleVerts[i].x, simpleVerts[i].z);
-        }
-        mesh.uv = uvs;
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
+    //     mesh.normals = simpleNormals.ToArray();
+    //     Vector2[] uvs = new Vector2[simpleVerts.Count];
+    //     for (int i = 0; i < simpleVerts.Count; i++)
+    //     {
+    //         uvs[i] = new Vector2(simpleVerts[i].x, simpleVerts[i].z);
+    //     }
+    //     mesh.uv = uvs;
+    //     mesh.RecalculateBounds();
+    //     mesh.RecalculateNormals();
 
-        return mesh;
-    }
+    //     return mesh;
+    // }
 
 
     void GenerateMesh()
@@ -323,11 +323,13 @@ public class AsteroidGenerator : MonoBehaviour
 
         // call calulate UVs using allVerts as the first parameter
         mesh.uv = CalculateUVs(allVerts.ToArray(), 1);
-
-
+        
+        Destroy(GetComponent<MeshCollider>().sharedMesh);
+        Destroy(GetComponent<MeshFilter>().sharedMesh);
         GetComponent<MeshCollider>().sharedMesh = mesh;
-        GetComponent<MeshFilter>().mesh = mesh;
-
+        // destroy the old mesh
+        GetComponent<MeshFilter>().sharedMesh = mesh;
+        mesh.UploadMeshData(true);
     }
 
     private enum Facing { Up, Forward, Right };

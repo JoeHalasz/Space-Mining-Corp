@@ -227,12 +227,13 @@ public class Minerals
         {
             values.Remove(randomPick);
         }
-        return values[Random.Range(0, values.Count)];
+        
+        // return values[Random.Range(0, values.Count)];
 
         int zone = CalculateZone(WorldPos);
 
-        // 90% chance of stone
-        if (Random.Range(0, 100) < 90)
+        // 75% chance of stone
+        if (Random.Range(0, 100) < 75)
         {
             return OresList["Stone"];
         }

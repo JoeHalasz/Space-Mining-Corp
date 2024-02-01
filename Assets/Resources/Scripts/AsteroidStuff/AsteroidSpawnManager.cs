@@ -15,6 +15,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     List<GameObject> AllPregeneratedAsteroids = new List<GameObject>();
     List<GameObject> AllPregeneratedBigAsteroids = new List<GameObject>();
     Dictionary<Vector3, GameObject> allSpawnedAsteroids = new Dictionary<Vector3, GameObject>();
+    int totalDespawnedAsteroidsSinceLastUnload = 0;
     Dictionary<Vector3, List<List<int>>> allEditedAsteroids = new Dictionary<Vector3, List<List<int>>>();
     public Dictionary<Vector3, List<List<int>>> getAllEditedAsteroids() { return allEditedAsteroids; }
     HashSet<Vector3> allEditedAsteroidsBeforeSave = new HashSet<Vector3>();
@@ -97,6 +98,13 @@ public class AsteroidSpawnManager : MonoBehaviour
         {
             Destroy(allSpawnedAsteroids[pos]);
             allSpawnedAsteroids.Remove(pos);
+            totalDespawnedAsteroidsSinceLastUnload++;
+            if (totalDespawnedAsteroidsSinceLastUnload > 500)
+            {
+                Debug.Log("Unloading unused assets");
+                totalDespawnedAsteroidsSinceLastUnload = 0;
+                Resources.UnloadUnusedAssets();
+            }
         }
     }
 
@@ -146,6 +154,8 @@ public class AsteroidSpawnManager : MonoBehaviour
     private IEnumerator SpawnAsteroidFromQueue()
     {
         stopwatch.Start();
+        bool printed = false;
+        bool printQueueStatus = false;
         while (true)
         {
             // if there is something in the queue 
@@ -177,13 +187,18 @@ public class AsteroidSpawnManager : MonoBehaviour
             {
                 if (!lastEmptyCheck)
                 {
-                    Debug.Log("Queue emptied");
+                    if (printed && printQueueStatus)
+                        Debug.Log("Queue emptied");
+                    printed = false;
                     lastEmptyCheck = true;
                 }
                 yield return WaitForFrames(60);
             }
-            if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0)
-                Debug.Log("Num asteroids left in queue " + AsteroidPositionsSpawnQueue.Count);
+            if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0){
+                if (printQueueStatus)
+                    Debug.Log("Num asteroids left in queue " + AsteroidPositionsSpawnQueue.Count);
+                printed = true;
+            }
 
             if (!initialLoadFinished && AsteroidPositionsSpawnQueue.Count == 1)
             { // cant be 0 because it starts at 0
@@ -230,7 +245,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     GameObject CopyOneAsteroid(Vector3 position)
     {
-        Random.InitState((int)(Mathf.Abs((getSeed()+1)/1000 + ((int)position.x*10 + (int)position.y*20 + (int)position.z*30))));
+        Random.InitState((int)(Mathf.Abs((getSeed()+1)/1000 + (position.x*10 + position.y*100 + position.z*1000))));
         bool isBig = Random.Range(0, 10) == 0;
         GameObject asteroidToCopy;
         if (isBig)

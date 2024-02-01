@@ -235,10 +235,16 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // if the player right clicks, teleport them 100 units in the direction they are facing. This will be removed for real game
+        // if the player right clicks, teleport them 100 units in the direction they are facing
         if (Input.GetMouseButtonUp(1))
         {
-            transform.position += transform.forward * 100;
+            //transform.position += transform.forward * 100;
+        }
+
+        // if the player holds right click, teleport them 10 units in the direction they are facing
+        if (Input.GetMouseButton(1))
+        {
+            transform.position += transform.forward * 10;
         }
 
         // slowly change playerVelocity to targetVelocity

@@ -35,7 +35,7 @@ public class WorldManager : MonoBehaviour
         {
             Load("test");
         }
-        
+
     }
 
     public void Save(string name)
