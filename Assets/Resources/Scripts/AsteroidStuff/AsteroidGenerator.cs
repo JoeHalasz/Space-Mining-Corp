@@ -35,6 +35,8 @@ public class AsteroidGenerator : MonoBehaviour
 
     AsteroidSpawnManager asteroidSpawnManager;
 
+    Vector3 originalPosition;
+
     IDictionary<T1, T2> copyIDict<T1, T2>(IDictionary<T1, T2> oldDict) { 
         // for all the keys in the old dict, add them to the new dict
         IDictionary<T1, T2> newDict = new Dictionary<T1, T2>();
@@ -51,6 +53,7 @@ public class AsteroidGenerator : MonoBehaviour
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
         // set the layer to 8 (asteroid)
         gameObject.layer = 8;
+        originalPosition = transform.localPosition;
     }
 
     List<List<T>> copyListOfLists<T>(List<List<T>> list)
@@ -64,7 +67,7 @@ public class AsteroidGenerator : MonoBehaviour
     }
 
     // function takes in all the above variables and sets them in this script
-    public void copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, List<Vector3> _outsidePoints, IDictionary<Vector3, int> _pointColors,
+    public bool copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, List<Vector3> _outsidePoints, IDictionary<Vector3, int> _pointColors,
                             IDictionary<Vector3, List<Vector3>> _pointToCubes, Mesh _mesh, float _increment, IDictionary<Vector3, int> _pointsSetPositions, 
                             List<List<int>> _cubesPointIndecies, List<List<int>> _originalCubesPointIndecies,
                             List<Vector3> _allVerts, List<int> _allTris, List<Vector3> _allNormals)
@@ -75,14 +78,24 @@ public class AsteroidGenerator : MonoBehaviour
         outsidePoints =         new List<Vector3>(_outsidePoints);
         pointColors =           copyIDict(_pointColors);
         pointToCubes =          copyIDict(_pointToCubes);
-        mesh =                  (Mesh)Instantiate(_mesh);
+        if (mesh != null)
+            mesh =                  (Mesh)Instantiate(_mesh);
         increment =             _increment;
         pointsSetPositions =    copyIDict(_pointsSetPositions);
-        cubesPointIndecies =    copyListOfLists(_cubesPointIndecies);
+        cubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
         originalCubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
         allVerts =              new List<Vector3>(_allVerts);
         allTris =               new List<int>(_allTris);
         allNormals =            new List<Vector3>(_allNormals);
+        if (mesh == null)
+            return false;
+        return true;
+
+    }
+
+    public void setOriginalPosition(Vector3 pos)
+    {
+        originalPosition = pos;
     }
 
     public void Generate()
@@ -324,10 +337,7 @@ public class AsteroidGenerator : MonoBehaviour
         // call calulate UVs using allVerts as the first parameter
         mesh.uv = CalculateUVs(allVerts.ToArray(), 1);
         
-        Destroy(GetComponent<MeshCollider>().sharedMesh);
-        Destroy(GetComponent<MeshFilter>().sharedMesh);
         GetComponent<MeshCollider>().sharedMesh = mesh;
-        // destroy the old mesh
         GetComponent<MeshFilter>().sharedMesh = mesh;
         mesh.UploadMeshData(true);
     }
@@ -435,7 +445,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
         else
         {
-            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
+            asteroidSpawnManager.addRemovedAsteroid(originalPosition); // this will destroy it as well
         }
     }
     
@@ -500,7 +510,7 @@ public class AsteroidGenerator : MonoBehaviour
         {
             //// make a small sphere at the rayPoint
             //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //sphere.transform.position = rayPoint;
+            //sphere.transform.localPosition = rayPoint;
             //sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
             //sphere.GetComponent<Renderer>().material.color = Color.red;
             // loop through all the cubes and find the closest one
@@ -518,7 +528,7 @@ public class AsteroidGenerator : MonoBehaviour
                         List<int> lastClosestCopy = new List<int>(lastClosest);
                         // remove the last closest cube from cubePointIndecies
                         cubesPointIndecies.Remove(lastClosest);
-                        asteroidSpawnManager.setIndeciesForAsteroid(transform.position, cubesPointIndecies);
+                        asteroidSpawnManager.setIndeciesForAsteroid(transform.localPosition, cubesPointIndecies);
                         return;
                     }
                 }
@@ -561,7 +571,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
         else
         {
-            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
+            asteroidSpawnManager.addRemovedAsteroid(originalPosition); // this will destroy it as well
         }
     }
 
@@ -579,7 +589,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
         else
         {
-            asteroidSpawnManager.addRemovedAsteroid(transform.position); // this will destroy it as well
+            asteroidSpawnManager.addRemovedAsteroid(originalPosition); // this will destroy it as well
         }
     }
 

@@ -22,6 +22,8 @@ public class AsteroidSpawnManager : MonoBehaviour
     public HashSet<Vector3> getAllEditedAsteroidsBeforeSave() { return allEditedAsteroidsBeforeSave; }
     HashSet<Vector3> allRemovedAsteroids = new HashSet<Vector3>();
     public HashSet<Vector3> getAllRemovedAsteroids() { return allRemovedAsteroids; }
+
+    WorldManager worldManager;
     
 
     System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -122,7 +124,8 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     void Start()
     {
-        seed = GameObject.Find("WorldManager").GetComponent<WorldManager>().getSeed();
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
+        seed = worldManager.getSeed();
         minerals.SetUp();
         IEnumerator coroutine = SpawnAsteroidFromQueue();
         StartCoroutine(coroutine);
@@ -248,20 +251,27 @@ public class AsteroidSpawnManager : MonoBehaviour
         Random.InitState((int)(Mathf.Abs((getSeed()+1)/1000 + (position.x*10 + position.y*100 + position.z*1000))));
         bool isBig = Random.Range(0, 10) == 0;
         GameObject asteroidToCopy;
+        int asteroidNumber = Random.Range(0, AllPregeneratedBigAsteroids.Count);
         if (isBig)
-            asteroidToCopy = AllPregeneratedBigAsteroids[Random.Range(0, AllPregeneratedBigAsteroids.Count)];
+            asteroidToCopy = AllPregeneratedBigAsteroids[asteroidNumber];
         else
-            asteroidToCopy = AllPregeneratedBigAsteroids[Random.Range(0, AllPregeneratedBigAsteroids.Count)];
+            asteroidToCopy = AllPregeneratedAsteroids[asteroidNumber];
         
         // make a copy of the asteroid
         GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
-        newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.outsidePoints, o.pointColors,
-                        o.pointToCubes, o.mesh, o.increment, o.pointsSetPositions, o.cubesPointIndecies, o.originalCubesPointIndecies, o.allVerts, o.allTris, o.allNormals);
+        if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.outsidePoints, o.pointColors,
+                        o.pointToCubes, o.mesh, o.increment, o.pointsSetPositions, o.cubesPointIndecies, 
+                        o.originalCubesPointIndecies, o.allVerts, o.allTris, o.allNormals))
+        {
+            Debug.Log("Failed to copy asteroid number" + asteroidNumber + " at " + position);
+            return null;
+        }
+        newAsteroid.GetComponent<AsteroidGenerator>().setOriginalPosition(position);
 
         // make it a different mineral
-        Item mineralType = minerals.GetMineralTypeFromPos(position, isBig);
+        Item mineralType = minerals.GetMineralTypeFromPos(newAsteroid.transform.localPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
 

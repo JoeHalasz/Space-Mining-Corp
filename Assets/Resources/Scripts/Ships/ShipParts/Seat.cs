@@ -7,6 +7,12 @@ using UnityEngine;
 public class Seat : MonoBehaviour
 {
 
+    GameObject allMovableObjects;
+    void Start()
+    {
+        allMovableObjects = GameObject.Find("All Movable Objects");
+    }
+
     public void MakePlayerSitOrUnsit(GameObject player)
     {
         // if the player is already sitting unsit them, otherwise sit them
@@ -19,7 +25,7 @@ public class Seat : MonoBehaviour
     void MakePlayerSit(GameObject player)
     {
         // move the player to the seat 
-        player.transform.position = transform.position;
+        player.transform.localPosition = transform.localPosition;
         player.transform.rotation = transform.rotation;
         // set ship as player parent
         player.transform.parent = transform.parent;
@@ -34,7 +40,7 @@ public class Seat : MonoBehaviour
     void MakePlayerStand(GameObject player)
     {
         // set the players parent to null
-        player.transform.parent = null;
+        player.transform.parent = allMovableObjects.transform;
         // unlock the players movement 
         player.GetComponent<PlayerMovement>().UnlockPlayerMovement();
         // lock the parent ships movement

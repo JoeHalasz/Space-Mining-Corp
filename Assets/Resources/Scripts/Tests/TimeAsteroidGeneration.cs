@@ -80,7 +80,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         // random mineral based on the world position
         // worldPosition = asteroid pos + asteroid area spawner position + asteroid field position
-        Vector3 worldPosition = position + transform.position;
+        Vector3 worldPosition = position + transform.localPosition;
 
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = minerals.GetMineralTypeFromPos(worldPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;

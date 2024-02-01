@@ -29,12 +29,14 @@ public class AsteroidFieldGenerator : MonoBehaviour
     public Minerals minerals;
 
     AsteroidSpawnManager asteroidSpawnManager;
+    WorldManager worldManager;
 
     // Start is called before the first frame update
     void Start()
     {
         minerals = new Minerals();
         minerals.SetUp();
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
 
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
 
@@ -44,7 +46,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
             asteroidAreaPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/AsteroidArea") as GameObject;
 
             // generate an asteroid field around this object
-            SpawnNewArea(transform.position);
+            SpawnNewArea(transform.localPosition);
         }
 
         // every second debug.log how many children this object has
@@ -81,7 +83,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         // make AsteroidAreaPrefab
         GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, pos, Quaternion.identity) as GameObject;
         // set the parent to this object
-        newAsteroidArea.transform.parent = gameObject.transform;
+        newAsteroidArea.transform.SetParent(gameObject.transform, false);
         // set newAsteroidAreas density, radius, and height
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
         newAsteroidArea.GetComponent<AsteroidAreaSpawner>().height = (height / ((height - negativeHeight) / sizeOfPartitions));
@@ -95,7 +97,6 @@ public class AsteroidFieldGenerator : MonoBehaviour
         int s = sizeOfPartitions;
         // if the 6 spots around middlePos are not in the HashSet, spawn a new area there and add it to the HashSet
         // if they are in the HashSet, do nothing
-
         if (!areaPositions.Contains(middlePos + new Vector3(s, 0, 0)))
             SpawnNewArea(middlePos + new Vector3(s, 0, 0));
         if (!areaPositions.Contains(middlePos + new Vector3(-1*s, 0, 0)))

@@ -19,9 +19,38 @@ public class WorldManager : MonoBehaviour
 
     AsteroidSpawnManager asteroidSpawnManager;
 
+    Vector3 currentWorldOffset = new Vector3(0, 0, 0);
+    GameObject allMovableObjects;
+
+    GameObject player;
+
+    public Vector3 getCurrentWorldOffset()
+    {
+        return currentWorldOffset;
+    }
+
+    public void OffsetWorldBy(Vector3 offset)
+    {
+        allMovableObjects.transform.position += offset;
+        currentWorldOffset += offset;
+    }
+
     void Start()
     {
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
+        allMovableObjects = GameObject.Find("All Movable Objects");
+        player = GameObject.FindGameObjectWithTag("Player");
+        // check the players pos every 30 seconds
+        InvokeRepeating("offsetWorldIfNecessary", 0, 3);
+    }
+
+    void offsetWorldIfNecessary()
+    {
+        // if the player is too far from the center of the world, move the entire world so that the player is in the center again
+        if (Vector3.Distance(player.transform.position, new Vector3(0, 0, 0)) > 25000)
+        {
+            OffsetWorldBy(player.transform.position * -1);
+        }
     }
 
     void Update()
@@ -34,6 +63,10 @@ public class WorldManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F9))
         {
             Load("test");
+        }
+        if (Input.GetKeyDown(KeyCode.F10))
+        {
+            OffsetWorldBy(new Vector3(50000, 0, 0));
         }
 
     }

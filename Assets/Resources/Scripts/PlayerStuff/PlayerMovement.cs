@@ -82,6 +82,7 @@ public class PlayerMovement : MonoBehaviour
     public void LockPlayerInputs(GameObject reason) { lockPlayerInputs = true; lockedReason = reason; }
     public void UnlockPlayerInputs() { lockPlayerInputs = false; lockedReason = null; }
 
+    Transform oldParent;
 
     private void Awake()
     {
@@ -103,6 +104,7 @@ public class PlayerMovement : MonoBehaviour
         inputs = GetComponent<PlayerInput>().actions;
         // enable it
         inputs.Enable();
+        oldParent = transform.parent;
     }
 
     private void Update()
@@ -128,8 +130,6 @@ public class PlayerMovement : MonoBehaviour
         //_animIDFreeFall = Animator.StringToHash("FreeFall");
         //_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
-
-    Transform oldParent = null;
 
     private void GroundedCheck()
     {

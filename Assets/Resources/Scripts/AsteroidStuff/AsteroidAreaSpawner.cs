@@ -30,9 +30,9 @@ public class AsteroidAreaSpawner : MonoBehaviour
     public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager)
     {   
         this.asteroidSpawnManager = asteroidSpawnManager;
-        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + (transform.position.x*10 + transform.position.y*100 + transform.position.z*1000))));
-        spawnedAsteroidPosition = new Vector3((int)Random.Range(-1 * radius, radius), (int)Random.Range(-1 * height, height), (int)Random.Range(-1 * radius, radius)) + transform.position;
-        // spawnedAsteroidPosition = transform.position;
+        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + (transform.localPosition.x*10 + transform.localPosition.y*100 + transform.localPosition.z*1000))));
+        spawnedAsteroidPosition = new Vector3((int)Random.Range(-1 * radius, radius), (int)Random.Range(-1 * height, height), (int)Random.Range(-1 * radius, radius)) + transform.localPosition;
+        // spawnedAsteroidPosition = transform.localPosition;
         asteroidSpawnManager.AddToQueue(spawnedAsteroidPosition);
     }
 
@@ -41,7 +41,7 @@ public class AsteroidAreaSpawner : MonoBehaviour
     {
         if (other.gameObject.tag == "AsteroidSpawnAreaSpawner")
         {
-            gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>().SpawnMoreAreasAt(transform.position);
+            gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>().SpawnMoreAreasAt(transform.localPosition);
         }
         else if (other.gameObject.tag == "AsteroidSpawnAreaDespawner")
         {
@@ -79,7 +79,7 @@ public class AsteroidAreaSpawner : MonoBehaviour
         // destroy the asteroid that was spawned by this, then destroy this
         asteroidSpawnManager.destroyAsteroidAt(spawnedAsteroidPosition);
         // delete the spawner from its parents list using removeSpawnAreaAt on the AsteroidFieldGenerator
-        asteroidFieldGenerator.removeSpawnAreaAt(transform.position);
+        asteroidFieldGenerator.removeSpawnAreaAt(transform.localPosition);
         // print the amount of children this object parent has
         Destroy(gameObject);
     }
