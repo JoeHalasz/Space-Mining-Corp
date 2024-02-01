@@ -192,7 +192,7 @@ public class AsteroidSpawnManager : MonoBehaviour
                     printed = false;
                     lastEmptyCheck = true;
                 }
-                yield return WaitForFrames(60);
+                yield return 0;
             }
             if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0){
                 if (printQueueStatus)

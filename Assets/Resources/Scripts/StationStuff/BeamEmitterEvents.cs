@@ -58,6 +58,7 @@ public class BeamEmitterEvents : MonoBehaviour
     GameObject BeamToGrow = null;
     bool GrowCenter = false;
     bool needsToLerpColor = false;
+    Material nextMaterial;
 
     void Update()
     {
@@ -82,9 +83,9 @@ public class BeamEmitterEvents : MonoBehaviour
         }
         if (needsToLerpColor)
         {
-            EnergyCenter.GetComponent<Renderer>().material.Lerp(EnergyCenter.GetComponent<Renderer>().material, MaterialGoals[timesDone], .01f);
+            EnergyCenter.GetComponent<Renderer>().material.Lerp(EnergyCenter.GetComponent<Renderer>().material, nextMaterial, .01f);
             // if we are done lerping then stop lerping
-            if (EnergyCenter.GetComponent<Renderer>().material.color == MaterialGoals[timesDone].color)
+            if (EnergyCenter.GetComponent<Renderer>().material.color == nextMaterial.color)
             {
                 needsToLerpColor = false;
             }
@@ -117,7 +118,7 @@ public class BeamEmitterEvents : MonoBehaviour
         {
             GrowBeam = false;
             GrowCenter = true;
-            
+            nextMaterial = MaterialGoals[timesDone];
         }
     }
 
