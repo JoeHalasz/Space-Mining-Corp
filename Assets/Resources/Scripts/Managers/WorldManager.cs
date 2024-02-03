@@ -42,6 +42,7 @@ public class WorldManager : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         // check the players pos every 30 seconds
         InvokeRepeating("offsetWorldIfNecessary", 0, 3);
+        asteroidSpawnManager.StartAfterWorldManagerSetUp();
     }
 
     void offsetWorldIfNecessary()

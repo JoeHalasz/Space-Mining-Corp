@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -33,44 +34,32 @@ public class AsteroidGenerator : MonoBehaviour
     public List<int> allTris;
     public List<Vector3> allNormals;
 
-    AsteroidSpawnManager asteroidSpawnManager;
+    public AsteroidSpawnManager asteroidSpawnManager;
 
     Vector3 originalPosition;
 
     IDictionary<T1, T2> copyIDict<T1, T2>(IDictionary<T1, T2> oldDict) { 
-        // for all the keys in the old dict, add them to the new dict
-        IDictionary<T1, T2> newDict = new Dictionary<T1, T2>();
-        foreach (T1 key in oldDict.Keys)
-        {
-            newDict.Add(key, oldDict[key]);
-        }
-        return newDict;
+        // return a copy of the IDict
+        return new Dictionary<T1, T2>(oldDict);
     }
 
     void Start()
     {
-        // find the AsteroidSpawnManager
-        asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
         // set the layer to 8 (asteroid)
         gameObject.layer = 8;
         originalPosition = transform.localPosition;
     }
 
-    List<List<T>> copyListOfLists<T>(List<List<T>> list)
+    List<List<T>> copyListOfLists<T>(List<List<T>> lst)
     {
-        List<List<T>> newList = new List<List<T>>();
-        foreach (List<T> subList in list)
-        {
-            newList.Add(new List<T>(subList));
-        }
-        return newList;
+        return lst.Select(innerList => new List<T>(innerList)).ToList();
     }
 
     // function takes in all the above variables and sets them in this script
     public bool copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, List<Vector3> _outsidePoints, IDictionary<Vector3, int> _pointColors,
                             IDictionary<Vector3, List<Vector3>> _pointToCubes, Mesh _mesh, float _increment, IDictionary<Vector3, int> _pointsSetPositions, 
                             List<List<int>> _cubesPointIndecies, List<List<int>> _originalCubesPointIndecies,
-                            List<Vector3> _allVerts, List<int> _allTris, List<Vector3> _allNormals)
+                            List<Vector3> _allVerts, List<int> _allTris, List<Vector3> _allNormals, AsteroidSpawnManager _asteroidSpawnManager)
     {
         mineralType =           _mineralType;
         isBig =                 _isBig;
@@ -78,8 +67,10 @@ public class AsteroidGenerator : MonoBehaviour
         outsidePoints =         new List<Vector3>(_outsidePoints);
         pointColors =           copyIDict(_pointColors);
         pointToCubes =          copyIDict(_pointToCubes);
-        if (mesh != null)
-            mesh =                  (Mesh)Instantiate(_mesh);
+        Destroy(mesh);
+        if (_mesh != null){
+            mesh =              (Mesh)Instantiate(_mesh);
+        }
         increment =             _increment;
         pointsSetPositions =    copyIDict(_pointsSetPositions);
         cubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
@@ -87,10 +78,20 @@ public class AsteroidGenerator : MonoBehaviour
         allVerts =              new List<Vector3>(_allVerts);
         allTris =               new List<int>(_allTris);
         allNormals =            new List<Vector3>(_allNormals);
+        asteroidSpawnManager = _asteroidSpawnManager;
         if (mesh == null)
             return false;
         return true;
+    }
 
+    public void ApplyMesh()
+    {
+        if (mesh != null)
+        {
+            GetComponent<MeshCollider>().sharedMesh = mesh;
+            GetComponent<MeshFilter>().sharedMesh = mesh;
+            mesh.UploadMeshData(true);
+        }
     }
 
     public void setOriginalPosition(Vector3 pos)
@@ -191,9 +192,7 @@ public class AsteroidGenerator : MonoBehaviour
             }
 
         }
-
         GenerateMesh();
-
     }
 
     void GenerateVertsTrisAndNormalsForList(List<List<int>> cubes)
@@ -289,6 +288,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateMesh()
     {
+        Debug.Log("Generating an asteroid mesh");
         allVerts = new List<Vector3>();
         allTris = new List<int>();
         allNormals = new List<Vector3>();
@@ -337,6 +337,8 @@ public class AsteroidGenerator : MonoBehaviour
         // call calulate UVs using allVerts as the first parameter
         mesh.uv = CalculateUVs(allVerts.ToArray(), 1);
         
+        // destroy the old mesh
+        Destroy(GetComponent<MeshCollider>().sharedMesh);
         GetComponent<MeshCollider>().sharedMesh = mesh;
         GetComponent<MeshFilter>().sharedMesh = mesh;
         mesh.UploadMeshData(true);

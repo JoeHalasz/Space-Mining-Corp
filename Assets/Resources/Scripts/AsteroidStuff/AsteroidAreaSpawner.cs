@@ -80,8 +80,6 @@ public class AsteroidAreaSpawner : MonoBehaviour
         asteroidSpawnManager.destroyAsteroidAt(spawnedAsteroidPosition);
         // delete the spawner from its parents list using removeSpawnAreaAt on the AsteroidFieldGenerator
         asteroidFieldGenerator.removeSpawnAreaAt(transform.localPosition);
-        // print the amount of children this object parent has
-        Destroy(gameObject);
     }
 
 }
