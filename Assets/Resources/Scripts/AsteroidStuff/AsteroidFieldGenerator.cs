@@ -104,12 +104,12 @@ public class AsteroidFieldGenerator : MonoBehaviour
         int negativeHeight = -1*height;
         // make AsteroidAreaPrefab
         // GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, pos, Quaternion.identity) as GameObject;
-        GameObject newAsteroidArea = AsteroidAreaGameObjectQueue.First.Value;
-        if (newAsteroidArea == null)
+        if (AsteroidAreaGameObjectQueue.First == null)
         {
-            Debug.LogError("AsteroidAreaGameObjectQueue is empty! Add more on load");
+            Debug.LogError("AsteroidAreaGameObjectQueue is empty! Add more on load. There should be " + numAreasInQueue);
             return;
         }
+        GameObject newAsteroidArea = AsteroidAreaGameObjectQueue.First.Value;
         AsteroidAreaGameObjectQueue.RemoveFirst();
         numAreasInQueue--;
         Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);

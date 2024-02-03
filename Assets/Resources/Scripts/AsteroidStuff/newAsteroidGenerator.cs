@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 
-public class AsteroidGenerator : MonoBehaviour
+public class newAsteroidGenerator : MonoBehaviour
 {
     // texture for the asteroid
     [SerializeField]

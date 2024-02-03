@@ -137,7 +137,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     {
         worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
         minerals.SetUp();
-
+        asteroidPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/Asteroid") as GameObject;
     }
 
     // should only be called once when the world is set up
@@ -316,12 +316,12 @@ public class AsteroidSpawnManager : MonoBehaviour
         
         // GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
         // get the first asteroid from the AsteroidGameObjectQueue
-        GameObject newAsteroid = AsteroidGameObjectQueue.First.Value;
-        if (newAsteroid == null)
+        if (AsteroidGameObjectQueue.First == null)
         {
-            Debug.LogError("AsteroidGameObjectQueue is empty! Add more on load");
+            Debug.LogError("AsteroidGameObjectQueue is empty! Add more on load. There should be " + numAsteroidsInQueue);
             return null;
         }
+        GameObject newAsteroid = AsteroidGameObjectQueue.First.Value;
         AsteroidGameObjectQueue.RemoveFirst();
         numAsteroidsInQueue--;
         Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);

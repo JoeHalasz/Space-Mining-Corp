@@ -33,6 +33,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
     void Start()
     {
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
+        asteroidPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/Asteroid") as GameObject;
     }
 
     void doTest()
