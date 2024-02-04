@@ -4,6 +4,7 @@ using UnityEngine;
 
 
 // pair class that holds an item and the amount of that item
+[System.Serializable]
 public class ItemPair
 {
     public Item item;

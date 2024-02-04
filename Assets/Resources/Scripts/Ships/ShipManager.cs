@@ -6,17 +6,70 @@ public class ShipManager : MonoBehaviour
     // dictionary of string and a list of gameobjects
     public Dictionary<string, List<GameObject>> shipPartsDictionary;
 
-    private float maxEnergy = 0;
-    public float GetMaxEnergy() { return maxEnergy; }
-    private float maxFuel = 0;
-    public float GetMaxFuel() { return maxFuel; }
 
-    private float energy = 0;
+    float energy = 0;
     public float GetEnergy() { return energy; }
+    float maxEnergy = 0;
+    public float GetMaxEnergy() { return maxEnergy; }
+    float maxFuel = 0;
+    public float GetMaxFuel() { return maxFuel; }
+    float fuel = 0;
+    public float GetFuel() { return fuel; }
+    float health;
+    public float GetHealth() { return health; }
+    float maxHealth;
+    public float GetMaxHealth() { return maxHealth; }
+    float forwardSpeed; 
+    public float GetForwardSpeed() { return forwardSpeed; }
+    float reverseSpeed;
+    public float GetReverseSpeed() { return reverseSpeed; }
+    float verticalTurnSpeed;
+    public float GetVerticalTurnSpeed() { return verticalTurnSpeed; }
+    float horizontalTurnSpeed;
+    public float GetHorizontalTurnSpeed() { return horizontalTurnSpeed; }
+    float strafeSpeed;
+    public float GetStrafeSpeed() { return strafeSpeed; }
+    float shield;
+    public float GetShield() { return shield; }
+    float maxShield;
+    public float GetMaxShield() { return maxShield; }
+    float shieldRegen;
+    public float GetShieldRegen() { return shieldRegen; }
+    float shieldDelay;
+    public float GetShieldDelay() { return shieldDelay; }
+    
+    // TODO for all ship parts add to save and load file
+    // TODO add weapons
+    // TODO add thrusters
+    
+
+    // used for loading the game
+
+    public void loadState( float energy, float maxEnergy, float maxFuel, float fuel, float health, 
+                    float maxHealth, float forwardSpeed, float reverseSpeed, float verticalTurnSpeed, 
+                    float horizontalTurnSpeed, float strafeSpeed, float shield, float maxShield, 
+                    float shieldRegen, float shieldDelay )
+    {
+        this.energy = energy;
+        this.maxEnergy = maxEnergy;
+        this.maxFuel = maxFuel;
+        this.fuel = fuel;
+        this.health = health;
+        this.maxHealth = maxHealth;
+        this.forwardSpeed = forwardSpeed;
+        this.reverseSpeed = reverseSpeed;
+        this.verticalTurnSpeed = verticalTurnSpeed;
+        this.horizontalTurnSpeed = horizontalTurnSpeed;
+        this.strafeSpeed = strafeSpeed;
+        this.shield = shield;
+        this.maxShield = maxShield;
+        this.shieldRegen = shieldRegen;
+        this.shieldDelay = shieldDelay;
+    }
 
     // get the ships inventory script
-    private Inventory inventory;
-    private OpenInventoryUI inventoryUI;
+    Inventory inventory;
+    OpenInventoryUI inventoryUI;
 
     int numCargoSlots = -1;
     public int GetNumCargoSlots() { return numCargoSlots; }

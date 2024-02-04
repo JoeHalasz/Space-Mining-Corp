@@ -17,6 +17,7 @@ public class FactionManager : MonoBehaviour
 
     float playerReputation = 0; // this should be a float between 0 and 4
     public float GetPlayerReputation() { return playerReputation; }
+    public void SetPlayerReputation(float rep) { playerReputation = rep; }
     public void AddPlayerReputation(float add) { playerReputation += add; remakeMissions = true; }
     
     GameObject Player;
@@ -58,8 +59,6 @@ public class FactionManager : MonoBehaviour
         {
             // give the player the rewards
             playerReputation += mission.GetReputationReward();
-            // add the rep to the playerstats
-            playerStats.AddReputation(factionName, mission.GetReputationReward());
             playerStats.AddCredits(mission.GetCreditsReward());
 
             // remake the missions pool

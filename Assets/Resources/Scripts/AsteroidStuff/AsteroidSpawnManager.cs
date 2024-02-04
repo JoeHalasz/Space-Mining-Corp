@@ -145,7 +145,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     }
 
     // should only be called once when the world is set up
-    public void StartAfterWorldManagerSetUp()
+    public void StartAfterWorldManagerSetUp(Vector3 playerSpawnPos)
     {
         seed = worldManager.getSeed();
         Random.InitState(getSeed());

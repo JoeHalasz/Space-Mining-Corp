@@ -30,6 +30,11 @@ public class MissionManager : MonoBehaviour
         return false;
     }
 
+    public void LoadMissions(List<Mission> missions)
+    {
+        this.missions = missions;
+    }
+
     public bool HandInMission(Mission mission, FactionManager faction)
     {
         // get shipInv from player stats curernt ship
@@ -39,8 +44,6 @@ public class MissionManager : MonoBehaviour
             if (mission.HandInMission(playerInventory, shipInventory))
             {
                 missions.Remove(mission);
-                // add the rewards to player stats
-                playerStats.AddReputation(faction.getFactionName(), mission.GetReputationReward());
                 // add the rewards to player inventory
                 playerStats.AddCredits(mission.GetCreditsReward());
                 // add the new rep to the player stats and the faction stats that this mission came from

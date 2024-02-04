@@ -4,21 +4,74 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
-    
     float playerCredits;
     float playerHealth;
+    float maxHealth;
 
-    public GameObject playerCurrentShip;
+    public GameObject playerCurrentShip; // should always be the same 
 
     public int numMainMissionsDone = 0;
 
-    int numCargoSlots = 8;
-    public int GetNumCargoSlots() { return numCargoSlots; }
+    MissionManager missionManager;
 
-    Dictionary<string, float> playerReputation = new Dictionary<string, float>();
+    int invSlots = 8;
+    public int GetInvSlots() { return invSlots; }
+
+    void Start()
+    {
+        missionManager = GetComponent<MissionManager>();
+    }
+
+    public void GetMissions()
+    {
+        missionManager.GetMissions();
+    }
+
+    public void SetMissions(List<Mission> missions)
+    {
+        missionManager.LoadMissions(missions);
+    }
+
+    public float getHealth()
+    {
+        return playerHealth;
+    }
+
+    // used for loading game
+    public float setHealth(float amount)
+    {
+        playerHealth = amount;
+        return playerHealth;
+    }
+
+    public void addHealth(float amount)
+    {
+        playerHealth += amount;
+        if (playerHealth > maxHealth)
+        {
+            playerHealth = maxHealth;
+        }
+    }
+    
+    public void removeHealth(float amount)
+    {
+        playerHealth -= amount;
+        if (playerHealth < 0)
+        {
+            playerHealth = 0;
+        }
+        die();
+    }
 
     public float getCredits()
     {
+        return playerCredits;
+    }
+
+    // used for loading game
+    public float setCredits(float amount)
+    {
+        playerCredits = amount;
         return playerCredits;
     }
     
@@ -38,23 +91,10 @@ public class PlayerStats : MonoBehaviour
         return false;
     }
 
-    public void AddReputation(string faction, float amount)
+    public void die()
     {
-        if (playerReputation.ContainsKey(faction))
-            playerReputation[faction] += amount;
-        else
-            playerReputation.Add(faction, amount);
-    }
-
-    public void RemoveReputation(string faction, float amount)
-    {
-        if (playerReputation.ContainsKey(faction)) 
-            playerReputation[faction] -= amount; 
-        else
-            playerReputation[faction] = 0;
-
-        if (playerReputation[faction] < 0)
-            playerReputation[faction] = 0;
+        // TODO make the player respawn at their ship without anything in their invnetory
+        // if the ship explodes the player has to reload the game 
     }
 
 }

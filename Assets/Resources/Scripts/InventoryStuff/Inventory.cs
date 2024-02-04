@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-
     List<ItemPair> items = new List<ItemPair>();
 
     public OpenInventoryUI inventoryUIScript;
@@ -36,7 +35,7 @@ public class Inventory : MonoBehaviour
         }
         else if (GetComponent<PlayerStats>() != null)
         {
-            totalInvSlots = GetComponent<PlayerStats>().GetNumCargoSlots();
+            totalInvSlots = GetComponent<PlayerStats>().GetInvSlots();
             calculatedSize = true;
         }
 
@@ -195,6 +194,10 @@ public class Inventory : MonoBehaviour
         
         if (pos != -1)
         {
+            if (totalInvSlots <= pos)
+            {
+                return itemPair;
+            }
             // if the position is null, add it there
             if (items[pos] == null)
             {
@@ -377,6 +380,17 @@ public class Inventory : MonoBehaviour
             }
         }
         return total;
+    }
+
+    // only used for saving and loading
+    public List<ItemPair> getInventory()
+    {
+        return items;
+    }
+
+    public void setInventory(List<ItemPair> items)
+    {
+        this.items = items;
     }
 
 }

@@ -42,7 +42,7 @@ public class WorldManager : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         // check the players pos every 30 seconds
         InvokeRepeating("offsetWorldIfNecessary", 0, 3);
-        asteroidSpawnManager.StartAfterWorldManagerSetUp();
+        asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
     }
 
     void offsetWorldIfNecessary()
@@ -105,6 +105,10 @@ public class WorldManager : MonoBehaviour
         bf.Serialize(file, seed);
         // save the player data
         savePlayer(file);
+        // save the ship data
+        //saveShip(file);
+        // save all factions data
+        //saveFactions(file);
         // save the asteroid data
         saveAllAsteroidData(file);
         file.Close();
@@ -141,6 +145,10 @@ public class WorldManager : MonoBehaviour
         seed = (int)bf.Deserialize(file);
         // load the player data
         loadPlayer(file);
+        // load the ship data
+        //loadShip(file);
+        // save all factions data
+        //loadFactions(file);
         // load the asteroid data
         loadAllAsteroidData(file);
         file.Close();
@@ -156,14 +164,181 @@ public class WorldManager : MonoBehaviour
     // file stream is already open
     void savePlayer(FileStream file)
     {
-
+        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+        BinaryFormatter bf = new BinaryFormatter();
+        // save the players position and rotation
+        Vector3 playerPos = player.transform.position;
+        Vector3 playerRot = player.transform.rotation.eulerAngles;
+        // save each float
+        bf.Serialize(file, playerPos.x);
+        bf.Serialize(file, playerPos.y);
+        bf.Serialize(file, playerPos.z);
+        bf.Serialize(file, playerRot.x);
+        bf.Serialize(file, playerRot.y);
+        bf.Serialize(file, playerRot.z);
+        // save the players credits
+        bf.Serialize(file, playerStats.getCredits());
+        // save the players health
+        bf.Serialize(file, playerStats.getHealth());
+        // save the players inventory
+        Inventory playerInventory = player.GetComponent<Inventory>();
+        List<ItemPair> invenetory = playerInventory.getInventory();
+        // save the amount of items
+        bf.Serialize(file, invenetory.Count);
+        // save each item
+        foreach(ItemPair item in invenetory)
+        {
+            bf.Serialize(file, item);
+        }
+        // save the players missions
+        MissionManager missionManager = player.GetComponent<MissionManager>();
+        bf.Serialize(file, missionManager.GetMissions());
+        // save the players ship
+        bf.Serialize(file, playerStats.playerCurrentShip);
     }
-
+     
     // file stream is already open
     void loadPlayer(FileStream file)
     {
+        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+        BinaryFormatter bf = new BinaryFormatter();
+        // load the players position and rotation float by float
+        Vector3 playerPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
+        Vector3 playerRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
+        player.transform.position = playerPos;
+        player.transform.rotation = Quaternion.Euler(playerRot);
+        // load the players credits
+        playerStats.setCredits((float)bf.Deserialize(file));
+        // load the players health
+        playerStats.setHealth((float)bf.Deserialize(file));
+        // load the players inventory
+        Inventory playerInventory = player.GetComponent<Inventory>();
+        // load the amount of items
+        int numItems = (int)bf.Deserialize(file);
+        // load each item
+        List<ItemPair> inventory = new List<ItemPair>();
+        for (int i = 0; i < numItems; i++)
+        {
+            inventory.Add((ItemPair)bf.Deserialize(file));
+        }
+        playerInventory.setInventory(inventory);
 
+        // load the players missions
+        MissionManager missionManager = player.GetComponent<MissionManager>();
+        missionManager.LoadMissions((List<Mission>)bf.Deserialize(file));
+        // load the players ship
+        playerStats.playerCurrentShip = (GameObject)bf.Deserialize(file);
     }
+    void saveShip(FileStream file)
+    {
+        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+        BinaryFormatter bf = new BinaryFormatter();
+        Vector3 shipPos = playerStats.playerCurrentShip.transform.position;
+        Vector3 shipRot = playerStats.playerCurrentShip.transform.rotation.eulerAngles;
+        bf.Serialize(file, shipPos.x);
+        bf.Serialize(file, shipPos.y);
+        bf.Serialize(file, shipPos.z);
+        bf.Serialize(file, shipRot.x);
+        bf.Serialize(file, shipRot.y);
+        bf.Serialize(file, shipRot.z);
+        Inventory shipInventory = playerStats.playerCurrentShip.GetComponent<Inventory>();
+        bf.Serialize(file, shipInventory.getInventory());
+        ShipManager shipManager = playerStats.playerCurrentShip.GetComponent<ShipManager>();
+        bf.Serialize(file, shipManager.GetEnergy());
+        bf.Serialize(file, shipManager.GetMaxEnergy());
+        bf.Serialize(file, shipManager.GetMaxFuel());
+        bf.Serialize(file, shipManager.GetFuel());
+        bf.Serialize(file, shipManager.GetNumCargoSlots());
+        bf.Serialize(file, shipManager.GetHealth());
+        bf.Serialize(file, shipManager.GetMaxHealth());
+        bf.Serialize(file, shipManager.GetForwardSpeed());
+        bf.Serialize(file, shipManager.GetReverseSpeed());
+        bf.Serialize(file, shipManager.GetVerticalTurnSpeed());
+        bf.Serialize(file, shipManager.GetHorizontalTurnSpeed());
+        bf.Serialize(file, shipManager.GetStrafeSpeed());
+        bf.Serialize(file, shipManager.GetShield());
+        bf.Serialize(file, shipManager.GetMaxShield());
+        bf.Serialize(file, shipManager.GetShieldRegen());
+        bf.Serialize(file, shipManager.GetShieldDelay());
+    }
+
+    void loadShip(FileStream file)
+    {
+        PlayerStats playerStats = player.GetComponent<PlayerStats>();
+        BinaryFormatter bf = new BinaryFormatter();
+        Vector3 shipPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
+        Vector3 shipRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
+        playerStats.playerCurrentShip.transform.position = shipPos;
+        playerStats.playerCurrentShip.transform.rotation = Quaternion.Euler(shipRot);
+        Inventory shipInventory = playerStats.playerCurrentShip.GetComponent<Inventory>();
+        shipInventory.setInventory((List<ItemPair>)bf.Deserialize(file));
+        ShipManager shipManager = playerStats.playerCurrentShip.GetComponent<ShipManager>();
+        shipManager.loadState((float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
+            (float)bf.Deserialize(file));
+        
+    }
+
+    void saveFactions(FileStream file)
+    {
+        // find the game object called factions
+        GameObject factionsParentObject = GameObject.Find("Factions");
+        // each of its children is a different faction
+        List<GameObject> factionsList = new List<GameObject>();
+        foreach (Transform child in factionsParentObject.transform)
+        {
+            factionsList.Add(child.gameObject);
+        }
+        // save the number of factions
+        BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(file, factionsList.Count);
+        // save each faction
+        foreach (GameObject faction in factionsList)
+        {
+            // save the faction name
+            bf.Serialize(file, faction.name);
+            // save the faction reputation
+            FactionManager factionManager = faction.GetComponent<FactionManager>();
+            bf.Serialize(file, factionManager.GetPlayerReputation());
+        }
+    }
+
+    void loadFactions(FileStream file)
+    {
+        // find the game object called factions
+        GameObject factionsParentObject = GameObject.Find("Factions");
+        // each of its children is a different faction
+        List<GameObject> factionsList = new List<GameObject>();
+        foreach (Transform child in factionsParentObject.transform)
+        {
+            factionsList.Add(child.gameObject);
+        }
+        // load the number of factions
+        BinaryFormatter bf = new BinaryFormatter();
+        int numFactions = (int)bf.Deserialize(file);
+        // load each faction
+        for (int i = 0; i < numFactions; i++)
+        {
+            // load the faction name
+            string factionName = (string)bf.Deserialize(file);
+            // load the faction reputation
+            float factionReputation = (float)bf.Deserialize(file);
+            // find the faction in the list
+            foreach (GameObject faction in factionsList)
+            {
+                if (faction.name == factionName)
+                {
+                    FactionManager factionManager = faction.GetComponent<FactionManager>();
+                    factionManager.SetPlayerReputation(factionReputation);
+                }
+            }
+        }
+    }
+
+
 
     // file stream is already open
     void saveAllAsteroidData(FileStream file)

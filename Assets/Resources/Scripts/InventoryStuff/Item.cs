@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class Item
 {
     
@@ -16,8 +17,8 @@ public class Item
         Misc
     }
 
-    string Name;
-    string description;
+    string Name="";
+    string description="";
     float density;
     float sellValue;
     float buyValue;
