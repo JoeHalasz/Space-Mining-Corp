@@ -39,7 +39,9 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     public void addRemovedAsteroid(Vector3 pos)
     {
-        Debug.Log("Removing asteroid at " + pos);
+        #if UNITY_EDITOR
+            Debug.Log("Removing asteroid at " + pos);
+        #endif
         allRemovedAsteroids.Add(pos);
         if (allEditedAsteroids.ContainsKey(pos))
         {
@@ -52,21 +54,23 @@ public class AsteroidSpawnManager : MonoBehaviour
         destroyAsteroidAt(pos);
     }
 
-    private void destoryAsteroid(Vector3 pos)
+    private void destroyAsteroid(Vector3 pos)
     {
         // Destroy(allSpawnedAsteroids[pos]);
         allSpawnedAsteroids[pos].SetActive(false);
         AsteroidGameObjectQueue.AddLast(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;
-        Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
+        #if UNITY_EDITOR
+            Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
+        #endif
         allSpawnedAsteroids.Remove(pos);
         
         totalDespawnedAsteroidsSinceLastUnload++;
         if (totalDespawnedAsteroidsSinceLastUnload > 500)
         {
-            Debug.Log("Unloading unused assets");
+            // Debug.Log("Unloading unused assets");
             totalDespawnedAsteroidsSinceLastUnload = 0;
-            //Resources.UnloadUnusedAssets();
+            Resources.UnloadUnusedAssets();
         }
     }
 
@@ -77,7 +81,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         {
             if (allSpawnedAsteroids.ContainsKey(pos))
             {
-                destoryAsteroid(pos);
+                destroyAsteroid(pos);
             }
         }
     }
@@ -117,7 +121,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     {
         if (allSpawnedAsteroids.ContainsKey(pos))
         {
-            destoryAsteroid(pos);
+            destroyAsteroid(pos);
         }
     }
 
@@ -240,16 +244,19 @@ public class AsteroidSpawnManager : MonoBehaviour
                 if (!lastEmptyCheck)
                 {
                     if (printed && printQueueStatus)
-                        Debug.Log("Queue emptied");
-                    printed = false;
+                    {
+                        // Debug.Log("Queue emptied");
+                        printed = false;
+                    }
                     lastEmptyCheck = true;
                 }
                 yield return 0;
             }
             if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0){
-                if (printQueueStatus)
+                if (printQueueStatus){
                     Debug.Log("Num asteroids left in queue " + AsteroidPositionsSpawnQueue.Count);
-                printed = true;
+                    printed = true;
+                }
             }
 
             if (!initialLoadFinished && AsteroidPositionsSpawnQueue.Count == 1)
@@ -324,7 +331,6 @@ public class AsteroidSpawnManager : MonoBehaviour
         GameObject newAsteroid = AsteroidGameObjectQueue.First.Value;
         AsteroidGameObjectQueue.RemoveFirst();
         numAsteroidsInQueue--;
-        Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
         newAsteroid.transform.localPosition = position;
         
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);

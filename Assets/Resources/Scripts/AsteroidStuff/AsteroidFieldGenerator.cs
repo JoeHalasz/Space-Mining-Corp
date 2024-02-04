@@ -22,7 +22,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
     [SerializeField]
     bool SpawnAsteroidField = true;
 
-    // HashSet of all area positions
+    // HashSet of all area's real positions
     public Dictionary<Vector3, GameObject> allSpawnAreas = new Dictionary<Vector3, GameObject>();
 
     public Minerals minerals;
@@ -71,8 +71,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
             numAreasInQueue++;
         }
         watch.Stop();
-        Debug.Log("Pregenerated " + numToPregen + " spawn area game objects in " + watch.ElapsedMilliseconds / 1000f + "s");
-        
+        #if UNITY_EDITOR
+            Debug.Log("Pregenerated " + numToPregen + " spawn area game objects in " + watch.ElapsedMilliseconds / 1000f + "s");
+        #endif
     }
 
     void DebugChildren()
@@ -97,9 +98,32 @@ public class AsteroidFieldGenerator : MonoBehaviour
         }
     }
 
+    Vector3 makeSurePosIsOnGrid(Vector3 pos)
+    {
+        int xOffset = ((int)pos.x)%sizeOfPartitions;
+        if (xOffset != 0)
+        {
+            Debug.Log("xOffset is not 0");
+        }
+        int yOffset = ((int)pos.y)%sizeOfPartitions;
+        if (yOffset != 0)
+        {
+            Debug.Log("yOffset is not 0");
+        }
+        int zOffset = ((int)pos.z)%sizeOfPartitions;
+        if (zOffset != 0)
+        {
+            Debug.Log("zOffset is not 0");
+        }
+        return new Vector3(((int)pos.x) - xOffset, ((int)pos.y) - yOffset, ((int)pos.z) - zOffset);
+    }
+
 
     void SpawnNewArea(Vector3 pos)
     {
+
+        pos = makeSurePosIsOnGrid(pos);
+
         int negativeRad = -1 * radius;
         int negativeHeight = -1*height;
         // make AsteroidAreaPrefab
@@ -112,19 +136,26 @@ public class AsteroidFieldGenerator : MonoBehaviour
         GameObject newAsteroidArea = AsteroidAreaGameObjectQueue.First.Value;
         AsteroidAreaGameObjectQueue.RemoveFirst();
         numAreasInQueue--;
-        Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
-        
-        newAsteroidArea.transform.position = pos;
-        newAsteroidArea.SetActive(true);
-        
+        #if UNITY_EDITOR
+            Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+        #endif        
         // set the parent to this object
         newAsteroidArea.transform.SetParent(gameObject.transform, false);
+        newAsteroidArea.transform.localPosition = pos;
+        newAsteroidArea.SetActive(true);
+        AsteroidAreaSpawner asteroidAreaSpawner = newAsteroidArea.GetComponent<AsteroidAreaSpawner>();
         // set newAsteroidAreas density, radius, and height
-        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
-        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().height = (height / ((height - negativeHeight) / sizeOfPartitions));
-        newAsteroidArea.GetComponent<AsteroidAreaSpawner>().GenerateAsteroids(asteroidSpawnManager);
+        asteroidAreaSpawner.radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
+        asteroidAreaSpawner.height = (height / ((height - negativeHeight) / sizeOfPartitions));
+        // if it exists, delete the old one
+        if (allSpawnAreas.ContainsKey(newAsteroidArea.transform.localPosition))
+        {
+            allSpawnAreas[newAsteroidArea.transform.localPosition].GetComponent<AsteroidAreaSpawner>().destroyAsteroidAndThis();
+        }
+        asteroidAreaSpawner.GenerateAsteroids(asteroidSpawnManager);
         // add to the Dictionary
-        allSpawnAreas.Add(pos, newAsteroidArea);
+        asteroidAreaSpawner.addedAtPos = newAsteroidArea.transform.localPosition;
+        allSpawnAreas.Add(newAsteroidArea.transform.localPosition, newAsteroidArea);
     }
 
     public void SpawnMoreAreasAt(Vector3 middlePos)
@@ -147,11 +178,14 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     }
 
+    // will return true if that pos still exists in the list, and false if it doesn't
     public void removeSpawnAreaAt(Vector3 pos)
     {
         AsteroidAreaGameObjectQueue.AddLast(allSpawnAreas[pos]);
         numAreasInQueue++;
-        Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+        #if UNITY_EDITOR
+            Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+        #endif
         allSpawnAreas[pos].SetActive(false);
         allSpawnAreas.Remove(pos);
     }

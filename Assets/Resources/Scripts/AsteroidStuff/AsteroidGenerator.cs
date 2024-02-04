@@ -288,7 +288,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateMesh()
     {
-        Debug.Log("Generating an asteroid mesh");
+        // Debug.Log("Generating an asteroid mesh");
         allVerts = new List<Vector3>();
         allTris = new List<int>();
         allNormals = new List<Vector3>();
@@ -430,14 +430,18 @@ public class AsteroidGenerator : MonoBehaviour
         {
             if (miner.GetComponent<Inventory>().addItem(mineralType, 1f, -1) != null)
             {
-                Debug.Log("Inventory full");
+                #if UNITY_EDITOR
+                    Debug.Log("Inventory full");
+                #endif
             }
         }
         else if (miner.transform.parent.GetComponent<Inventory>() != null)
         {
             if (miner.transform.parent.GetComponent<Inventory>().addItem(mineralType, 1f, -1) != null)
             {
-                Debug.Log("Inventory full");
+                #if UNITY_EDITOR
+                    Debug.Log("Inventory full");
+                #endif
             }
         }
 

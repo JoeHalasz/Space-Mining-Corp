@@ -67,7 +67,7 @@ public class WorldManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.F10))
         {
-            OffsetWorldBy(new Vector3(50000, 0, 0));
+            OffsetWorldBy(new Vector3(5000, 0, 0));
         }
 
     }

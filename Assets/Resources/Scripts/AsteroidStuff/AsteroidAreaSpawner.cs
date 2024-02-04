@@ -22,6 +22,8 @@ public class AsteroidAreaSpawner : MonoBehaviour
     AsteroidSpawnManager asteroidSpawnManager;
     AsteroidFieldGenerator asteroidFieldGenerator;
 
+    public Vector3 addedAtPos;
+
     void Start()
     {
         asteroidFieldGenerator = gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>();
@@ -54,7 +56,7 @@ public class AsteroidAreaSpawner : MonoBehaviour
         if (other.gameObject.tag == "AsteroidSpawnAreaDespawner")
         {
             insideDespawner = true;
-            // wait 1 second and if insideDespawner is still true then destroy the asteroid and this
+            // wait half a second and if insideDespawner is still true then destroy the asteroid and this
             StartCoroutine(waitAndDestroy());
         }
     }
@@ -62,24 +64,30 @@ public class AsteroidAreaSpawner : MonoBehaviour
     // wait and destory
     IEnumerator waitAndDestroy()
     {
-        yield return new WaitForSeconds(1);
+        // wait for half a second
+        yield return new WaitForSeconds(0.5f);
         if (insideDespawner)
         {
             destroyAsteroidAndThis();
         }
     }
 
-    void destroyAsteroidAndThis()
+    public void destroyAsteroidAndThis()
     {
         if (asteroidSpawnManager == null)
         {
             Debug.Log("Should not be here"); // can be here if its very very rare
             asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
         }
+        if (asteroidFieldGenerator == null)
+        {
+            Debug.Log("Should not be here"); // can be here if its very very rare
+            asteroidFieldGenerator = gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>();
+        }
         // destroy the asteroid that was spawned by this, then destroy this
         asteroidSpawnManager.destroyAsteroidAt(spawnedAsteroidPosition);
-        // delete the spawner from its parents list using removeSpawnAreaAt on the AsteroidFieldGenerator
-        asteroidFieldGenerator.removeSpawnAreaAt(transform.localPosition);
+        // delete the spawner from its parents list using remove Spawn Area At on the AsteroidFieldGenerator
+        asteroidFieldGenerator.removeSpawnAreaAt(addedAtPos);
     }
 
 }
