@@ -28,6 +28,10 @@ public class AsteroidSpawnManager : MonoBehaviour
     WorldManager worldManager;
     ItemManager itemManager;
     
+    GameObject player;
+    public bool loadingGame = false;
+
+    AsteroidFieldGenerator asteroidFieldGenerator;
 
     System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
     int seed;
@@ -59,7 +63,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     {
         // Destroy(allSpawnedAsteroids[pos]);
         allSpawnedAsteroids[pos].SetActive(false);
-        AsteroidGameObjectQueue.AddLast(allSpawnedAsteroids[pos]);
+        AsteroidGameObjectQueue.AddFirst(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;
         #if UNITY_EDITOR
             Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
@@ -145,6 +149,8 @@ public class AsteroidSpawnManager : MonoBehaviour
         itemManager = worldManagerObject.GetComponent<ItemManager>();
         minerals = worldManagerObject.GetComponent<Minerals>();
         asteroidPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/Asteroid") as GameObject;
+        asteroidFieldGenerator = gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>();
+        player = GameObject.Find("Player");
     }
 
     // should only be called once when the world is set up
@@ -157,6 +163,23 @@ public class AsteroidSpawnManager : MonoBehaviour
         IEnumerator coroutine = SpawnAsteroidFromQueue();
         StartCoroutine(coroutine);
         Debug.Log("Seed: " + seed);
+    }
+
+    public void LoadGame(HashSet<Vector3> newRemovedAsteroids, Dictionary<Vector3, List<List<int>>> newEditedAsteroids )
+    {
+        Debug.Log("Loading game");
+        loadingGame = true;
+        AsteroidPositionsSpawnQueue = new List<Vector3>();
+
+        // delete all asteroidAreas
+        asteroidFieldGenerator.destroyAllSpawnAreas();
+
+        allRemovedAsteroids = newRemovedAsteroids;
+        allEditedAsteroids = newEditedAsteroids;
+        
+        loadingGame = false;
+        // spawn the first area spawner near the players current pos
+        asteroidFieldGenerator.SpawnNewArea(player.transform.localPosition);
     }
 
     // this create all the asteroid presets
@@ -198,7 +221,7 @@ public class AsteroidSpawnManager : MonoBehaviour
             GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0,5,0), Quaternion.identity) as GameObject;
             newAsteroid.SetActive(false);
             newAsteroid.transform.SetParent(AllPregeneratedAsteroids[0].transform.parent, false);
-            AsteroidGameObjectQueue.AddLast(newAsteroid);
+            AsteroidGameObjectQueue.AddFirst(newAsteroid);
             numAsteroidsInQueue++;
         }
         watch.Stop();

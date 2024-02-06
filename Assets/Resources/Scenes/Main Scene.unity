@@ -5357,6 +5357,7 @@ MonoBehaviour:
   asteroidPrefab: {fileID: 4140343361690331378, guid: 0ef98c27a31240546a3fc8e263c19bad,
     type: 3}
   initialLoadFinished: 0
+  loadingGame: 0
 --- !u!1 &423864335 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8596226357925745049, guid: 25499599d3be7034886399dee37bf66c,
@@ -6473,6 +6474,7 @@ MonoBehaviour:
   height: 2500
   SpawnAsteroidField: 1
   minerals: {fileID: 0}
+  asteroidSpawnManager: {fileID: 0}
 --- !u!114 &508936030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12048,7 +12050,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6000, y: 6000, z: 6000}
+  m_LocalScale: {x: 600, y: 600, z: 600}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 495250638423853852}

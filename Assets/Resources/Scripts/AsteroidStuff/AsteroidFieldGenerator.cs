@@ -27,7 +27,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     public Minerals minerals;
 
-    AsteroidSpawnManager asteroidSpawnManager;
+    public AsteroidSpawnManager asteroidSpawnManager;
     WorldManager worldManager;
 
     LinkedList<GameObject> AsteroidAreaGameObjectQueue = new LinkedList<GameObject>();
@@ -42,6 +42,13 @@ public class AsteroidFieldGenerator : MonoBehaviour
         minerals = worldManagerObject.GetComponent<Minerals>();
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
 
+        // every second debug.log how many children this object has
+        // InvokeRepeating("DebugChildren", 1, 1);
+    }
+
+    public void StartAfterWorldManagerSetUp()
+    {
+        
         if (SpawnAsteroidField)
         {
             // load the prefabs
@@ -52,8 +59,20 @@ public class AsteroidFieldGenerator : MonoBehaviour
             SpawnNewArea(transform.localPosition);
         }
 
-        // every second debug.log how many children this object has
-        // InvokeRepeating("DebugChildren", 1, 1);
+    }
+
+    public void destroyAllSpawnAreas()
+    {
+        List<AsteroidAreaSpawner> allSpawnAreaScripts = new List<AsteroidAreaSpawner>();
+        foreach (KeyValuePair<Vector3, GameObject> kvp in allSpawnAreas)
+        {
+            allSpawnAreaScripts.Add(kvp.Value.GetComponent<AsteroidAreaSpawner>());
+        }
+
+        for (int i = 0; i < allSpawnAreaScripts.Count; i++)
+        {
+            allSpawnAreaScripts[i].destroyAsteroidAndThis();
+        }
     }
 
     void MakePregeneratedGameObjectsForAsteroidAreas()
@@ -66,7 +85,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
             GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, new Vector3(0,0,0), Quaternion.identity) as GameObject;
             newAsteroidArea.SetActive(false);
             newAsteroidArea.transform.SetParent(gameObject.transform, false);
-            AsteroidAreaGameObjectQueue.AddLast(newAsteroidArea);
+            AsteroidAreaGameObjectQueue.AddFirst(newAsteroidArea);
             numAreasInQueue++;
         }
         watch.Stop();
@@ -97,30 +116,16 @@ public class AsteroidFieldGenerator : MonoBehaviour
         }
     }
 
-    Vector3 makeSurePosIsOnGrid(Vector3 pos)
+    Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZRID
     {
         int xOffset = ((int)pos.x)%sizeOfPartitions;
-        if (xOffset != 0)
-        {
-            Debug.Log("xOffset is not 0");
-        }
         int yOffset = ((int)pos.y)%sizeOfPartitions;
-        if (yOffset != 0)
-        {
-            Debug.Log("yOffset is not 0");
-        }
         int zOffset = ((int)pos.z)%sizeOfPartitions;
-        if (zOffset != 0)
-        {
-            Debug.Log("zOffset is not 0");
-        }
         return new Vector3(((int)pos.x) - xOffset, ((int)pos.y) - yOffset, ((int)pos.z) - zOffset);
     }
 
-
-    void SpawnNewArea(Vector3 pos)
+    public void SpawnNewArea(Vector3 pos)
     {
-
         pos = makeSurePosIsOnGrid(pos);
 
         int negativeRad = -1 * radius;
@@ -136,7 +141,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         AsteroidAreaGameObjectQueue.RemoveFirst();
         numAreasInQueue--;
         #if UNITY_EDITOR
-            Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+            // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
         #endif        
         // set the parent to this object
         newAsteroidArea.transform.SetParent(gameObject.transform, false);
@@ -177,13 +182,12 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     }
 
-    // will return true if that pos still exists in the list, and false if it doesn't
     public void removeSpawnAreaAt(Vector3 pos)
     {
-        AsteroidAreaGameObjectQueue.AddLast(allSpawnAreas[pos]);
+        AsteroidAreaGameObjectQueue.AddFirst(allSpawnAreas[pos]);
         numAreasInQueue++;
         #if UNITY_EDITOR
-            Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+            // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
         #endif
         allSpawnAreas[pos].SetActive(false);
         allSpawnAreas.Remove(pos);

@@ -23,14 +23,14 @@ public class AsteroidAreaSpawner : MonoBehaviour
     void Start()
     {
         asteroidFieldGenerator = gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>();
+        asteroidSpawnManager = asteroidFieldGenerator.asteroidSpawnManager;
     }
 
     public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager)
     {   
         this.asteroidSpawnManager = asteroidSpawnManager;
-        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + (transform.localPosition.x*10 + transform.localPosition.y*100 + transform.localPosition.z*1000))));
+        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + ((int)transform.localPosition.x*10 + (int)transform.localPosition.y*100 + (int)transform.localPosition.z*1000))));
         spawnedAsteroidPosition = new Vector3((int)Random.Range(-1 * radius, radius), (int)Random.Range(-1 * height, height), (int)Random.Range(-1 * radius, radius)) + transform.localPosition;
-        // spawnedAsteroidPosition = transform.localPosition;
         asteroidSpawnManager.AddToQueue(spawnedAsteroidPosition);
     }
 
@@ -52,8 +52,16 @@ public class AsteroidAreaSpawner : MonoBehaviour
         if (other.gameObject.tag == "AsteroidSpawnAreaDespawner")
         {
             insideDespawner = true;
-            // wait half a second and if insideDespawner is still true then destroy the asteroid and this
-            StartCoroutine(waitAndDestroy());
+            // if we are loading a game then destroy without delay
+            if (!asteroidSpawnManager.loadingGame)
+            {
+                // wait half a second and if insideDespawner is still true then destroy the asteroid and this
+                StartCoroutine(waitAndDestroy());
+            }
+            else
+            {
+                destroyAsteroidAndThis();
+            }
         }
     }
 

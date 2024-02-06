@@ -334,7 +334,6 @@ public class OpenInventoryUI : MonoBehaviour
             // make sure if we are holding something it goes back to where it came from
             if (heldItem != null)
             {
-                Debug.Log("Resetting because inv was closed");
                 // put the item back in its original spot
                 GetComponent<Inventory>().addItem(heldItem.item, heldItem.amount, lastPressedPos);
                 heldItem = null;

@@ -7,7 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public class WorldManager : MonoBehaviour
 {
-    int seed = 123456789;
+    int seed;
 
     public int getSeed() { return seed; }
     public void setSeed(int value) { seed = value; }
@@ -18,6 +18,7 @@ public class WorldManager : MonoBehaviour
     public Dictionary<Vector3, List<List<int>>> editedAsteroids = new Dictionary<Vector3, List<List<int>>>();
 
     AsteroidSpawnManager asteroidSpawnManager;
+    AsteroidFieldGenerator asteroidFieldGenerator;
 
     Vector3 currentWorldOffset = new Vector3(0, 0, 0);
     GameObject allMovableObjects;
@@ -37,12 +38,16 @@ public class WorldManager : MonoBehaviour
 
     void Start()
     {
+        seed = 123456789; // TODO delete this
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
+        asteroidFieldGenerator = GameObject.Find("AsteroidField").GetComponent<AsteroidFieldGenerator>();
         allMovableObjects = GameObject.Find("All Movable Objects");
         player = GameObject.FindGameObjectWithTag("Player");
-        // check the players pos every 30 seconds
-        InvokeRepeating("offsetWorldIfNecessary", 0, 3);
+        // check the players pos and offset if too far from the origin
+        InvokeRepeating("offsetWorldIfNecessary", 0, 5);
         asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
+        asteroidFieldGenerator.StartAfterWorldManagerSetUp();
+
     }
 
     void offsetWorldIfNecessary()
@@ -94,11 +99,16 @@ public class WorldManager : MonoBehaviour
         FileStream file = File.Create(filePath);
         if (File.Exists(filePath))
         {
-            Debug.Log("File created successfully");
+            #if UNITY_EDITOR
+                Debug.Log("File created successfully");
+            #endif
         }
         else
         {
-            Debug.Log("File creation failed");
+            #if UNITY_EDITOR
+                Debug.Log("File creation failed");
+            #endif
+            return;
         }
         // save the seed in binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -114,7 +124,9 @@ public class WorldManager : MonoBehaviour
         file.Close();
 
         watch.Stop();
-        Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
+        #if UNITY_EDITOR
+            Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
+        #endif  
 
     }
 
@@ -132,11 +144,15 @@ public class WorldManager : MonoBehaviour
         string filePath = "saves/" + name + ".dat";
         if (File.Exists(filePath))
         {
-            Debug.Log("File exists");
+            #if UNITY_EDITOR
+                Debug.Log("File exists");
+            #endif
         }
         else
         {
-            Debug.Log("File does not exist");
+            #if UNITY_EDITOR
+                Debug.Log("File does not exist");
+            #endif
             return;
         }
         FileStream file = File.Open(filePath, FileMode.Open);
@@ -153,12 +169,10 @@ public class WorldManager : MonoBehaviour
         loadAllAsteroidData(file);
         file.Close();
 
-        setRemovedAsteroids();
-        asteroidSpawnManager.reloadAllNonEditedAsteroids();
-        setEditedAsteroids();
-
         watch.Stop();
-        Debug.Log("Loaded game in " + watch.ElapsedMilliseconds + "ms");
+        #if UNITY_EDITOR
+            Debug.Log("Loaded game in " + watch.ElapsedMilliseconds + "ms");
+        #endif
     }
 
     // file stream is already open
@@ -419,28 +433,19 @@ public class WorldManager : MonoBehaviour
             // add the asteroid to the dictionary
             editedAsteroids.Add(pos, edits);
         }
+
+        asteroidSpawnManager.LoadGame(removedAsteroids, editedAsteroids);
         
     }
 
     void getRemovedAsteroids(){
         removedAsteroids = asteroidSpawnManager.getAllRemovedAsteroids();
     }
-    
-    void setRemovedAsteroids()
-    {
-        asteroidSpawnManager.setAllRemovedAsteroids(removedAsteroids);
-    }
 
     void getEditedAsteroids()
     {
         editedAsteroids = asteroidSpawnManager.getAllEditedAsteroids();
     }
-
-    void setEditedAsteroids()
-    {
-        asteroidSpawnManager.setAllEditedAsteroids(editedAsteroids);
-    }
-
 
     List<int> Vec3ToListInt(Vector3 vec)
     {
