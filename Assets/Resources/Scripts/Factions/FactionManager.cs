@@ -37,9 +37,8 @@ public class FactionManager : MonoBehaviour
         Player = GameObject.FindGameObjectWithTag("Player");
         playerStats = Player.GetComponent<PlayerStats>();
         CreateAllMissions c = new CreateAllMissions();
-        AllDefaultMissionsByLevel = c.CreateAllGameMissions();
-        minerals = new Minerals();
-        minerals.SetUp();
+        minerals = GameObject.Find("WorldManager").GetComponent<Minerals>();
+        AllDefaultMissionsByLevel = c.CreateAllGameMissions(minerals);
         MakeMissions();
     }
 

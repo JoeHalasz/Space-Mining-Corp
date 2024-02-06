@@ -11,11 +11,11 @@ public class OreRefinery : MonoBehaviour
     int waitFrames = 5;
     int count = 0;
 
-    Minerals minerals = new Minerals();
+    Minerals minerals;
     // Start is called before the first frame update
     void Start()
     {
-        minerals.SetUp();
+        minerals = GameObject.Find("WorldManager").GetComponent<Minerals>();
         inventory = GetComponent<Inventory>();
     }
 
@@ -36,10 +36,6 @@ public class OreRefinery : MonoBehaviour
             // loop through all the items and look for the word "Ore" in the name
             foreach (ItemPair item in allItems)
             {
-                if (item != null && item.item != null && item.item.getName().Contains("Ore") != null)
-                {
-
-                }
                 if (item != null && item.item != null && item.item.getName().Contains("Ore") && item.getAmount() >= 1)
                 {
                     Debug.Log(item.item.getName() + " is an ore");

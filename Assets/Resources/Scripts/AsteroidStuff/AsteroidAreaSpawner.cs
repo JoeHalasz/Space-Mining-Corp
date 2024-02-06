@@ -9,11 +9,7 @@ public class AsteroidAreaSpawner : MonoBehaviour
     public int radius;
     public int height;
 
-    bool done = false;
-
     Minerals minerals;
-
-    int total = 0;
 
     bool insideDespawner = true;
 

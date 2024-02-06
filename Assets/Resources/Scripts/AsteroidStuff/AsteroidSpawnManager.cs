@@ -6,7 +6,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 {
 
     List<Vector3> AsteroidPositionsSpawnQueue = new List<Vector3>();
-    Minerals minerals = new Minerals();
+    Minerals minerals;
     [SerializeField]
     GameObject asteroidPrefab;
     private bool lastEmptyCheck = true;
@@ -26,6 +26,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     int numAsteroidsInQueue = 0;
 
     WorldManager worldManager;
+    ItemManager itemManager;
     
 
     System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -139,8 +140,10 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     void Start()
     {
-        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
-        minerals.SetUp();
+        GameObject worldManagerObject = GameObject.Find("WorldManager");
+        worldManager = worldManagerObject.GetComponent<WorldManager>();
+        itemManager = worldManagerObject.GetComponent<ItemManager>();
+        minerals = worldManagerObject.GetComponent<Minerals>();
         asteroidPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/Asteroid") as GameObject;
     }
 
@@ -293,7 +296,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
 
         // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
-        newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
+        newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
 
         if (generate)
         {
@@ -348,7 +351,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         // make it a different mineral
         Item mineralType = minerals.GetMineralTypeFromPos(newAsteroid.transform.localPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
-        newAsteroid.GetComponent<Renderer>().materials = new Material[] { mineralType.getMaterial(), minerals.GetMineralByName("Stone").getMaterial() };
+        newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
         
         newAsteroid.GetComponent<AsteroidGenerator>().ApplyMesh();
         

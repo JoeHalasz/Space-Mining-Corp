@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 // these are the different types of materials that can be mined
-public class Minerals
+public class Minerals : MonoBehaviour
 {
     // list of all the minerals
     public Dictionary<string, Item> MineralsList = new Dictionary<string, Item>();
@@ -15,9 +15,11 @@ public class Minerals
 
     Dictionary<int, List<Item>> MineralGroups = new Dictionary<int, List<Item>>();
 
-    // Start is called before the first frame update
-    void Start()
+    ItemManager itemManager;
+
+    void Awake()
     {
+        itemManager = GameObject.Find("WorldManager").GetComponent<ItemManager>();
         SetUp();
     }
 
@@ -30,7 +32,13 @@ public class Minerals
         // get the mineral material with that name
         Material material = Resources.Load<Material>("Materials/Minerals/" + name);
 
-        newItem.SetUpItem(name, desc, density, sellValue, buyValue, stackable, maxStack, itemType, material, level, sprite);
+        if (itemManager.getMaterial(name) == null)
+        {
+            // first time setup for that item
+            itemManager.registerItem(name, material, sprite);
+        }
+
+        newItem.SetUpItem(name, desc, density, sellValue, buyValue, stackable, maxStack, itemType, level);
         return newItem;
     }
 
@@ -58,7 +66,7 @@ public class Minerals
         }
     }
 
-    public void SetUp()
+    void SetUp()
     {
         // light armor plating group 1 // white color
         MineralsList.Add("Titanium", SetupOneItem("Titanium", "refined tier 1 light armor materials", 4.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.white, 1));

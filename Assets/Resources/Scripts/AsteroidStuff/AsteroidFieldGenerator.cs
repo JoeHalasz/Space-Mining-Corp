@@ -37,10 +37,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        minerals = new Minerals();
-        minerals.SetUp();
-        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
-
+        GameObject worldManagerObject = GameObject.Find("WorldManager");
+        worldManager = worldManagerObject.GetComponent<WorldManager>();
+        minerals = worldManagerObject.GetComponent<Minerals>();
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
 
         if (SpawnAsteroidField)

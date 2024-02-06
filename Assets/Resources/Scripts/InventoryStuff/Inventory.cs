@@ -189,9 +189,13 @@ public class Inventory : MonoBehaviour
     public ItemPair addItem(Item item, float amount, int pos) // if pos is -1, add to first available slot
     {
         PrintInv();
+        
         // make a pair out of item
         ItemPair itemPair = new ItemPair(item, amount);
-        
+        if (item == null || item.getName() == "")
+        {
+            return itemPair;
+        }
         if (pos != -1)
         {
             if (totalInvSlots <= pos)

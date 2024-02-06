@@ -19,10 +19,12 @@ public class UIManager : MonoBehaviour
     PlayerMovement playerMovement;
 
     List<GameObject> shownMissions = new List<GameObject>();
+    ItemManager itemManager;
 
 
     void Start()
     {
+        itemManager = GameObject.Find("WorldManager").GetComponent<ItemManager>();
         missionPrefab = Resources.Load<GameObject>("Prefabs/UI/MissionUI");
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
         playerMovement = GetComponent<PlayerMovement>();
@@ -164,7 +166,7 @@ public class UIManager : MonoBehaviour
         {
             Transform image = newMission.transform.Find("Image" + x++);
             image.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-            image.GetComponent<UnityEngine.UI.Image>().sprite = itemPair.item.getSprite();
+            image.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(itemPair.item.getName());
             image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = "" + itemPair.getAmount();
         }
 

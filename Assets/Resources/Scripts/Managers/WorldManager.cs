@@ -106,9 +106,9 @@ public class WorldManager : MonoBehaviour
         // save the player data
         savePlayer(file);
         // save the ship data
-        //saveShip(file);
+        saveShip(file);
         // save all factions data
-        //saveFactions(file);
+        saveFactions(file);
         // save the asteroid data
         saveAllAsteroidData(file);
         file.Close();
@@ -146,9 +146,9 @@ public class WorldManager : MonoBehaviour
         // load the player data
         loadPlayer(file);
         // load the ship data
-        //loadShip(file);
+        loadShip(file);
         // save all factions data
-        //loadFactions(file);
+        loadFactions(file);
         // load the asteroid data
         loadAllAsteroidData(file);
         file.Close();
@@ -167,7 +167,7 @@ public class WorldManager : MonoBehaviour
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         BinaryFormatter bf = new BinaryFormatter();
         // save the players position and rotation
-        Vector3 playerPos = player.transform.position;
+        Vector3 playerPos = player.transform.localPosition;
         Vector3 playerRot = player.transform.rotation.eulerAngles;
         // save each float
         bf.Serialize(file, playerPos.x);
@@ -182,19 +182,13 @@ public class WorldManager : MonoBehaviour
         bf.Serialize(file, playerStats.getHealth());
         // save the players inventory
         Inventory playerInventory = player.GetComponent<Inventory>();
-        List<ItemPair> invenetory = playerInventory.getInventory();
-        // save the amount of items
-        bf.Serialize(file, invenetory.Count);
-        // save each item
-        foreach(ItemPair item in invenetory)
-        {
-            bf.Serialize(file, item);
-        }
+        List<ItemPair> inventory = playerInventory.getInventory();
+        bf.Serialize(file, inventory);
         // save the players missions
         MissionManager missionManager = player.GetComponent<MissionManager>();
         bf.Serialize(file, missionManager.GetMissions());
         // save the players ship
-        bf.Serialize(file, playerStats.playerCurrentShip);
+        bf.Serialize(file, playerStats.playerCurrentShip.name);
     }
      
     // file stream is already open
@@ -205,7 +199,7 @@ public class WorldManager : MonoBehaviour
         // load the players position and rotation float by float
         Vector3 playerPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
         Vector3 playerRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
-        player.transform.position = playerPos;
+        player.transform.localPosition = playerPos;
         player.transform.rotation = Quaternion.Euler(playerRot);
         // load the players credits
         playerStats.setCredits((float)bf.Deserialize(file));
@@ -213,27 +207,20 @@ public class WorldManager : MonoBehaviour
         playerStats.setHealth((float)bf.Deserialize(file));
         // load the players inventory
         Inventory playerInventory = player.GetComponent<Inventory>();
-        // load the amount of items
-        int numItems = (int)bf.Deserialize(file);
-        // load each item
-        List<ItemPair> inventory = new List<ItemPair>();
-        for (int i = 0; i < numItems; i++)
-        {
-            inventory.Add((ItemPair)bf.Deserialize(file));
-        }
+        // load the inventory
+        List<ItemPair> inventory = (List<ItemPair>)bf.Deserialize(file);
         playerInventory.setInventory(inventory);
-
         // load the players missions
         MissionManager missionManager = player.GetComponent<MissionManager>();
         missionManager.LoadMissions((List<Mission>)bf.Deserialize(file));
         // load the players ship
-        playerStats.playerCurrentShip = (GameObject)bf.Deserialize(file);
+        playerStats.playerCurrentShip = GameObject.Find((string)bf.Deserialize(file));
     }
     void saveShip(FileStream file)
     {
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         BinaryFormatter bf = new BinaryFormatter();
-        Vector3 shipPos = playerStats.playerCurrentShip.transform.position;
+        Vector3 shipPos = playerStats.playerCurrentShip.transform.localPosition;
         Vector3 shipRot = playerStats.playerCurrentShip.transform.rotation.eulerAngles;
         bf.Serialize(file, shipPos.x);
         bf.Serialize(file, shipPos.y);
@@ -268,17 +255,19 @@ public class WorldManager : MonoBehaviour
         BinaryFormatter bf = new BinaryFormatter();
         Vector3 shipPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
         Vector3 shipRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
-        playerStats.playerCurrentShip.transform.position = shipPos;
+        playerStats.playerCurrentShip.transform.localPosition = shipPos;
         playerStats.playerCurrentShip.transform.rotation = Quaternion.Euler(shipRot);
         Inventory shipInventory = playerStats.playerCurrentShip.GetComponent<Inventory>();
         shipInventory.setInventory((List<ItemPair>)bf.Deserialize(file));
         ShipManager shipManager = playerStats.playerCurrentShip.GetComponent<ShipManager>();
-        shipManager.loadState((float)bf.Deserialize(file), (float)bf.Deserialize(file), 
-            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+        shipManager.loadState(
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
+            (float)bf.Deserialize(file), (int)bf.Deserialize(file), (float)bf.Deserialize(file), 
             (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
             (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
             (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
-            (float)bf.Deserialize(file));
+            (float)bf.Deserialize(file)
+            );
         
     }
 

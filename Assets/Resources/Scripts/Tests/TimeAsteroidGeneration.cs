@@ -46,8 +46,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
         }
         allAsteroids.Clear();
 
-        minerals = new Minerals();
-        minerals.SetUp();
+        minerals = GameObject.Find("WorldManager").GetComponent<Minerals>();
 
         // make a grid of maxAsteroids
         for (int x = 0; x < maxAsteroidsX * spacing; x += spacing)

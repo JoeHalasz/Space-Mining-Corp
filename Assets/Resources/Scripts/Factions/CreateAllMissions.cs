@@ -6,11 +6,9 @@ public class CreateAllMissions
 {
 
     // this should create all the missions for the factions to take from
-    public Dictionary<int, List<Mission>> CreateAllGameMissions()
+    public Dictionary<int, List<Mission>> CreateAllGameMissions(Minerals minerals)
     {
         Dictionary<int, List<Mission>> AllMissionsByLevel = new Dictionary<int, List<Mission>>();
-        Minerals minerals = new Minerals();
-        minerals.SetUp();
         // for every mineral type, create a mission for it. Use GetMineralsInGroup
         for (int i = 0; i < 4; i++)
         {

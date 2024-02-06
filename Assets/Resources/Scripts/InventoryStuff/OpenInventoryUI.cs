@@ -39,6 +39,7 @@ public class OpenInventoryUI : MonoBehaviour
     int lastPressedPos = 0;
 
     GameObject player;
+    ItemManager itemManager;
 
     // Start is called before the first frame update
     void Start()
@@ -49,6 +50,7 @@ public class OpenInventoryUI : MonoBehaviour
         inventoryUIRight = GameObject.Find("RightInventory");
         inventoryUILeftBackground = GameObject.Find("LeftInventoryBackground");
         inventoryUIRightBackground = GameObject.Find("RightInventoryBackground");
+        itemManager = GameObject.Find("WorldManager").GetComponent<ItemManager>();
 
         if (this.gameObject.tag == "Player")
             IsOnPlayer = true;
@@ -316,7 +318,11 @@ public class OpenInventoryUI : MonoBehaviour
                 mousePos.z = 1;
                 heldItemSprite.transform.position = mousePos;
                 heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = heldItem.item.getSprite();
+                if (itemManager.getSprite(heldItem.item.getName()) == null)
+                {
+                    Debug.Log("here");
+                }
+                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
             }
             if (!Input.GetMouseButton(0))
             {
@@ -410,7 +416,11 @@ public class OpenInventoryUI : MonoBehaviour
             else
             {
                 Icons[i].GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-                Icons[i].GetComponent<UnityEngine.UI.Image>().sprite = allItems[i].item.getSprite();
+                if (itemManager.getSprite(allItems[i].item.getName()) == null)
+                {
+                    Debug.Log("here1");
+                }
+                Icons[i].GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(allItems[i].item.getName());
             }
         }
         if (heldItemSprite != null)

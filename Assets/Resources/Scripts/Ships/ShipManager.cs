@@ -45,7 +45,7 @@ public class ShipManager : MonoBehaviour
 
     // used for loading the game
 
-    public void loadState( float energy, float maxEnergy, float maxFuel, float fuel, float health, 
+    public void loadState( float energy, float maxEnergy, float maxFuel, float fuel, int numCargoSlots, float health, 
                     float maxHealth, float forwardSpeed, float reverseSpeed, float verticalTurnSpeed, 
                     float horizontalTurnSpeed, float strafeSpeed, float shield, float maxShield, 
                     float shieldRegen, float shieldDelay )
@@ -54,6 +54,7 @@ public class ShipManager : MonoBehaviour
         this.maxEnergy = maxEnergy;
         this.maxFuel = maxFuel;
         this.fuel = fuel;
+        this.numCargoSlots = numCargoSlots;
         this.health = health;
         this.maxHealth = maxHealth;
         this.forwardSpeed = forwardSpeed;

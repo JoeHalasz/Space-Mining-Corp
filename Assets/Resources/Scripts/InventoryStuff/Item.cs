@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class Item
 {
-    
+    [System.Serializable]
     public enum ItemType
     {
         Weapon,
@@ -24,12 +24,10 @@ public class Item
     float buyValue;
     bool stackable;
     int maxStack;
-    ItemType type;
-    Material material;
+    int type;
     int level;
-    Sprite sprite;
 
-    public void SetUpItem(string name, string description, float density, float sellValue, float buyValue, bool stackable, int maxStack, ItemType type, Material material, int level, Sprite sprite)
+    public void SetUpItem(string name, string description, float density, float sellValue, float buyValue, bool stackable, int maxStack, ItemType type, int level)
     {
         this.Name = name;
         this.description = description;
@@ -38,10 +36,8 @@ public class Item
         this.buyValue = buyValue;
         this.stackable = stackable;
         this.maxStack = maxStack;
-        this.type = type;
-        this.material = material;
+        this.type = (int)type;
         this.level = level;
-        this.sprite = sprite;
     }
 
     public string getName()        { return Name; }
@@ -51,10 +47,7 @@ public class Item
     public float getBuyValue()     { return buyValue; }
     public bool getStackable()     { return stackable; }
     public int getMaxStack()       { return maxStack; }
-    public ItemType getType()      { return type; }
-    public Material getMaterial()  { return material; }
+    public ItemType getType()      { return (ItemType)type; }
     public int getLevel()          { return level; }
-    public Sprite getSprite()      { return sprite; }
-
 
 }
