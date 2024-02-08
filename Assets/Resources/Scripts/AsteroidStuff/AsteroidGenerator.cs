@@ -16,7 +16,6 @@ public class AsteroidGenerator : MonoBehaviour
     ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
 
     public List<Vector3> points = new List<Vector3>();
-    public List<Vector3> outsidePoints = new List<Vector3>();
     public IDictionary<Vector3, int> pointColors = new Dictionary<Vector3, int>();
 
     public IDictionary<Vector3, List<Vector3>> pointToCubes = new Dictionary<Vector3, List<Vector3>>();
@@ -28,6 +27,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     public IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
 
+    public List<List<int>> outsideCubePointIndecies = new List<List<int>>();
     public List<List<int>> cubesPointIndecies = new List<List<int>>();
     public List<List<int>> originalCubesPointIndecies = new List<List<int>>();
     public List<Vector3> allVerts;
@@ -37,6 +37,8 @@ public class AsteroidGenerator : MonoBehaviour
     public AsteroidSpawnManager asteroidSpawnManager;
 
     Vector3 originalPosition;
+
+    bool edited = false;
 
     IDictionary<T1, T2> copyIDict<T1, T2>(IDictionary<T1, T2> oldDict) { 
         // return a copy of the IDict
@@ -56,15 +58,14 @@ public class AsteroidGenerator : MonoBehaviour
     }
 
     // function takes in all the above variables and sets them in this script
-    public bool copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, List<Vector3> _outsidePoints, IDictionary<Vector3, int> _pointColors,
+    public bool copyAll(Item _mineralType, bool _isBig, List<Vector3> _points, IDictionary<Vector3, int> _pointColors,
                             IDictionary<Vector3, List<Vector3>> _pointToCubes, Mesh _mesh, float _increment, IDictionary<Vector3, int> _pointsSetPositions, 
-                            List<List<int>> _cubesPointIndecies, List<List<int>> _originalCubesPointIndecies,
+                            List<List<int>> _outsideCubePointIndecies, List<List<int>> _cubesPointIndecies, List<List<int>> _originalCubesPointIndecies,
                             List<Vector3> _allVerts, List<int> _allTris, List<Vector3> _allNormals, AsteroidSpawnManager _asteroidSpawnManager)
     {
         mineralType =           _mineralType;
         isBig =                 _isBig;
         points =                new List<Vector3>(_points);
-        outsidePoints =         new List<Vector3>(_outsidePoints);
         pointColors =           copyIDict(_pointColors);
         pointToCubes =          copyIDict(_pointToCubes);
         Destroy(mesh);
@@ -73,6 +74,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
         increment =             _increment;
         pointsSetPositions =    copyIDict(_pointsSetPositions);
+        outsideCubePointIndecies = copyListOfLists(_outsideCubePointIndecies);
         cubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
         originalCubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
         allVerts =              new List<Vector3>(_allVerts);
@@ -113,13 +115,16 @@ public class AsteroidGenerator : MonoBehaviour
 
         float maxDistance = Vector3.Distance(new Vector3(0, 0, 0), new Vector3(size, size, size));
 
+        Dictionary<int, List<List<int>>> cubePointIndeciesDistances = new Dictionary<int, List<List<int>>>();
+        Dictionary<List<Vector3>, int> cubeDistances = new Dictionary<List<Vector3>, int>();
+        
+        int count = 0;
         for (float x = -size; x < size; x += increment)
         {
             for (float y = -size; y < size; y += increment)
             {
                 for (float z = -size; z < size; z += increment)
                 {
-
                     //calculate the distance from the center of the asteroid
                     float distance = Vector3.Distance(new Vector3(0,0,0), new Vector3(x, y, z));
 
@@ -149,6 +154,7 @@ public class AsteroidGenerator : MonoBehaviour
                                 {
                                     pointsSetPositions.Add(point, points.Count);
                                     points.Add(point);
+                                    count += 1;
                                 }
                                 newCubePointIndecies.Add(pointsSetPositions[point]);
                             }
@@ -157,11 +163,58 @@ public class AsteroidGenerator : MonoBehaviour
                         {
                             cubesPointIndecies.Add(newCubePointIndecies);
                             originalCubesPointIndecies.Add(newCubePointIndecies);
+                            if(!cubePointIndeciesDistances.ContainsKey((int)distance))
+                            {
+                                cubePointIndeciesDistances.Add((int)distance, new List<List<int>>());
+                            }
+                            cubePointIndeciesDistances[(int)distance].Add(newCubePointIndecies);
                         }
                     }
                 }
             }
         }
+        
+        // {
+        //     List<Color> layerColors = new List<Color>();
+        //     layerColors.Add(Color.white);
+        //     layerColors.Add(Color.red);
+        //     layerColors.Add(Color.yellow);
+        //     layerColors.Add(Color.green);
+        //     layerColors.Add(Color.blue);
+        //     layerColors.Add(Color.black);
+
+        //     // generate a small game object at each point with a different color for each layer
+        //     int c = 0;
+        //     foreach (KeyValuePair<float, List<Vector3>> kvp in pointsDistLayers)
+        //     {
+        //         c++;
+        //         for (int i = 0; i < kvp.Value.Count;i++)
+        //         {
+        //             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //             cube.transform.localPosition = kvp.Value[i] + new Vector3(0,10,0f);
+        //             cube.transform.localScale = new Vector3(.1f, .1f, .1f);
+        //             cube.GetComponent<Renderer>().material.color = layerColors[c%5];
+        //         }
+        //     }
+        // }
+        
+        // find the 2 furthest layers
+        int furthest = 0;
+        int furthest2 = 0;
+        foreach (KeyValuePair<int, List<List<int>>> kvp in cubePointIndeciesDistances)
+        {
+            if (kvp.Key > furthest)
+            {
+                furthest2 = furthest;
+                furthest = kvp.Key;
+            }
+            else if (kvp.Key > furthest2)
+            {
+                furthest2 = kvp.Key;
+            }
+        }
+        outsideCubePointIndecies.AddRange(cubePointIndeciesDistances[furthest]);
+        outsideCubePointIndecies.AddRange(cubePointIndeciesDistances[furthest2]);
 
         float addRandomness = inbetweenPointSize;
 
@@ -293,8 +346,14 @@ public class AsteroidGenerator : MonoBehaviour
         allTris = new List<int>();
         allNormals = new List<Vector3>();
 
-        GenerateVertsTrisAndNormalsForList(cubesPointIndecies);
-
+        if (!edited)
+        {
+            GenerateVertsTrisAndNormalsForList(outsideCubePointIndecies);
+        }
+        else
+        {
+            GenerateVertsTrisAndNormalsForList(cubesPointIndecies);
+        }
         Color[] colors = new Color[allVerts.Count];
 
         // create the mesh
@@ -423,6 +482,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)
     {
+        edited = true;
         RemoveCubesClosestToRay(ray, hit);
 
         // if the miner or the miners parent has an inventory then add the mineral to the inventory
@@ -563,8 +623,10 @@ public class AsteroidGenerator : MonoBehaviour
 
     }
 
+    // this should only happen when loading the game
     public void setIndecies(List<List<int>> AllIndecies)
     {
+        edited = true;
         cubesPointIndecies = new List<List<int>>();
         foreach (List<int> indecies in AllIndecies)
         {

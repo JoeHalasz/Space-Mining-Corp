@@ -47,7 +47,6 @@ public class WorldManager : MonoBehaviour
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
         asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
         asteroidFieldGenerator.StartAfterWorldManagerSetUp();
-
     }
 
     void offsetWorldIfNecessary()

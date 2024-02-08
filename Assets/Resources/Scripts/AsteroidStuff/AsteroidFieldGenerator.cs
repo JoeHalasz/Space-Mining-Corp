@@ -116,7 +116,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         }
     }
 
-    Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZRID
+    Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZMOD
     {
         int xOffset = ((int)pos.x)%sizeOfPartitions;
         int yOffset = ((int)pos.y)%sizeOfPartitions;

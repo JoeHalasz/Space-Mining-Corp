@@ -51,7 +51,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
         // make a grid of maxAsteroids
         for (int x = 0; x < maxAsteroidsX * spacing; x += spacing)
         {
-            for (int y = 0; y < maxAsteroidsY * spacing; y += spacing)
+            for (int y = 10; y < (maxAsteroidsY * spacing) + 10; y += spacing)
             {
                 for (int z = 0; z < maxAsteroidsZ * spacing; z += spacing)
                 {
