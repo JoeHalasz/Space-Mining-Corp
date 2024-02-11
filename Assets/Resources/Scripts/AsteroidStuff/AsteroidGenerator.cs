@@ -42,6 +42,7 @@ public class AsteroidGenerator : MonoBehaviour
     }
 
     // function takes in all the above variables and sets them in this script
+    // TODO make this pass by ref the other asteroid generator
     public bool copyAll(    Item _mineralType, Item _stone, List<Vector3> _points, List<List<int>> _oreCubes, Mesh _mesh, 
                             List<List<int>> _outsideCubePointIndecies, List<List<int>> _cubesPointIndecies, 
                             List<List<int>> _originalCubesPointIndecies, List<Vector3> _allVerts, 
