@@ -312,11 +312,11 @@ public class AsteroidSpawnManager : MonoBehaviour
         // random mineral based on the world position
 
         Item mineralType = minerals.GetMineralTypeFromPos(position, isBig);
+        Item stone = minerals.GetMineralByName("Stone");
 
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
+        newAsteroid.GetComponent<AsteroidGenerator>().stone = stone;
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;
-
-        newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
 
         // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
@@ -361,10 +361,12 @@ public class AsteroidSpawnManager : MonoBehaviour
         
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
-        if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.oreCubes,
-                        o.mesh, o.increment, o.pointsSetPositions, o.outsideCubePointIndecies ,o.cubesPointIndecies, 
-                        o.originalCubesPointIndecies, o.allVerts, o.allTris, o.allNormals, gameObject.GetComponent<AsteroidSpawnManager>(),
-                        o.cubePointIndeciesDistances, o.size))
+        if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(
+                        o.mineralType, o.stone, o.points, o.oreCubes, o.mesh, 
+                        o.outsideCubePointIndecies ,o.cubesPointIndecies, 
+                        o.originalCubesPointIndecies, o.allVerts, 
+                        o.allTris, o.allNormals, 
+                        gameObject.GetComponent<AsteroidSpawnManager>(), o.size))
         {
             Debug.LogError("Failed to copy asteroid number" + asteroidNumber + " at " + position);
             Destroy(newAsteroid);

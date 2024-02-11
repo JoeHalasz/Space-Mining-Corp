@@ -88,15 +88,6 @@ public class TimeAsteroidGeneration : MonoBehaviour
         // add the asteroid to the parents asteroid field
         allAsteroids.Add(newAsteroid);
 
-        if (numAsteroids > (maxAsteroidsX * maxAsteroidsZ) / 2)
-        {
-            newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
-        }
-        else
-        {
-            newAsteroid.GetComponent<AsteroidGenerator>().increment = 1.1f;
-        }
-
         newAsteroid.GetComponent<AsteroidGenerator>().Generate();
     }
 
