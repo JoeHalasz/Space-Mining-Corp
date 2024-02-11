@@ -605,6 +605,9 @@ public class AsteroidGenerator : MonoBehaviour
                     float currentDistance = Vector3.Distance(rayPoint, closestCubeMidPoint + asteroidCurrentPosition);
                     if (currentDistance > lastClosestDist)
                     {
+                        // TODO remove this cube, save how close it got. dont return
+                        // stop when there are no cubes left
+                        // at the end loop through all the distances and return the cube with the closest one. 
                         List<int> lastClosestCopy = new List<int>(lastClosest);
                         // remove the last closest cube from cubePointIndecies
                         cubesPointIndecies.Remove(lastClosest);
