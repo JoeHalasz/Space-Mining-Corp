@@ -236,7 +236,7 @@ public class Minerals : MonoBehaviour
             values.Remove(randomPick);
         }
         
-        // return values[Random.Range(0, values.Count)];
+        return values[Random.Range(0, values.Count)];
 
         int zone = CalculateZone(WorldPos);
 

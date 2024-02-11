@@ -361,9 +361,10 @@ public class AsteroidSpawnManager : MonoBehaviour
         
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
-        if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.pointColors,
-                        o.pointToCubes, o.mesh, o.increment, o.pointsSetPositions, o.outsideCubePointIndecies ,o.cubesPointIndecies, 
-                        o.originalCubesPointIndecies, o.allVerts, o.allTris, o.allNormals, gameObject.GetComponent<AsteroidSpawnManager>()))
+        if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(o.mineralType, o.isBig, o.points, o.oreCubes,
+                        o.mesh, o.increment, o.pointsSetPositions, o.outsideCubePointIndecies ,o.cubesPointIndecies, 
+                        o.originalCubesPointIndecies, o.allVerts, o.allTris, o.allNormals, gameObject.GetComponent<AsteroidSpawnManager>(),
+                        o.cubePointIndeciesDistances, o.size))
         {
             Debug.LogError("Failed to copy asteroid number" + asteroidNumber + " at " + position);
             Destroy(newAsteroid);
