@@ -42,29 +42,23 @@ public class AsteroidGenerator : MonoBehaviour
     }
 
     // function takes in all the above variables and sets them in this script
-    // TODO make this pass by ref the other asteroid generator
-    public bool copyAll(    Item _mineralType, Item _stone, List<Vector3> _points, List<List<int>> _oreCubes, Mesh _mesh, 
-                            List<List<int>> _outsideCubePointIndecies, List<List<int>> _cubesPointIndecies, 
-                            List<List<int>> _originalCubesPointIndecies, List<Vector3> _allVerts, 
-                            List<int> _allTris, List<Vector3> _allNormals, 
-                            AsteroidSpawnManager _asteroidSpawnManager, float _size)
+    public bool copyAll(ref AsteroidGenerator other, AsteroidSpawnManager _asteroidSpawnManager)
     {
-        mineralType =           _mineralType;
-        stone = _stone;
-        points =                new List<Vector3>(_points);
-        oreCubes =              _oreCubes;
+        mineralType =           other.mineralType;
+        stone = other.stone;
+        points =                new List<Vector3>(other.points);
+        oreCubes =              other.oreCubes;
         Destroy(mesh);
-        if (_mesh != null){
-            mesh =              (Mesh)Instantiate(_mesh);
+        if (other.mesh != null){
+            mesh =              (Mesh)Instantiate(other.mesh);
         }
-        outsideCubePointIndecies = copyListOfLists(_outsideCubePointIndecies);
-        cubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
-        originalCubesPointIndecies =    copyListOfLists(_originalCubesPointIndecies);
-        allVerts =              new List<Vector3>(_allVerts);
-        allTris =               new List<int>(_allTris);
-        allNormals =            new List<Vector3>(_allNormals);
+        outsideCubePointIndecies = copyListOfLists(other.outsideCubePointIndecies);
+        cubesPointIndecies =    copyListOfLists(other.originalCubesPointIndecies);
+        originalCubesPointIndecies =    copyListOfLists(other.originalCubesPointIndecies);
+        allVerts =              new List<Vector3>(other.allVerts);
+        allTris =               new List<int>(other.allTris);
+        allNormals =            new List<Vector3>(other.allNormals);
         asteroidSpawnManager = _asteroidSpawnManager;
-        size = _size;
         if (mesh == null)
             return false;
         return true;
