@@ -321,7 +321,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
 
         // create the mesh
-        mesh = new Mesh(); // TODO just use the old mesh
+        mesh = new Mesh(); // TODO just use the old mesh if mesh isnt null
         mesh.vertices = allVerts.ToArray();
 
         // create a submesh for the ore material
