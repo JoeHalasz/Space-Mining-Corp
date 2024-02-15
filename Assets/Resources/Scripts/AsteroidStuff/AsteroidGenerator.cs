@@ -44,11 +44,12 @@ public class AsteroidGenerator : MonoBehaviour
     // function takes in all the above variables and sets them in this script
     public bool copyAll(ref AsteroidGenerator other, AsteroidSpawnManager _asteroidSpawnManager)
     {
+        // TODO dont copy anything. use the ref and only copy when the asteroid is mined
         mineralType =           other.mineralType;
         stone = other.stone;
         points =                new List<Vector3>(other.points);
         oreCubes =              other.oreCubes;
-        Destroy(mesh);
+        Destroy(mesh); // TODO dont destroy the mesh, just copy the old one over and only use new if we havent created a new one ever for this asteroid
         if (other.mesh != null){
             mesh =              (Mesh)Instantiate(other.mesh);
         }
@@ -302,6 +303,8 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateMesh()
     {
+        // TODO add check so that if we are ever here, we arent using copied asteroids refs anymore
+        // TODO put a print in that check and make sure it doesnt happen other than the 200 genersted asteroids, and on first mine
         // Debug.Log("Generating an asteroid mesh");
         allVerts = new List<Vector3>();
         allTris = new List<int>();
