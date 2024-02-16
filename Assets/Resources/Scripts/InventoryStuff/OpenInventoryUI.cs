@@ -313,16 +313,15 @@ public class OpenInventoryUI : MonoBehaviour
             }
             if (heldItem != null && heldItemSprite != null)
             {
-                // set its position to the mouse position
-                Vector3 mousePos = Input.mousePosition;
-                mousePos.z = 1;
-                heldItemSprite.transform.position = mousePos;
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-                if (itemManager.getSprite(heldItem.item.getName()) == null)
+                if (itemManager.getSprite(heldItem.item.getName()) != null)
                 {
-                    Debug.Log("here");
+                    // set its position to the mouse position
+                    Vector3 mousePos = Input.mousePosition;
+                    mousePos.z = 1;
+                    heldItemSprite.transform.position = mousePos;
+                    heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+                    heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
                 }
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
             }
             if (!Input.GetMouseButton(0))
             {

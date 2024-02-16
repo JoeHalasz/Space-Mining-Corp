@@ -188,8 +188,9 @@ public class Inventory : MonoBehaviour
     // will return the leftover
     public ItemPair addItem(Item item, float amount, int pos) // if pos is -1, add to first available slot
     {
-        PrintInv();
-        
+        #if UNITY_EDITOR
+            //PrintInv();
+        #endif       
         // make a pair out of item
         ItemPair itemPair = new ItemPair(item, amount);
         if (item == null || item.getName() == "")

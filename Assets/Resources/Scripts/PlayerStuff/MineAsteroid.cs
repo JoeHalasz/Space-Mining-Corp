@@ -7,14 +7,24 @@ public class MineAsteroid : MonoBehaviour
     UIManager uiManager;
 
     // variable that saves the last time something was mined
-    float lastMineTime = 0;
     bool held = false;
 
     public float maxDistOfRay = 8f;
+    public float mineDelayStart = .5f;
+    public float mineDelayMin = .3f;
+    public float mineDelayDelta = .025f;
+    float currentMineDelay;
+    float mineDelayTimeout = .5f;
+
+    float lastTimeMined = 0;
+    float lastTimeAttemptedMine = 0;
 
     void Start()
     {
         uiManager = GetComponent<UIManager>();
+        currentMineDelay = mineDelayStart;
+        lastTimeMined = Time.time;
+        lastTimeAttemptedMine = Time.time;
     }
 
 
@@ -38,15 +48,14 @@ public class MineAsteroid : MonoBehaviour
 
     void tryMine()
     {
-        
         // get the current time
         float currentTime = Time.time;
-        // if it has been .2 seconds
-        if (currentTime - lastMineTime > .2f)
+        // if it has been currentMineDelay seconds
+        if (currentTime - lastTimeMined > currentMineDelay)
         {
             if (!uiManager.getUIOpen())
             {
-                lastMineTime = currentTime;
+                lastTimeAttemptedMine = Time.time;
                 // cast a ray that stops at the first object it hits
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -58,11 +67,27 @@ public class MineAsteroid : MonoBehaviour
                     {
                         if (hit.transform.GetComponent<AsteroidGenerator>() == null)
                             Destroy(hit.transform.gameObject);
-                        else
+                        else{
                             hit.transform.GetComponent<AsteroidGenerator>().MineAsteroid(transform.gameObject, ray, hit, ray.direction, 5);
+                            if (currentMineDelay > mineDelayMin)
+                            {
+                                currentMineDelay -= mineDelayDelta;
+                            }
+                            lastTimeMined = Time.time;
+                            Invoke("resetMineDelay", mineDelayTimeout);
+                        }
                     }
                 }
             }
+        }
+    }
+
+    void resetMineDelay()
+    {
+        float currentTime = Time.time;
+        if (currentTime - lastTimeAttemptedMine >= mineDelayTimeout)
+        {
+            currentMineDelay = mineDelayStart;
         }
     }
 }
