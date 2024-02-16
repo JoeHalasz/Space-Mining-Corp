@@ -308,6 +308,11 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
+    void OnDestroy()
+    {
+        unloadAsteroid();
+    }
+
     public void unloadAsteroid()
     {
         if (newMeshCreated)

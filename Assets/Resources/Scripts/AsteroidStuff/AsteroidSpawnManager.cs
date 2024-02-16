@@ -67,7 +67,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         AsteroidGameObjectQueue.AddFirst(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;
         #if UNITY_EDITOR
-            Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
+            // Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
         #endif
         allSpawnedAsteroids.Remove(pos);
         

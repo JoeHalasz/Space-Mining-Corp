@@ -174,7 +174,6 @@ using UnityEngine;
         ///   Edge0 and Edge1 are the vertexes of edge in CCW order, Face is the
         ///   face on the other side of the horizon.
         ///
-        ///   TODO Edge1 isn't actually needed, you can just index the next item
         ///   in the horizon array.
         /// </summary>
         struct HorizonEdge
@@ -204,7 +203,6 @@ using UnityEngine;
         ///   list is fairly fast, and it might be worth it to avoid Dictionary
         ///   overhead.
         ///
-        ///   TODO test converting to a List<Face> instead.
         /// </summary>
         Dictionary<int, Face> faces;
 
@@ -584,7 +582,6 @@ using UnityEngine;
         /// </summary>
         void FindHorizon(List<Vector3> points, Vector3 point, int fi, Face face)
         {
-            // TODO should I use epsilon in the PointFaceDistance comparisons?
 
             litFaces.Clear();
             horizon.Clear();
@@ -920,8 +917,6 @@ using UnityEngine;
     ///   Final step in algorithm, export the faces of the convex hull in a
     ///   mesh-friendly format.
     ///
-    ///   TODO normals calculation for non-split vertices. Right now it just
-    ///   leaves the normal array empty.
     /// </summary>
     void ExportMesh(
             List<Vector3> points,
