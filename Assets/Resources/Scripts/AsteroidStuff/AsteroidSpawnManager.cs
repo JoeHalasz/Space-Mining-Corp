@@ -62,6 +62,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     private void destroyAsteroid(Vector3 pos)
     {
         // Destroy(allSpawnedAsteroids[pos]);
+        allSpawnedAsteroids[pos].GetComponent<AsteroidGenerator>().unloadAsteroid(); // should free the memory taken by mesh creation
         allSpawnedAsteroids[pos].SetActive(false);
         AsteroidGameObjectQueue.AddFirst(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;

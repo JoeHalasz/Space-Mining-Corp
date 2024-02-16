@@ -10,6 +10,8 @@ public class MineAsteroid : MonoBehaviour
     float lastMineTime = 0;
     bool held = false;
 
+    public float maxDistOfRay = 8f;
+
     void Start()
     {
         uiManager = GetComponent<UIManager>();
@@ -51,8 +53,8 @@ public class MineAsteroid : MonoBehaviour
 
                 if (Physics.Raycast(ray, out hit))
                 {
-                    // if the ray hits an astroid within 10 units then mine it
-                    if (hit.distance < 20 && hit.collider.tag == "Asteroid")
+                    // if the ray hits an astroid within 8 units then mine it
+                    if (hit.distance < maxDistOfRay && hit.collider.tag == "Asteroid")
                     {
                         if (hit.transform.GetComponent<AsteroidGenerator>() == null)
                             Destroy(hit.transform.gameObject);

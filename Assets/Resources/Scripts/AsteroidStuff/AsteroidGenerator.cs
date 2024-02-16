@@ -16,6 +16,7 @@ public class AsteroidGenerator : MonoBehaviour
     public List<Vector3> points = new List<Vector3>();
     public List<List<int>> oreCubes = new List<List<int>>();
     public Mesh mesh;
+    public Mesh originalMesh;
     IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
     public List<List<int>> outsideCubePointIndecies = new List<List<int>>();
     public List<List<int>> cubesPointIndecies = new List<List<int>>();
@@ -28,6 +29,7 @@ public class AsteroidGenerator : MonoBehaviour
     Vector3 originalPosition;
 
     bool edited = false;
+    bool newMeshCreated = false;
 
     void Start()
     {
@@ -44,24 +46,24 @@ public class AsteroidGenerator : MonoBehaviour
     // function takes in all the above variables and sets them in this script
     public bool copyAll(ref AsteroidGenerator other, AsteroidSpawnManager _asteroidSpawnManager)
     {
-        // TODO dont copy anything. use the ref and only copy when the asteroid is mined
-        mineralType =           other.mineralType;
-        stone = other.stone;
-        points =                new List<Vector3>(other.points);
-        oreCubes =              other.oreCubes;
-        Destroy(mesh); // TODO dont destroy the mesh, just copy the old one over and only use new if we havent created a new one ever for this asteroid
-        if (other.mesh != null){
-            mesh =              (Mesh)Instantiate(other.mesh);
-        }
-        outsideCubePointIndecies = copyListOfLists(other.outsideCubePointIndecies);
-        cubesPointIndecies =    copyListOfLists(other.originalCubesPointIndecies);
-        originalCubesPointIndecies =    copyListOfLists(other.originalCubesPointIndecies);
-        allVerts =              new List<Vector3>(other.allVerts);
-        allTris =               new List<int>(other.allTris);
-        allNormals =            new List<Vector3>(other.allNormals);
-        asteroidSpawnManager = _asteroidSpawnManager;
-        if (mesh == null)
+        mineralType =               other.mineralType;
+        stone =                     other.stone;
+        points =                    other.points;
+        oreCubes =                  other.oreCubes;
+        originalMesh =              other.originalMesh;
+        outsideCubePointIndecies =  other.outsideCubePointIndecies;
+        cubesPointIndecies =        copyListOfLists(other.originalCubesPointIndecies);
+        originalCubesPointIndecies= other.originalCubesPointIndecies;
+        allVerts =                  new List<Vector3>(other.allVerts); // need to copy these so that we dont have a ref problem
+        allTris =                   new List<int>(other.allTris);
+        allNormals =                new List<Vector3>(other.allNormals);
+        asteroidSpawnManager =      _asteroidSpawnManager;
+        if (originalMesh == null){
+            #if UNITY_EDITOR
+                Debug.Log("Failed to generate asteroid");
+            #endif
             return false;
+        }
         return true;
     }
 
@@ -72,6 +74,12 @@ public class AsteroidGenerator : MonoBehaviour
             GetComponent<MeshCollider>().sharedMesh = mesh;
             GetComponent<MeshFilter>().sharedMesh = mesh;
             mesh.UploadMeshData(false);
+        }
+        else
+        {
+            GetComponent<MeshCollider>().sharedMesh = originalMesh;
+            GetComponent<MeshFilter>().sharedMesh = originalMesh;
+            originalMesh.UploadMeshData(false);
         }
     }
 
@@ -89,7 +97,6 @@ public class AsteroidGenerator : MonoBehaviour
 
     void GenerateAsteroid()
     {
-
         if (isBig)
         {
             AsteroidMinSize = 4;
@@ -217,7 +224,7 @@ public class AsteroidGenerator : MonoBehaviour
             }
         }
 
-        float addRandomness = increment/4f;
+        float addRandomness = increment/3f;
         // add some randomness to each point and give each point a color
         for (int i = 0; i < points.Count; i++)
         {
@@ -301,11 +308,29 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
+    public void unloadAsteroid()
+    {
+        if (newMeshCreated)
+        {
+            #if UNITY_EDITOR
+                Debug.Log("Freeing mesh memory");
+            #endif
+            Destroy(mesh);
+        }
+    }
+
     void GenerateMesh()
     {
-        // TODO add check so that if we are ever here, we arent using copied asteroids refs anymore
-        // TODO put a print in that check and make sure it doesnt happen other than the 200 genersted asteroids, and on first mine
-        // Debug.Log("Generating an asteroid mesh");
+        if (!newMeshCreated)
+        {
+            mesh = new Mesh();
+            newMeshCreated = true;
+        }
+        else
+        {
+            Destroy(mesh);
+            mesh = new Mesh();
+        }
         allVerts = new List<Vector3>();
         allTris = new List<int>();
         allNormals = new List<Vector3>();
@@ -323,8 +348,6 @@ public class AsteroidGenerator : MonoBehaviour
             GenerateVertsTrisAndNormalsForList(cubesPointIndecies, ref oreTris, ref otherTris);
         }
 
-        // create the mesh
-        mesh = new Mesh(); // TODO just use the old mesh if mesh isnt null
         mesh.vertices = allVerts.ToArray();
 
         // create a submesh for the ore material
@@ -341,10 +364,13 @@ public class AsteroidGenerator : MonoBehaviour
         mesh.uv = CalculateUVs(allVerts.ToArray(), 1);
         
         // destroy the old mesh
-        Destroy(GetComponent<MeshCollider>().sharedMesh);
         GetComponent<MeshCollider>().sharedMesh = mesh;
         GetComponent<MeshFilter>().sharedMesh = mesh;
         mesh.UploadMeshData(false);
+        if (originalMesh == null)
+        {
+            originalMesh = Instantiate(mesh);
+        }
     }
 
     private enum Facing { Up, Forward, Right };
@@ -426,6 +452,10 @@ public class AsteroidGenerator : MonoBehaviour
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)
     {
+        if (!edited)
+        {
+            cubesPointIndecies = copyListOfLists(cubesPointIndecies);
+        }
         edited = true;
         List<int> removedCube = RemoveCubesClosestToRay(ray, hit);
         // check if removedCube is in oreCubes
@@ -479,7 +509,6 @@ public class AsteroidGenerator : MonoBehaviour
         float closestDistance = Mathf.Infinity;
         List<int> closestCube = new List<int>();
         Vector3 asteroidCurrentPosition = transform.position;
-
         // loop through all cubes
         foreach (List<int> cube in cubesPointIndecies)
         {
@@ -499,89 +528,116 @@ public class AsteroidGenerator : MonoBehaviour
                 closestCube = cube;
             }
         }
-
         // this should be a list of all the cubes that could be the best cube to remove
         List<List<int>> closestCubes = new List<List<int>>();
+        List<Vector3> closestCubesMidpoints = new List<Vector3>();
         // get all the cubes that contain one of the points in the closest cube
-        foreach (List<int> cube in cubesPointIndecies)
+        for (int i = 0; i < cubesPointIndecies.Count; i++)
         {
+            List<int> cube = cubesPointIndecies[i];
             foreach (int index in cube)
             {
                 if (closestCube.Contains(index))
                 {
                     closestCubes.Add(cube);
+                    closestCubesMidpoints.Add(new Vector3());
+                    foreach (int index2 in cube)
+                    {
+                        closestCubesMidpoints[closestCubes.Count-1] += points[index2];
+                    }
+                    closestCubesMidpoints[closestCubes.Count-1] /= cube.Count;
+                    closestCubesMidpoints[closestCubes.Count-1] += asteroidCurrentPosition;
                     break;
                 }
             }
         }
 
+        float closestDist = Mathf.Infinity;
+        // get the distances and pick the least. thats the closest cube
+        for (int i = 0; i < closestCubes.Count; i++)
+        {
+            float dist = Vector3.Distance(hit.point, closestCubesMidpoints[i]);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closestCube = closestCubes[i];
+            }
+        }
+        List<int> closestCubeCopy = new List<int>(closestCube);
+        // remove the last closest cube from cubePointIndecies
+        cubesPointIndecies.Remove(closestCube);
+        asteroidSpawnManager.setIndeciesForAsteroid(transform.localPosition, cubesPointIndecies);
+        return closestCube;
+
         
         // for each .2 meters on the ray, check to see if we are still getting closer to the closest cube midpoint
         // if we still are then keep going, if not then stop and remove the closest cube
-        Vector3 rayDirection = ray.direction;
-        Vector3 rayOrigin = ray.origin;
-        Vector3 rayPoint = rayOrigin;
-        Vector3 closestCubeMidPoint = Vector3.zero;
+        // Vector3 rayDirection = ray.direction;
+        // Vector3 rayOrigin = ray.origin;
+        // Vector3 rayPoint = rayOrigin;
+        // Vector3 closestCubeMidPoint = Vector3.zero;
         
-        float lastClosestDist = Mathf.Infinity;
-        List<int> lastClosest = new List<int>();
-        closestDistance = Mathf.Infinity;
-        List<int> currentClosest = new List<int>();
+        // float lastClosestDist = Mathf.Infinity;
+        // List<int> lastClosest = new List<int>();
+        // closestDistance = Mathf.Infinity;
+        // List<int> currentClosest = new List<int>();
 
-        int i = 0;
+        
+        // i = 0;
 
-        while (i++ < 5000)
-        {
-            //// make a small sphere at the rayPoint
-            //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //sphere.transform.localPosition = rayPoint;
-            //sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
-            //sphere.GetComponent<Renderer>().material.color = Color.red;
-            // loop through all the cubes and find the closest one
-            foreach (List<int> cube in closestCubes)
-            {
+        // while (i++ < 5000)
+        // {
+        //     //// make a small sphere at the rayPoint
+        //     //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //     //sphere.transform.localPosition = rayPoint;
+        //     //sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+        //     //sphere.GetComponent<Renderer>().material.color = Color.red;
+        //     // loop through all the cubes and find the closest one
+        //     for (int j = 0; j < closestCubes.Count; j++)
+        //     {
+        //         List<int> cube = closestCubes[j];
+        //         Vector3 cubeMidpoint = closestCubesMidpoints[j];
+        //         // if there is a currentClosest point
+        //         if (currentClosest.Count != 0)
+        //         {
+        //             // if the current distance to that closest point is greater than the last distance to the closest point
+        //             // then we have gone too far and should remove the last closest cube
+        //             float currentDistance = Vector3.Distance(rayPoint, closestCubeMidPoint + asteroidCurrentPosition);
+        //             if (currentDistance > lastClosestDist)
+        //             {
+        //                 // TODO remove this cube, save how close it got. dont return
+        //                 // stop when there are no cubes left
+        //                 // at the end loop through all the distances and return the cube with the closest one. 
+        //                 List<int> lastClosestCopy = new List<int>(lastClosest);
+        //                 // remove the last closest cube from cubePointIndecies
+        //                 cubesPointIndecies.Remove(lastClosest);
+        //                 asteroidSpawnManager.setIndeciesForAsteroid(transform.localPosition, cubesPointIndecies);
+        //                 return lastClosestCopy;
+        //             }
+        //         }
 
-                // if there is a currentClosest point
-                if (currentClosest.Count != 0)
-                {
-                    // if the current distance to that closest point is greater than the last distance to the closest point
-                    // then we have gone too far and should remove the last closest cube
-                    float currentDistance = Vector3.Distance(rayPoint, closestCubeMidPoint + asteroidCurrentPosition);
-                    if (currentDistance > lastClosestDist)
-                    {
-                        // TODO remove this cube, save how close it got. dont return
-                        // stop when there are no cubes left
-                        // at the end loop through all the distances and return the cube with the closest one. 
-                        List<int> lastClosestCopy = new List<int>(lastClosest);
-                        // remove the last closest cube from cubePointIndecies
-                        cubesPointIndecies.Remove(lastClosest);
-                        asteroidSpawnManager.setIndeciesForAsteroid(transform.localPosition, cubesPointIndecies);
-                        return lastClosestCopy;
-                    }
-                }
+        //         // find the midpoint of the cube
+        //         Vector3 midPoint = Vector3.zero;
+        //         foreach (int index in cube)
+        //         {
+        //             midPoint += points[index];
+        //         }
+        //         midPoint /= cube.Count;
+        //         // get the closest one to the hitpoint
+        //         float distance = Vector3.Distance(rayPoint, midPoint + asteroidCurrentPosition);
+        //         if (distance < closestDistance)
+        //         {
+        //             closestDistance = distance;
+        //             currentClosest = cube;
+        //             closestCubeMidPoint = midPoint;
+        //         }
+        //     }
 
-                // find the midpoint of the cube
-                Vector3 midPoint = Vector3.zero;
-                foreach (int index in cube)
-                {
-                    midPoint += points[index];
-                }
-                midPoint /= cube.Count;
-                // get the closest one to the hitpoint
-                float distance = Vector3.Distance(rayPoint, midPoint + asteroidCurrentPosition);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    currentClosest = cube;
-                    closestCubeMidPoint = midPoint;
-                }
-            }
-
-            lastClosest = currentClosest;
-            lastClosestDist = closestDistance;
-            rayPoint += rayDirection * .2f;
-        }
-        return new List<int>();
+        //     lastClosest = currentClosest;
+        //     lastClosestDist = closestDistance;
+        //     rayPoint += rayDirection * .2f;
+        // }
+        // return new List<int>();
     }
 
     // this should only happen when loading the game
