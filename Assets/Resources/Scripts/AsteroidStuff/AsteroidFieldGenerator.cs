@@ -77,7 +77,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     void MakePregeneratedGameObjectsForAsteroidAreas()
     {
-        int numToPregen = 5000;
+        int numToPregen = 20;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         for (int i = 0; i < numToPregen; i++)

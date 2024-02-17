@@ -188,7 +188,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     // the totalToPregen will be the amount of different asteroids there are in the world for that seed
     void MakePregeneratedAsteroids()
     {
-        int totalToPregen = 200;
+        int totalToPregen = 4;
         // time this
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
@@ -213,10 +213,11 @@ public class AsteroidSpawnManager : MonoBehaviour
     // this will create all the asteroid game objects to use when copying an asteroid
     void MakePregeneratedGameObjectsForAsteroids()
     {
-        int numToPregen = 5000;
+        int numToPregen = 20;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         GameObject fakeAsteroid = GenerateOneAsteroid(new Vector3(0, 0, 0), false, false);
+        fakeAsteroid.SetActive(false);
         for (int i = 0; i < numToPregen; i++)
         {
             GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0,5,0), Quaternion.identity) as GameObject;
@@ -294,7 +295,7 @@ public class AsteroidSpawnManager : MonoBehaviour
                 Debug.Log("Initial load took: " + stopwatch.ElapsedMilliseconds/1000f + "s");
             }
 
-            if (initialLoadFinished && AsteroidPositionsSpawnQueue.Count % 50 == 0)
+            if (initialLoadFinished && AsteroidPositionsSpawnQueue.Count % 1000 == 0)
                 // wait 7 frames
                 yield return 0;
             else if (AsteroidPositionsSpawnQueue.Count % 1000 == 0)
@@ -322,11 +323,11 @@ public class AsteroidSpawnManager : MonoBehaviour
         // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
 
+        newAsteroid.SetActive(false);
         if (generate)
         {
             newAsteroid.GetComponent<AsteroidGenerator>().Generate();    
         }
-        newAsteroid.SetActive(false);
         return newAsteroid;
     }
 
