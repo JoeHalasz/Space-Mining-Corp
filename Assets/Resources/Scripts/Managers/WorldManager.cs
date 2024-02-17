@@ -15,7 +15,7 @@ public class WorldManager : MonoBehaviour
     public HashSet<Vector3> removedAsteroids = new HashSet<Vector3>();
     
     // make a dictionary for all the edited asteroids where the key is Vector3 and the value is a list of edits
-    public Dictionary<Vector3, List<List<int>>> editedAsteroids = new Dictionary<Vector3, List<List<int>>>();
+    public Dictionary<Vector3, HashSet<int>> editedAsteroids = new Dictionary<Vector3, HashSet<int>>();
 
     AsteroidSpawnManager asteroidSpawnManager;
     AsteroidFieldGenerator asteroidFieldGenerator;
@@ -137,7 +137,7 @@ public class WorldManager : MonoBehaviour
 
         // clear the data we have
         removedAsteroids = new HashSet<Vector3>();
-        editedAsteroids = new Dictionary<Vector3, List<List<int>>>();
+        editedAsteroids = new Dictionary<Vector3, HashSet<int>>();
 
         // load a file under saves/{name}.dat
         string filePath = "saves/" + name + ".dat";
@@ -364,22 +364,15 @@ public class WorldManager : MonoBehaviour
         bf.Serialize(file, editedAsteroids.Count);
         List<int> bigList = new List<int>();
         // save the edited asteroids
-        foreach (KeyValuePair<Vector3, List<List<int>>> asteroid in editedAsteroids)
+        foreach (KeyValuePair<Vector3, HashSet<int>> asteroid in editedAsteroids)
         {
             List<int> pos = Vec3ToListInt(asteroid.Key);
             // add the pos to the big list
             bigList.AddRange(pos);
-            // add the number of edits to the big list
-            bigList.Add(asteroid.Value.Count);
-            
-            // add the edits to the big list
-            foreach (List<int> index in asteroid.Value)
-            {
-                // add the number of indecies to the big list
-                bigList.Add(index.Count);
-                // add the indecies to the big list
-                bigList.AddRange(index);
-            }
+            // make the hash set into a list and put it in the big list
+            List<int> edits = new List<int>(asteroid.Value);
+            bigList.Add(edits.Count);
+            bigList.AddRange(edits);
         }
         bf.Serialize(file, bigList);
         
@@ -416,20 +409,11 @@ public class WorldManager : MonoBehaviour
             int numEdits = bigList[count++];
 
             // get the edits
-            List<List<int>> edits = new List<List<int>>();
+            HashSet<int> edits = new HashSet<int>();
             for (int j = 0; j < numEdits; j++)
             {
-                // get the num indecies
-                int numIndecies = bigList[count++];
-                // get the indecies
-                List<int> indecies = new List<int>();
-                for (int k = 0; k < numIndecies; k++)
-                {
-                    indecies.Add(bigList[count++]);
-                }
-                edits.Add(indecies);
+                edits.Add(bigList[count++]);
             }
-            // add the asteroid to the dictionary
             editedAsteroids.Add(pos, edits);
         }
 

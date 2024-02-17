@@ -16,8 +16,8 @@ public class AsteroidSpawnManager : MonoBehaviour
     List<GameObject> AllPregeneratedBigAsteroids = new List<GameObject>();
     Dictionary<Vector3, GameObject> allSpawnedAsteroids = new Dictionary<Vector3, GameObject>();
     int totalDespawnedAsteroidsSinceLastUnload = 0;
-    Dictionary<Vector3, List<List<int>>> allEditedAsteroids = new Dictionary<Vector3, List<List<int>>>();
-    public Dictionary<Vector3, List<List<int>>> getAllEditedAsteroids() { return allEditedAsteroids; }
+    Dictionary<Vector3, HashSet<int>> allEditedAsteroids = new Dictionary<Vector3, HashSet<int>>();
+    public Dictionary<Vector3, HashSet<int>> getAllEditedAsteroids() { return allEditedAsteroids; }
     HashSet<Vector3> allEditedAsteroidsBeforeSave = new HashSet<Vector3>();
     public HashSet<Vector3> getAllEditedAsteroidsBeforeSave() { return allEditedAsteroidsBeforeSave; }
     HashSet<Vector3> allRemovedAsteroids = new HashSet<Vector3>();
@@ -80,43 +80,15 @@ public class AsteroidSpawnManager : MonoBehaviour
         }
     }
 
-    public void setAllRemovedAsteroids(HashSet<Vector3> allRemovedAsteroids)
-    {
-        this.allRemovedAsteroids = allRemovedAsteroids;
-        // for each removed asteroid, if its spawned in then remove it
-        foreach (Vector3 pos in allRemovedAsteroids)
-        {
-            if (allSpawnedAsteroids.ContainsKey(pos))
-            {
-                destroyAsteroid(pos);
-            }
-        }
-    }
-
-    // this should only happen when loading a game
-    public void setAllEditedAsteroids(Dictionary<Vector3, List<List<int>>> allEditedAsteroids)
-    {
-        this.allEditedAsteroids = allEditedAsteroids;
-        // for each edited asteroid, if its spawned in then add the edits to it
-        foreach (KeyValuePair<Vector3, List<List<int>>> entry in allEditedAsteroids)
-        {
-            if (allSpawnedAsteroids.ContainsKey(entry.Key))
-            {
-                allSpawnedAsteroids[entry.Key].GetComponent<AsteroidGenerator>().setIndecies(entry.Value);
-            }
-        }
-        allEditedAsteroidsBeforeSave = new HashSet<Vector3>();
-    }
-
-    public void setIndeciesForAsteroid(Vector3 pos, List<List<int>> indecies)
+    public void setRemovedChunksForAsteroid(Vector3 pos, HashSet<int> removedChunksIndecies)
     {
         if (allEditedAsteroids.ContainsKey(pos))
         {
-            allEditedAsteroids[pos] = indecies;
+            allEditedAsteroids[pos] = removedChunksIndecies;
         }
         else
         {
-            allEditedAsteroids.Add(pos, indecies);
+            allEditedAsteroids.Add(pos, removedChunksIndecies);
         }
         if (!allEditedAsteroidsBeforeSave.Contains(pos))
         {
@@ -167,7 +139,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         Debug.Log("Seed: " + seed);
     }
 
-    public void LoadGame(HashSet<Vector3> newRemovedAsteroids, Dictionary<Vector3, List<List<int>>> newEditedAsteroids)
+    public void LoadGame(HashSet<Vector3> newRemovedAsteroids, Dictionary<Vector3, HashSet<int>> newEditedAsteroids)
     {
         Debug.Log("Loading game");
         loadingGame = true;
@@ -259,7 +231,7 @@ public class AsteroidSpawnManager : MonoBehaviour
                     allSpawnedAsteroids.Add(AsteroidPositionsSpawnQueue[0], newAsteroid);
                     if (allEditedAsteroids.ContainsKey(AsteroidPositionsSpawnQueue[0]))
                     {
-                        newAsteroid.GetComponent<AsteroidGenerator>().setIndecies(allEditedAsteroids[AsteroidPositionsSpawnQueue[0]]);
+                        newAsteroid.GetComponent<AsteroidGenerator>().setRemovedCubeIndecies(allEditedAsteroids[AsteroidPositionsSpawnQueue[0]]);
                     }
                 }
                 else
