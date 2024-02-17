@@ -7,7 +7,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
     GameObject asteroidPrefab;
 
     // defaults are 1000 asteroids in a 1000m radius
-    
+
     // change this for more or less asteroids
     int sizeOfPartitions = 390;
 
@@ -48,7 +48,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     public void StartAfterWorldManagerSetUp()
     {
-        
+
         if (SpawnAsteroidField)
         {
             // load the prefabs
@@ -77,21 +77,21 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     void MakePregeneratedGameObjectsForAsteroidAreas()
     {
-        int numToPregen = 20;
+        int numToPregen = 5000;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         for (int i = 0; i < numToPregen; i++)
         {
-            GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, new Vector3(0,0,0), Quaternion.identity) as GameObject;
+            GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
             newAsteroidArea.SetActive(false);
             newAsteroidArea.transform.SetParent(gameObject.transform, false);
             AsteroidAreaGameObjectQueue.AddFirst(newAsteroidArea);
             numAreasInQueue++;
         }
         watch.Stop();
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("Pregenerated " + numToPregen + " spawn area game objects in " + watch.ElapsedMilliseconds / 1000f + "s");
-        #endif
+#endif
     }
 
     void DebugChildren()
@@ -118,9 +118,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZMOD
     {
-        int xOffset = ((int)pos.x)%sizeOfPartitions;
-        int yOffset = ((int)pos.y)%sizeOfPartitions;
-        int zOffset = ((int)pos.z)%sizeOfPartitions;
+        int xOffset = ((int)pos.x) % sizeOfPartitions;
+        int yOffset = ((int)pos.y) % sizeOfPartitions;
+        int zOffset = ((int)pos.z) % sizeOfPartitions;
         return new Vector3(((int)pos.x) - xOffset, ((int)pos.y) - yOffset, ((int)pos.z) - zOffset);
     }
 
@@ -129,7 +129,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         pos = makeSurePosIsOnGrid(pos);
 
         int negativeRad = -1 * radius;
-        int negativeHeight = -1*height;
+        int negativeHeight = -1 * height;
         // make AsteroidAreaPrefab
         // GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, pos, Quaternion.identity) as GameObject;
         if (AsteroidAreaGameObjectQueue.First == null)
@@ -140,9 +140,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
         GameObject newAsteroidArea = AsteroidAreaGameObjectQueue.First.Value;
         AsteroidAreaGameObjectQueue.RemoveFirst();
         numAreasInQueue--;
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
-        #endif        
+#endif
         // set the parent to this object
         newAsteroidArea.transform.SetParent(gameObject.transform, false);
         newAsteroidArea.transform.localPosition = pos;
@@ -169,7 +169,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         // if they are in the Dictionary, do nothing
         if (!allSpawnAreas.ContainsKey(middlePos + new Vector3(s, 0, 0)))
             SpawnNewArea(middlePos + new Vector3(s, 0, 0));
-        if (!allSpawnAreas.ContainsKey(middlePos + new Vector3(-1*s, 0, 0)))
+        if (!allSpawnAreas.ContainsKey(middlePos + new Vector3(-1 * s, 0, 0)))
             SpawnNewArea(middlePos + new Vector3(-1 * s, 0, 0));
         if (!allSpawnAreas.ContainsKey(middlePos + new Vector3(0, s, 0)))
             SpawnNewArea(middlePos + new Vector3(0, s, 0));
@@ -186,9 +186,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
     {
         AsteroidAreaGameObjectQueue.AddFirst(allSpawnAreas[pos]);
         numAreasInQueue++;
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
-        #endif
+#endif
         allSpawnAreas[pos].SetActive(false);
         allSpawnAreas.Remove(pos);
     }

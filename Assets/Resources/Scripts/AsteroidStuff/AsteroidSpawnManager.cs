@@ -27,7 +27,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     WorldManager worldManager;
     ItemManager itemManager;
-    
+
     GameObject player;
     public bool loadingGame = false;
 
@@ -44,9 +44,9 @@ public class AsteroidSpawnManager : MonoBehaviour
 
     public void addRemovedAsteroid(Vector3 pos)
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("Removing asteroid at " + pos);
-        #endif
+#endif
         allRemovedAsteroids.Add(pos);
         if (allEditedAsteroids.ContainsKey(pos))
         {
@@ -66,11 +66,11 @@ public class AsteroidSpawnManager : MonoBehaviour
         allSpawnedAsteroids[pos].SetActive(false);
         AsteroidGameObjectQueue.AddFirst(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             // Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
-        #endif
+#endif
         allSpawnedAsteroids.Remove(pos);
-        
+
         totalDespawnedAsteroidsSinceLastUnload++;
         if (totalDespawnedAsteroidsSinceLastUnload > 500)
         {
@@ -80,7 +80,8 @@ public class AsteroidSpawnManager : MonoBehaviour
         }
     }
 
-    public void setAllRemovedAsteroids(HashSet<Vector3> allRemovedAsteroids) {
+    public void setAllRemovedAsteroids(HashSet<Vector3> allRemovedAsteroids)
+    {
         this.allRemovedAsteroids = allRemovedAsteroids;
         // for each removed asteroid, if its spawned in then remove it
         foreach (Vector3 pos in allRemovedAsteroids)
@@ -166,7 +167,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         Debug.Log("Seed: " + seed);
     }
 
-    public void LoadGame(HashSet<Vector3> newRemovedAsteroids, Dictionary<Vector3, List<List<int>>> newEditedAsteroids )
+    public void LoadGame(HashSet<Vector3> newRemovedAsteroids, Dictionary<Vector3, List<List<int>>> newEditedAsteroids)
     {
         Debug.Log("Loading game");
         loadingGame = true;
@@ -177,7 +178,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 
         allRemovedAsteroids = newRemovedAsteroids;
         allEditedAsteroids = newEditedAsteroids;
-        
+
         loadingGame = false;
         // spawn the first area spawner near the players current pos
         asteroidFieldGenerator.SpawnNewArea(player.transform.localPosition);
@@ -188,7 +189,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     // the totalToPregen will be the amount of different asteroids there are in the world for that seed
     void MakePregeneratedAsteroids()
     {
-        int totalToPregen = 4;
+        int totalToPregen = 200;
         // time this
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
@@ -201,26 +202,26 @@ public class AsteroidSpawnManager : MonoBehaviour
         Debug.Log("Pregenerated " + totalToPregen + " small asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
         // make big asteroids
         watch = System.Diagnostics.Stopwatch.StartNew();
-        for (int i = 0; i < totalToPregen/4; i++)
+        for (int i = 0; i < totalToPregen / 4; i++)
         {
             AllPregeneratedBigAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), true));
         }
         watch.Stop();
-        Debug.Log("Pregenerated " + totalToPregen/4 + " big asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
-        
+        Debug.Log("Pregenerated " + totalToPregen / 4 + " big asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
+
     }
 
     // this will create all the asteroid game objects to use when copying an asteroid
     void MakePregeneratedGameObjectsForAsteroids()
     {
-        int numToPregen = 20;
+        int numToPregen = 5000;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         GameObject fakeAsteroid = GenerateOneAsteroid(new Vector3(0, 0, 0), false, false);
         fakeAsteroid.SetActive(false);
         for (int i = 0; i < numToPregen; i++)
         {
-            GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0,5,0), Quaternion.identity) as GameObject;
+            GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0, 5, 0), Quaternion.identity) as GameObject;
             newAsteroid.SetActive(false);
             newAsteroid.transform.SetParent(AllPregeneratedAsteroids[0].transform.parent, false);
             AsteroidGameObjectQueue.AddFirst(newAsteroid);
@@ -253,7 +254,8 @@ public class AsteroidSpawnManager : MonoBehaviour
 
                 if (AsteroidPositionsSpawnQueue[0] != null)
                     newAsteroid = CopyOneAsteroid(AsteroidPositionsSpawnQueue[0]);
-                if (newAsteroid != null){
+                if (newAsteroid != null)
+                {
                     allSpawnedAsteroids.Add(AsteroidPositionsSpawnQueue[0], newAsteroid);
                     if (allEditedAsteroids.ContainsKey(AsteroidPositionsSpawnQueue[0]))
                     {
@@ -280,8 +282,10 @@ public class AsteroidSpawnManager : MonoBehaviour
                 }
                 yield return 0;
             }
-            if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0){
-                if (printQueueStatus){
+            if (AsteroidPositionsSpawnQueue.Count % 10 == 0 && AsteroidPositionsSpawnQueue.Count != 0)
+            {
+                if (printQueueStatus)
+                {
                     Debug.Log("Num asteroids left in queue " + AsteroidPositionsSpawnQueue.Count);
                     printed = true;
                 }
@@ -292,7 +296,7 @@ public class AsteroidSpawnManager : MonoBehaviour
                 Debug.Log("Initial load finished");
                 initialLoadFinished = true;
                 stopwatch.Stop();
-                Debug.Log("Initial load took: " + stopwatch.ElapsedMilliseconds/1000f + "s");
+                Debug.Log("Initial load took: " + stopwatch.ElapsedMilliseconds / 1000f + "s");
             }
 
             if (initialLoadFinished && AsteroidPositionsSpawnQueue.Count % 1000 == 0)
@@ -300,14 +304,14 @@ public class AsteroidSpawnManager : MonoBehaviour
                 yield return 0;
             else if (AsteroidPositionsSpawnQueue.Count % 1000 == 0)
                 yield return 0;
-                
+
         }
     }
 
-    GameObject GenerateOneAsteroid(Vector3 position, bool isBig, bool generate=true)
+    GameObject GenerateOneAsteroid(Vector3 position, bool isBig, bool generate = true)
     {
         GameObject newAsteroid = Instantiate(asteroidPrefab, position, Quaternion.identity) as GameObject;
-        
+
         newAsteroid.tag = "Asteroid";
         // set the parent to this objects parent
         newAsteroid.transform.SetParent(gameObject.transform.parent, false);
@@ -326,14 +330,14 @@ public class AsteroidSpawnManager : MonoBehaviour
         newAsteroid.SetActive(false);
         if (generate)
         {
-            newAsteroid.GetComponent<AsteroidGenerator>().Generate();    
+            newAsteroid.GetComponent<AsteroidGenerator>().Generate();
         }
         return newAsteroid;
     }
 
     GameObject CopyOneAsteroid(Vector3 position)
     {
-        Random.InitState((int)(Mathf.Abs((getSeed()+1)/1000 + (position.x*10 + position.y*100 + position.z*1000))));
+        Random.InitState((int)(Mathf.Abs((getSeed() + 1) / 1000 + (position.x * 10 + position.y * 100 + position.z * 1000))));
         bool isBig = Random.Range(0, 10) == 0;
         GameObject asteroidToCopy;
         int asteroidNumber;
@@ -342,13 +346,13 @@ public class AsteroidSpawnManager : MonoBehaviour
             asteroidNumber = Random.Range(0, AllPregeneratedBigAsteroids.Count);
             asteroidToCopy = AllPregeneratedBigAsteroids[asteroidNumber];
         }
-        else 
+        else
         {
             asteroidNumber = Random.Range(0, AllPregeneratedAsteroids.Count);
             asteroidToCopy = AllPregeneratedAsteroids[asteroidNumber];
         }
         // make a copy of the asteroid
-        
+
         // GameObject newAsteroid = Instantiate(asteroidToCopy, position, Quaternion.identity) as GameObject;
         // get the first asteroid from the AsteroidGameObjectQueue
         if (AsteroidGameObjectQueue.First == null)
@@ -360,7 +364,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         AsteroidGameObjectQueue.RemoveFirst();
         numAsteroidsInQueue--;
         newAsteroid.transform.localPosition = position;
-        
+
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
         if (!newAsteroid.GetComponent<AsteroidGenerator>().copyAll(ref o, gameObject.GetComponent<AsteroidSpawnManager>()))
@@ -370,14 +374,14 @@ public class AsteroidSpawnManager : MonoBehaviour
             return null;
         }
         newAsteroid.GetComponent<AsteroidGenerator>().setOriginalPosition(position);
-        
+
         // make it a different mineral
         Item mineralType = minerals.GetMineralTypeFromPos(newAsteroid.transform.localPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
-        
+
         newAsteroid.GetComponent<AsteroidGenerator>().ApplyMesh();
-        
+
         newAsteroid.SetActive(true);
 
         return newAsteroid;
