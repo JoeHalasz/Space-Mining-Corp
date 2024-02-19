@@ -66,13 +66,14 @@ public class AsteroidSpawnManager : MonoBehaviour
         allSpawnedAsteroids[pos].SetActive(false);
         AsteroidGameObjectQueue.AddFirst(allSpawnedAsteroids[pos]);
         numAsteroidsInQueue++;
+        //Debug.Log("AsteroidGameObjectQueue count: " + (5000-numAsteroidsInQueue));
 #if UNITY_EDITOR
             // Debug.Log("AsteroidGameObjectQueue count: " + numAsteroidsInQueue);
 #endif
         allSpawnedAsteroids.Remove(pos);
 
         totalDespawnedAsteroidsSinceLastUnload++;
-        if (totalDespawnedAsteroidsSinceLastUnload > 500)
+        if (totalDespawnedAsteroidsSinceLastUnload > 10000)
         {
             // Debug.Log("Unloading unused assets");
             totalDespawnedAsteroidsSinceLastUnload = 0;
@@ -186,7 +187,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     // this will create all the asteroid game objects to use when copying an asteroid
     void MakePregeneratedGameObjectsForAsteroids()
     {
-        int numToPregen = 5000;
+        int numToPregen = 10000;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         GameObject fakeAsteroid = GenerateOneAsteroid(new Vector3(0, 0, 0), false, false);
@@ -233,6 +234,7 @@ public class AsteroidSpawnManager : MonoBehaviour
                     {
                         newAsteroid.GetComponent<AsteroidGenerator>().setRemovedCubeIndecies(allEditedAsteroids[AsteroidPositionsSpawnQueue[0]]);
                     }
+                    Debug.Log("Num asteroids spawned " + allSpawnedAsteroids.Count);
                 }
                 else
                 {

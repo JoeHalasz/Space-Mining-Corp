@@ -32,10 +32,12 @@ public class AsteroidGenerator : MonoBehaviour
     public bool isBig = false;
     float AsteroidMinSize = 3.2f; // 12
     float AsteroidMaxSize = 3.7f; // 15
+    public float size;
     public List<Vector3> points;
     public List<CubeData> allCubeData;
     public HashSet<int> minedCubesIndecies;
     public Mesh mesh;
+    public Mesh lowPolyMesh;
     public Mesh originalMesh;
     List<Vector3> allVerts;
     List<int> allTris;
@@ -66,6 +68,7 @@ public class AsteroidGenerator : MonoBehaviour
         mineralType = other.mineralType;
         stone = other.stone;
         points = other.points;
+        lowPolyMesh = other.lowPolyMesh;
         originalMesh = other.originalMesh;
         allCubeData = other.allCubeData;
         asteroidSpawnManager = _asteroidSpawnManager;
@@ -104,8 +107,6 @@ public class AsteroidGenerator : MonoBehaviour
     {
         GenerateAsteroid();
     }
-
-    public float size;
 
     void GenerateAsteroid() // this should only happen for the pregenerated asteroids at game load
     {
@@ -261,6 +262,7 @@ public class AsteroidGenerator : MonoBehaviour
         GenerateVertsTrisNormalsAndUVs();
         GenerateMidPoints();
         GenerateMesh();
+        GenerateLowPolyMesh();
     }
 
 
@@ -340,6 +342,46 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
+    void GenerateLowPolyMesh()
+    {
+        // this will only happen once
+        lowPolyMesh = new Mesh();
+        List<Vector3> lowPolyPoints = new List<Vector3>();
+        List<Vector3> lowPolyVerts = new List<Vector3>();
+        List<int> lowPolyTris = new List<int>();
+        List<Vector3> lowPolyNormals = new List<Vector3>();
+        List<Vector2> lowPolyUVs = new List<Vector2>();
+        List<int> lowPolyOreTris = new List<int>();
+        List<int> lowPolyOtherTris = new List<int>();
+        List<int> lowPolyTrisTemp = new List<int>();
+
+        // make a big square out of the from the size 
+        lowPolyPoints.Add(new Vector3(-size, -size, -size));
+        lowPolyPoints.Add(new Vector3(size, -size, -size));
+        lowPolyPoints.Add(new Vector3(size, size, -size));
+        lowPolyPoints.Add(new Vector3(-size, size, -size));
+        lowPolyPoints.Add(new Vector3(-size, -size, size));
+        lowPolyPoints.Add(new Vector3(size, -size, size));
+        lowPolyPoints.Add(new Vector3(size, size, size));
+        lowPolyPoints.Add(new Vector3(-size, size, size));
+
+        ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
+        ConvexHullCalcGlobal.GenerateHull(lowPolyPoints, true, ref lowPolyVerts, ref lowPolyTris, ref lowPolyNormals);
+        lowPolyMesh.vertices = lowPolyVerts.ToArray();
+        lowPolyMesh.triangles = lowPolyTris.ToArray();
+        lowPolyMesh.normals = lowPolyNormals.ToArray();
+        lowPolyMesh.uv = lowPolyUVs.ToArray();
+        // get the LODGroup and set the mesh to the LOD1
+        LODGroup lodGroup = GetComponent<LODGroup>();
+        if (lodGroup != null)
+        {
+            LOD[] lods = lodGroup.GetLODs();
+            lods[1].renderers[0].GetComponent<MeshFilter>().sharedMesh = lowPolyMesh;
+            lodGroup.SetLODs(lods);
+        }
+        lowPolyMesh.UploadMeshData(false);
+    }
+
     void GenerateMesh()
     {
         if (!newMeshCreated)
@@ -414,13 +456,22 @@ public class AsteroidGenerator : MonoBehaviour
         // add uvs
         mesh.uv = allUVs.ToArray();
 
+        // get the LODGroup and set the mesh to the LOD0
+        LODGroup lodGroup = GetComponent<LODGroup>();
+        if (lodGroup != null)
+        {
+            LOD[] lods = lodGroup.GetLODs();
+            lods[0].renderers[0].GetComponent<MeshFilter>().sharedMesh = mesh;
+            lodGroup.SetLODs(lods);
+        }
+        // set the collider mesh
         GetComponent<MeshCollider>().sharedMesh = mesh;
         GetComponent<MeshFilter>().sharedMesh = mesh;
         mesh.UploadMeshData(false);
         if (originalMesh == null)
         {
             originalMesh = Instantiate(mesh);
-        }
+        } 
     }
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)

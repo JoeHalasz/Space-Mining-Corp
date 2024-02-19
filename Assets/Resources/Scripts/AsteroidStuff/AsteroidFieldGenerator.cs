@@ -9,7 +9,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
     // defaults are 1000 asteroids in a 1000m radius
 
     // change this for more or less asteroids
-    int sizeOfPartitions = 390;
+    int sizeOfPartitions = 1200;
 
     [SerializeField]
     [Range(1000, 100000)]
@@ -77,7 +77,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     void MakePregeneratedGameObjectsForAsteroidAreas()
     {
-        int numToPregen = 5000;
+        int numToPregen = 10000;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         for (int i = 0; i < numToPregen; i++)
@@ -184,13 +184,17 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     public void removeSpawnAreaAt(Vector3 pos)
     {
-        AsteroidAreaGameObjectQueue.AddFirst(allSpawnAreas[pos]);
-        numAreasInQueue++;
-#if UNITY_EDITOR
-            // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
-#endif
-        allSpawnAreas[pos].SetActive(false);
-        allSpawnAreas.Remove(pos);
+        // if it exists, delete the old one
+        if (allSpawnAreas.ContainsKey(pos))
+        {
+            AsteroidAreaGameObjectQueue.AddFirst(allSpawnAreas[pos]);
+            numAreasInQueue++;
+            #if UNITY_EDITOR
+                // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
+            #endif
+            allSpawnAreas[pos].SetActive(false);
+            allSpawnAreas.Remove(pos);
+        }
     }
 
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8107612014418126797}
   - component: {fileID: 4030067616115203154}
   - component: {fileID: 360536263856644233}
+  - component: {fileID: 3155920084050302575}
   m_Layer: 0
   m_Name: Asteroid
   m_TagString: Untagged
@@ -27,13 +28,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 467615157038304897}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -5.41, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &8895411108259787147
 MeshRenderer:
@@ -120,11 +121,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isBig: 0
+  size: 0
   points: []
-  outsidePoints: []
   mesh: {fileID: 0}
-  increment: 0.75
-  allVerts: []
-  allTris: 
-  allNormals: []
+  lowPolyMesh: {fileID: 0}
+  originalMesh: {fileID: 0}
   asteroidSpawnManager: {fileID: 0}
+--- !u!205 &3155920084050302575
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 467615157038304897}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0, z: 0}
+  m_Size: 1
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.001
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 3157087569844628326, guid: 2789e5dac9fab6043bc6bd3e25f8204b,
+        type: 3}
+  - screenRelativeHeight: 0
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 3157087569844628326, guid: 2789e5dac9fab6043bc6bd3e25f8204b,
+        type: 3}
+  m_Enabled: 1

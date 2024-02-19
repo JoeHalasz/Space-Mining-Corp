@@ -5,7 +5,7 @@ using UnityEngine;
 public class FixRenderDistances : MonoBehaviour
 {
     float stationRenderDist = 100000f;
-    float asteroidRenderDist = 5000f;
+    float asteroidRenderDist = 100000f;
     void Awake()
     {
         Camera camera = GetComponent<Camera>();

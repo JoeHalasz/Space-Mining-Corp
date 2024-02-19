@@ -11,8 +11,6 @@ public class AsteroidAreaSpawner : MonoBehaviour
 
     Minerals minerals;
 
-    bool insideDespawner = true;
-
     Vector3 spawnedAsteroidPosition;
 
     AsteroidSpawnManager asteroidSpawnManager;
@@ -20,10 +18,22 @@ public class AsteroidAreaSpawner : MonoBehaviour
 
     public Vector3 addedAtPos;
 
+    GameObject player;
+    float xMax;
+    float yMax;
+    float zMax;
+
     void Start()
     {
         asteroidFieldGenerator = gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>();
         asteroidSpawnManager = asteroidFieldGenerator.asteroidSpawnManager;
+        player = GameObject.Find("Player");
+        GameObject AsteroidSpawnAreaDeSpawner = player.transform.Find("AsteroidSpawnAreaDeSpawner").gameObject;
+        xMax = AsteroidSpawnAreaDeSpawner.transform.localScale.x / 2f;
+        yMax = AsteroidSpawnAreaDeSpawner.transform.localScale.y / 2f;
+        zMax = AsteroidSpawnAreaDeSpawner.transform.localScale.z / 2f;
+        // run ensureInRange every 5 seconds
+        InvokeRepeating("ensureInCollider", 5, 5);
     }
 
     public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager)
@@ -41,36 +51,23 @@ public class AsteroidAreaSpawner : MonoBehaviour
         {
             gameObject.transform.parent.GetComponent<AsteroidFieldGenerator>().SpawnMoreAreasAt(transform.localPosition);
         }
-        else if (other.gameObject.tag == "AsteroidSpawnAreaDespawner")
-        {
-            insideDespawner = true;
-        }
     }
 
     void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "AsteroidSpawnAreaDespawner")
         {
-            insideDespawner = true;
-            // if we are loading a game then destroy without delay
-            if (!asteroidSpawnManager.loadingGame)
-            {
-                // wait half a second and if insideDespawner is still true then destroy the asteroid and this
-                StartCoroutine(waitAndDestroy());
-            }
-            else
-            {
-                destroyAsteroidAndThis();
-            }
+            destroyAsteroidAndThis();
         }
     }
 
-    // wait and destory
-    IEnumerator waitAndDestroy()
-    {
-        // wait for half a second
-        yield return new WaitForSeconds(0.5f);
-        if (insideDespawner)
+    void ensureInCollider()
+    {   
+        
+        // make sure the x y and z are within the size of AsteroidAreaDespawner from the player
+        if (Mathf.Abs(player.transform.position.x - transform.position.x) > xMax ||
+            Mathf.Abs(player.transform.position.y - transform.position.y) > yMax ||
+            Mathf.Abs(player.transform.position.z - transform.position.z) > zMax )
         {
             destroyAsteroidAndThis();
         }
