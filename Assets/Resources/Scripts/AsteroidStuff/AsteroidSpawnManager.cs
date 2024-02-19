@@ -25,6 +25,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     LinkedList<GameObject> AsteroidGameObjectQueue = new LinkedList<GameObject>();
     int numAsteroidsInQueue = 0;
 
+    GameObject lowPolyRender;
     WorldManager worldManager;
     ItemManager itemManager;
 
@@ -133,6 +134,7 @@ public class AsteroidSpawnManager : MonoBehaviour
     {
         seed = worldManager.getSeed();
         Random.InitState(getSeed());
+        MakeLowPolyRender();
         MakePregeneratedAsteroids();
         MakePregeneratedGameObjectsForAsteroids();
         IEnumerator coroutine = SpawnAsteroidFromQueue();
@@ -182,6 +184,43 @@ public class AsteroidSpawnManager : MonoBehaviour
         watch.Stop();
         Debug.Log("Pregenerated " + totalToPregen / 4 + " big asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
 
+    }
+
+    GameObject MakeLowPolyRender()
+    {
+        // this will only happen once
+        Mesh lowPolyMesh = new Mesh();
+        List<Vector3> lowPolyPoints = new List<Vector3>();
+        List<Vector3> lowPolyVerts = new List<Vector3>();
+        List<int> lowPolyTris = new List<int>();
+        List<Vector3> lowPolyNormals = new List<Vector3>();
+        float size = 4f;
+        // make a big square out of the from the size 
+        lowPolyPoints.Add(new Vector3(-size, -size, -size));
+        lowPolyPoints.Add(new Vector3(size, -size, -size));
+        lowPolyPoints.Add(new Vector3(size, size, -size));
+        lowPolyPoints.Add(new Vector3(-size, size, -size));
+        lowPolyPoints.Add(new Vector3(-size, -size, size));
+        lowPolyPoints.Add(new Vector3(size, -size, size));
+        lowPolyPoints.Add(new Vector3(size, size, size));
+        lowPolyPoints.Add(new Vector3(-size, size, size));
+
+        ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
+        ConvexHullCalcGlobal.GenerateHull(lowPolyPoints, true, ref lowPolyVerts, ref lowPolyTris, ref lowPolyNormals);
+        lowPolyMesh.vertices = lowPolyVerts.ToArray();
+        lowPolyMesh.triangles = lowPolyTris.ToArray();
+        lowPolyMesh.normals = lowPolyNormals.ToArray();
+
+        GameObject lowPolyRender = new GameObject("lowPolyRender");
+        lowPolyRender.layer = 8;
+        lowPolyRender.transform.parent = transform;
+        lowPolyRender.transform.localPosition = Vector3.zero;
+        lowPolyRender.AddComponent<MeshRenderer>();
+        lowPolyRender.AddComponent<MeshFilter>();
+        lowPolyRender.GetComponent<MeshFilter>().mesh = lowPolyMesh;
+        lowPolyRender.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial("Stone") };
+        lowPolyRender.SetActive(false);
+        return lowPolyRender;
     }
 
     // this will create all the asteroid game objects to use when copying an asteroid
@@ -234,7 +273,6 @@ public class AsteroidSpawnManager : MonoBehaviour
                     {
                         newAsteroid.GetComponent<AsteroidGenerator>().setRemovedCubeIndecies(allEditedAsteroids[AsteroidPositionsSpawnQueue[0]]);
                     }
-                    Debug.Log("Num asteroids spawned " + allSpawnedAsteroids.Count);
                 }
                 else
                 {
@@ -285,7 +323,15 @@ public class AsteroidSpawnManager : MonoBehaviour
     GameObject GenerateOneAsteroid(Vector3 position, bool isBig, bool generate = true)
     {
         GameObject newAsteroid = Instantiate(asteroidPrefab, position, Quaternion.identity) as GameObject;
-
+        // add a copy of the lowPolyRender to the asteroid
+        if (lowPolyRender == null)
+        {
+            lowPolyRender = MakeLowPolyRender();
+        }
+        GameObject lowPolyRenderCopy = Instantiate(lowPolyRender, position, Quaternion.identity) as GameObject;
+        lowPolyRenderCopy.transform.SetParent(newAsteroid.transform, false);
+        lowPolyRenderCopy.SetActive(true);
+        
         newAsteroid.tag = "Asteroid";
         // set the parent to this objects parent
         newAsteroid.transform.SetParent(gameObject.transform.parent, false);
@@ -298,7 +344,6 @@ public class AsteroidSpawnManager : MonoBehaviour
         newAsteroid.GetComponent<AsteroidGenerator>().stone = stone;
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;
 
-        // add minerals.GetMineralByName("Stone").getMaterial() to the materials array
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
 
         newAsteroid.SetActive(false);

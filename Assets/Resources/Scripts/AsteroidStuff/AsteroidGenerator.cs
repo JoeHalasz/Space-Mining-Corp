@@ -37,7 +37,6 @@ public class AsteroidGenerator : MonoBehaviour
     public List<CubeData> allCubeData;
     public HashSet<int> minedCubesIndecies;
     public Mesh mesh;
-    public Mesh lowPolyMesh;
     public Mesh originalMesh;
     List<Vector3> allVerts;
     List<int> allTris;
@@ -68,7 +67,6 @@ public class AsteroidGenerator : MonoBehaviour
         mineralType = other.mineralType;
         stone = other.stone;
         points = other.points;
-        lowPolyMesh = other.lowPolyMesh;
         originalMesh = other.originalMesh;
         allCubeData = other.allCubeData;
         asteroidSpawnManager = _asteroidSpawnManager;
@@ -87,14 +85,25 @@ public class AsteroidGenerator : MonoBehaviour
         if (mesh == null)
         {
             GetComponent<MeshCollider>().sharedMesh = originalMesh;
-            GetComponent<MeshFilter>().sharedMesh = originalMesh;
-            originalMesh.UploadMeshData(false);
+            LODGroup lodGroup = GetComponent<LODGroup>();
+            LOD[] lods = lodGroup.GetLODs();
+            if (lods[0].renderers.Length == 0)
+            {
+                lods[0].renderers = new Renderer[1];
+                lods[0].renderers[0] = GetComponent<Renderer>();
+            }
+            lods[0].renderers[0].GetComponent<MeshFilter>().sharedMesh = originalMesh;
+            if (lods[1].renderers.Length == 0)
+            {
+                lods[1].renderers = new Renderer[1];
+                lods[1].renderers[0] = transform.GetChild(0).GetComponent<Renderer>();
+            }
+            lodGroup.SetLODs(lods);
         }
         else
         {
             GetComponent<MeshCollider>().sharedMesh = mesh;
             GetComponent<MeshFilter>().sharedMesh = mesh;
-            mesh.UploadMeshData(false);
         }
     }
 
@@ -241,6 +250,13 @@ public class AsteroidGenerator : MonoBehaviour
             {
                 kvp.Key.isOutside = true;
             }
+            else 
+            {
+                if (Random.Range(0, 10) <= 9)
+                {
+                    kvp.Key.isOre = true;
+                }
+            }
         }
 
         float addRandomness = increment / 3f;
@@ -250,10 +266,10 @@ public class AsteroidGenerator : MonoBehaviour
             points[i] = new Vector3(points[i].x + Random.Range(-addRandomness, addRandomness), points[i].y + Random.Range(-addRandomness, addRandomness), points[i].z + Random.Range(-addRandomness, addRandomness));
         }
 
-        // 80% chance to be an ore
+        // 20% chance to be an ore
         foreach (CubeData cube in allCubeData)
         {
-            if (Random.Range(0, 10) >= 8)
+            if (Random.Range(0, 10) <=2 )
             {
                 cube.isOre = true;
             }
@@ -262,7 +278,6 @@ public class AsteroidGenerator : MonoBehaviour
         GenerateVertsTrisNormalsAndUVs();
         GenerateMidPoints();
         GenerateMesh();
-        GenerateLowPolyMesh();
     }
 
 
@@ -341,47 +356,6 @@ public class AsteroidGenerator : MonoBehaviour
             Destroy(mesh);
         }
     }
-
-    void GenerateLowPolyMesh()
-    {
-        // this will only happen once
-        lowPolyMesh = new Mesh();
-        List<Vector3> lowPolyPoints = new List<Vector3>();
-        List<Vector3> lowPolyVerts = new List<Vector3>();
-        List<int> lowPolyTris = new List<int>();
-        List<Vector3> lowPolyNormals = new List<Vector3>();
-        List<Vector2> lowPolyUVs = new List<Vector2>();
-        List<int> lowPolyOreTris = new List<int>();
-        List<int> lowPolyOtherTris = new List<int>();
-        List<int> lowPolyTrisTemp = new List<int>();
-
-        // make a big square out of the from the size 
-        lowPolyPoints.Add(new Vector3(-size, -size, -size));
-        lowPolyPoints.Add(new Vector3(size, -size, -size));
-        lowPolyPoints.Add(new Vector3(size, size, -size));
-        lowPolyPoints.Add(new Vector3(-size, size, -size));
-        lowPolyPoints.Add(new Vector3(-size, -size, size));
-        lowPolyPoints.Add(new Vector3(size, -size, size));
-        lowPolyPoints.Add(new Vector3(size, size, size));
-        lowPolyPoints.Add(new Vector3(-size, size, size));
-
-        ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
-        ConvexHullCalcGlobal.GenerateHull(lowPolyPoints, true, ref lowPolyVerts, ref lowPolyTris, ref lowPolyNormals);
-        lowPolyMesh.vertices = lowPolyVerts.ToArray();
-        lowPolyMesh.triangles = lowPolyTris.ToArray();
-        lowPolyMesh.normals = lowPolyNormals.ToArray();
-        lowPolyMesh.uv = lowPolyUVs.ToArray();
-        // get the LODGroup and set the mesh to the LOD1
-        LODGroup lodGroup = GetComponent<LODGroup>();
-        if (lodGroup != null)
-        {
-            LOD[] lods = lodGroup.GetLODs();
-            lods[1].renderers[0].GetComponent<MeshFilter>().sharedMesh = lowPolyMesh;
-            lodGroup.SetLODs(lods);
-        }
-        lowPolyMesh.UploadMeshData(false);
-    }
-
     void GenerateMesh()
     {
         if (!newMeshCreated)
@@ -455,19 +429,24 @@ public class AsteroidGenerator : MonoBehaviour
         mesh.normals = allNormals.ToArray();
         // add uvs
         mesh.uv = allUVs.ToArray();
-
-        // get the LODGroup and set the mesh to the LOD0
-        LODGroup lodGroup = GetComponent<LODGroup>();
-        if (lodGroup != null)
-        {
-            LOD[] lods = lodGroup.GetLODs();
-            lods[0].renderers[0].GetComponent<MeshFilter>().sharedMesh = mesh;
-            lodGroup.SetLODs(lods);
-        }
-        // set the collider mesh
+        
         GetComponent<MeshCollider>().sharedMesh = mesh;
-        GetComponent<MeshFilter>().sharedMesh = mesh;
-        mesh.UploadMeshData(false);
+
+        LODGroup lodGroup = GetComponent<LODGroup>();
+        LOD[] lods = lodGroup.GetLODs();
+        if (lods[0].renderers.Length == 0)
+        {
+            lods[0].renderers = new Renderer[1];
+            lods[0].renderers[0] = GetComponent<Renderer>();
+        }
+        lods[0].renderers[0].GetComponent<MeshFilter>().sharedMesh = mesh;
+        if (lods[1].renderers.Length == 0)
+        {
+            lods[1].renderers = new Renderer[1];
+            lods[1].renderers[0] = transform.GetChild(0).GetComponent<Renderer>();
+        }
+        lodGroup.SetLODs(lods);
+        // set the collider mesh
         if (originalMesh == null)
         {
             originalMesh = Instantiate(mesh);
