@@ -25,13 +25,15 @@ public class CubeData
 
 public class AsteroidGenerator : MonoBehaviour
 {
-    // texture for the asteroid
     [SerializeField]
+    bool CREATE_DEBUG_POINTS = false;
+    [SerializeField]
+    bool REGENERATE_ASTEROID = false;
     public Item mineralType;
     public Item stone;
     public bool isBig = false;
-    float AsteroidMinSize = 3.2f; // 12
-    float AsteroidMaxSize = 3.7f; // 15
+    float AsteroidMinSize = 3.2f; // 4.2 for isBig
+    float AsteroidMaxSize = 3.7f; // 4.7 for isBig
     public float size;
     public List<Vector3> points;
     public List<CubeData> allCubeData;
@@ -57,6 +59,29 @@ public class AsteroidGenerator : MonoBehaviour
         originalPosition = transform.localPosition;
     }
 
+    #if UNITY_EDITOR
+    void Update()
+    {
+        if (CREATE_DEBUG_POINTS)
+        {
+            foreach (Vector3 point in points)
+            {
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.position = point + transform.position;
+                sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+                sphere.GetComponent<Renderer>().material.color = Color.red;
+            }
+            CREATE_DEBUG_POINTS = false;
+        }
+        if (REGENERATE_ASTEROID)
+        {
+            GenerateAsteroid();
+            REGENERATE_ASTEROID = false;
+            Debug.Log("Asteroid regenerated");
+        }
+    }
+    #endif
+
     List<List<T>> copyListOfLists<T>(List<List<T>> lst)
     {
         return lst.Select(innerList => new List<T>(innerList)).ToList();
@@ -77,6 +102,7 @@ public class AsteroidGenerator : MonoBehaviour
 #endif
             return false;
         }
+        size = other.size; // TODO delete this. its only for debugging
         return true;
     }
 
@@ -126,8 +152,13 @@ public class AsteroidGenerator : MonoBehaviour
         points = new List<Vector3>();
         if (isBig)
         {
-            AsteroidMinSize = 4;
-            AsteroidMaxSize = 5;
+            AsteroidMinSize = 4.2f;
+            AsteroidMaxSize = 4.7f;
+        }
+        else 
+        {
+            AsteroidMinSize = 3.2f;
+            AsteroidMaxSize = 3.7f;
         }
 
         // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
@@ -244,6 +275,7 @@ public class AsteroidGenerator : MonoBehaviour
             }
         }
         // make all the cubes in the furthest 2 bands outside cubes
+        // if its an inside cube then make it a 90% chance that its an ore
         foreach (KeyValuePair<CubeData, int> kvp in cubeDistances)
         {
             if (kvp.Value == furthest || kvp.Value == furthest2)
@@ -266,12 +298,24 @@ public class AsteroidGenerator : MonoBehaviour
             points[i] = new Vector3(points[i].x + Random.Range(-addRandomness, addRandomness), points[i].y + Random.Range(-addRandomness, addRandomness), points[i].z + Random.Range(-addRandomness, addRandomness));
         }
 
-        // 20% chance to be an ore
+        List<int> oreIndecies = new List<int>();
+        // 3% that a point is an ore. If a point is in a cube then make that cube an ore
+        for (int i = 0; i < points.Count; i++)
+        {
+            if (Random.Range(0, 100) <= 3)
+            {
+                oreIndecies.Add(i);
+            }
+        }
         foreach (CubeData cube in allCubeData)
         {
-            if (Random.Range(0, 10) <=2 )
+            foreach (int index in cube.indecies)
             {
-                cube.isOre = true;
+                if (oreIndecies.Contains(index))
+                {
+                    cube.isOre = true;
+                    break;
+                }
             }
         }
 
