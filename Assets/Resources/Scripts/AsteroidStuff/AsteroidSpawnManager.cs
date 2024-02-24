@@ -29,6 +29,8 @@ public class AsteroidSpawnManager : MonoBehaviour
     WorldManager worldManager;
     ItemManager itemManager;
 
+    GameObject fakeAsteroid;
+
     GameObject player;
     public bool loadingGame = false;
 
@@ -220,7 +222,17 @@ public class AsteroidSpawnManager : MonoBehaviour
         lowPolyRender.GetComponent<MeshFilter>().mesh = lowPolyMesh;
         lowPolyRender.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial("Stone") };
         lowPolyRender.SetActive(false);
+        lowPolyRender.isStatic = true;
         return lowPolyRender;
+    }
+
+    void MakeOnePregeneratedAsteroid(GameObject fakeAsteroid)
+    {
+        GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0, 5, 0), Quaternion.identity) as GameObject;
+        newAsteroid.SetActive(false);
+        newAsteroid.transform.SetParent(AllPregeneratedAsteroids[0].transform.parent, false);
+        AsteroidGameObjectQueue.AddFirst(newAsteroid);
+        numAsteroidsInQueue++;
     }
 
     // this will create all the asteroid game objects to use when copying an asteroid
@@ -229,15 +241,11 @@ public class AsteroidSpawnManager : MonoBehaviour
         int numToPregen = 10000;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
-        GameObject fakeAsteroid = GenerateOneAsteroid(new Vector3(0, 0, 0), false, false);
+        fakeAsteroid = GenerateOneAsteroid(new Vector3(0, 0, 0), false, false);
         fakeAsteroid.SetActive(false);
         for (int i = 0; i < numToPregen; i++)
         {
-            GameObject newAsteroid = Instantiate(fakeAsteroid, new Vector3(0, 5, 0), Quaternion.identity) as GameObject;
-            newAsteroid.SetActive(false);
-            newAsteroid.transform.SetParent(AllPregeneratedAsteroids[0].transform.parent, false);
-            AsteroidGameObjectQueue.AddFirst(newAsteroid);
-            numAsteroidsInQueue++;
+            MakeOnePregeneratedAsteroid(fakeAsteroid);
         }
         watch.Stop();
         Debug.Log("Pregenerated " + numToPregen + " asteroid game objects in " + watch.ElapsedMilliseconds / 1000f + "s");
@@ -331,7 +339,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         GameObject lowPolyRenderCopy = Instantiate(lowPolyRender, position, Quaternion.identity) as GameObject;
         lowPolyRenderCopy.transform.SetParent(newAsteroid.transform, false);
         lowPolyRenderCopy.SetActive(true);
-        
+
         newAsteroid.tag = "Asteroid";
         // set the parent to this objects parent
         newAsteroid.transform.SetParent(gameObject.transform.parent, false);
@@ -376,8 +384,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         // get the first asteroid from the AsteroidGameObjectQueue
         if (AsteroidGameObjectQueue.First == null)
         {
-            Debug.LogError("AsteroidGameObjectQueue is empty! Add more on load. There should be " + numAsteroidsInQueue);
-            return null;
+            MakeOnePregeneratedAsteroid(fakeAsteroid);
         }
         GameObject newAsteroid = AsteroidGameObjectQueue.First.Value;
         AsteroidGameObjectQueue.RemoveFirst();

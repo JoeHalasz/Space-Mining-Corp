@@ -36,12 +36,20 @@ public class AsteroidAreaSpawner : MonoBehaviour
         InvokeRepeating("ensureInCollider", 5, 5);
     }
 
-    public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager)
+    public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager, bool allowRandomness)
     {   
         this.asteroidSpawnManager = asteroidSpawnManager;
+        
         Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + ((int)transform.localPosition.x*10 + (int)transform.localPosition.y*100 + (int)transform.localPosition.z*1000))));
         spawnedAsteroidPosition = new Vector3((int)Random.Range(-1 * radius, radius), (int)Random.Range(-1 * height, height), (int)Random.Range(-1 * radius, radius)) + transform.localPosition;
-        asteroidSpawnManager.AddToQueue(spawnedAsteroidPosition);
+        if (allowRandomness)
+        {
+            asteroidSpawnManager.AddToQueue(spawnedAsteroidPosition);
+        }
+        else
+        {
+            asteroidSpawnManager.AddToQueue(transform.localPosition);
+        }
     }
 
 

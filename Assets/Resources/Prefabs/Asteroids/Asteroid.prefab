@@ -19,7 +19,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 127
   m_IsActive: 1
 --- !u!4 &499465584411890828
 Transform:
@@ -120,11 +120,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9967b2f397f06cd4a93c1c44fb70704b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CREATE_DEBUG_POINTS: 0
+  REGENERATE_ASTEROID: 0
   isBig: 0
   size: 0
   points: []
   mesh: {fileID: 0}
-  lowPolyMesh: {fileID: 0}
   originalMesh: {fileID: 0}
   asteroidSpawnManager: {fileID: 0}
 --- !u!205 &3155920084050302575
@@ -141,7 +142,7 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.002
+  - screenRelativeHeight: 0.005
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 8895411108259787147}

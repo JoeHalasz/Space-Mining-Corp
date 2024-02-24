@@ -57,10 +57,13 @@ public class AsteroidGenerator : MonoBehaviour
         // set the layer to 8 (asteroid)
         gameObject.layer = 8;
         originalPosition = transform.localPosition;
+#if UNITY_EDITOR
+        InvokeRepeating("CheckDebugBooleans", 5, 1);
+#endif
     }
 
-    #if UNITY_EDITOR
-    void Update()
+#if UNITY_EDITOR
+    void CheckDebugBooleans()
     {
         if (CREATE_DEBUG_POINTS)
         {
@@ -80,7 +83,7 @@ public class AsteroidGenerator : MonoBehaviour
             Debug.Log("Asteroid regenerated");
         }
     }
-    #endif
+#endif
 
     List<List<T>> copyListOfLists<T>(List<List<T>> lst)
     {
@@ -125,11 +128,13 @@ public class AsteroidGenerator : MonoBehaviour
                 lods[1].renderers[0] = transform.GetChild(0).GetComponent<Renderer>();
             }
             lodGroup.SetLODs(lods);
+            originalMesh.UploadMeshData(true);
         }
         else
         {
             GetComponent<MeshCollider>().sharedMesh = mesh;
             GetComponent<MeshFilter>().sharedMesh = mesh;
+            mesh.UploadMeshData(true);
         }
     }
 
@@ -155,7 +160,7 @@ public class AsteroidGenerator : MonoBehaviour
             AsteroidMinSize = 4.2f;
             AsteroidMaxSize = 4.7f;
         }
-        else 
+        else
         {
             AsteroidMinSize = 3.2f;
             AsteroidMaxSize = 3.7f;
@@ -282,7 +287,7 @@ public class AsteroidGenerator : MonoBehaviour
             {
                 kvp.Key.isOutside = true;
             }
-            else 
+            else
             {
                 if (Random.Range(0, 10) <= 9)
                 {
@@ -363,7 +368,7 @@ public class AsteroidGenerator : MonoBehaviour
 
                 float ratioX = Vector3.Distance(v1, v2) / Vector3.Distance(side1, side2);
                 float ratioY = Vector3.Distance(v1, v3) / Vector3.Distance(side1, side2);
-                
+
                 cube.uvs.Add(new Vector2(ratioX, ratioY));
                 cube.uvs.Add(new Vector2(0, ratioY));
                 cube.uvs.Add(new Vector2(ratioX, 0));
@@ -434,6 +439,10 @@ public class AsteroidGenerator : MonoBehaviour
 
         for (int i = 0; i < allCubeData.Count; i++)
         {
+            if (!edited && !allCubeData[i].isOutside)
+            {
+                continue;
+            }
             // if the cube has been mined then continue
             if (!minedCubesIndecies.Contains(i))
             {
@@ -444,7 +453,7 @@ public class AsteroidGenerator : MonoBehaviour
                 allTris.AddRange(trisTemp);
                 allNormals.AddRange(allCubeData[i].normals);
                 allUVs.AddRange(allCubeData[i].uvs);
-                
+
                 if (allCubeData[i].isOre)
                 {
                     foreach (int tri in allCubeData[i].tris)
@@ -473,7 +482,7 @@ public class AsteroidGenerator : MonoBehaviour
         mesh.normals = allNormals.ToArray();
         // add uvs
         mesh.uv = allUVs.ToArray();
-        
+
         GetComponent<MeshCollider>().sharedMesh = mesh;
 
         LODGroup lodGroup = GetComponent<LODGroup>();
@@ -490,11 +499,11 @@ public class AsteroidGenerator : MonoBehaviour
             lods[1].renderers[0] = transform.GetChild(0).GetComponent<Renderer>();
         }
         lodGroup.SetLODs(lods);
-        // set the collider mesh
         if (originalMesh == null)
         {
             originalMesh = Instantiate(mesh);
-        } 
+        }
+        mesh.UploadMeshData(true);
     }
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)
@@ -507,10 +516,10 @@ public class AsteroidGenerator : MonoBehaviour
             }
             edited = true;
         }
-        
+
         int removedCubeIndex = RemoveCubesClosestToRay(ray, hit);
         Item itemMined = stone;
-        
+
         if (allCubeData[removedCubeIndex].isOre)
         {
             itemMined = mineralType;

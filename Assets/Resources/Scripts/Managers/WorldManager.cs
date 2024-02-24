@@ -84,13 +84,16 @@ public class WorldManager : MonoBehaviour
         
         getRemovedAsteroids();
         getEditedAsteroids();
-
-        if(!Directory.Exists("saves"))
+        if(!Directory.Exists("data"))
         {
-            Directory.CreateDirectory("saves");
+            Directory.CreateDirectory("data");
         }
-        // save a file under saves/{name}.dat
-        string filePath = "saves/" + name + ".dat";
+        if(!Directory.Exists("data/saves"))
+        {
+            Directory.CreateDirectory("data/saves");
+        }
+        // save a file under data/saves/{name}.dat
+        string filePath = "data/saves/" + name + ".dat";
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
@@ -139,8 +142,8 @@ public class WorldManager : MonoBehaviour
         removedAsteroids = new HashSet<Vector3>();
         editedAsteroids = new Dictionary<Vector3, HashSet<int>>();
 
-        // load a file under saves/{name}.dat
-        string filePath = "saves/" + name + ".dat";
+        // load a file under data/saves/{name}.dat
+        string filePath = "data/saves/" + name + ".dat";
         if (File.Exists(filePath))
         {
             #if UNITY_EDITOR

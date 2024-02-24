@@ -9,15 +9,16 @@ public class AsteroidFieldGenerator : MonoBehaviour
     // defaults are 1000 asteroids in a 1000m radius
 
     // change this for more or less asteroids
+    [SerializeField]
     int sizeOfPartitions = 1200;
 
     [SerializeField]
     [Range(1000, 100000)]
-    public int radius = 1000;
+    public int radius = 5000;
 
-    [SerializeField]
-    [Range(1000, 100000)]
-    public int height = 10000;
+    public bool allowRandomness = true;
+
+    int height;
 
     [SerializeField]
     bool SpawnAsteroidField = true;
@@ -37,13 +38,16 @@ public class AsteroidFieldGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        height = radius / 2;
         GameObject worldManagerObject = GameObject.Find("WorldManager");
         worldManager = worldManagerObject.GetComponent<WorldManager>();
         minerals = worldManagerObject.GetComponent<Minerals>();
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
 
         // every second debug.log how many children this object has
-        // InvokeRepeating("DebugChildren", 1, 1);
+#if UNITY_EDITOR
+            InvokeRepeating("DebugChildren", 30, 5);
+#endif
     }
 
     public void StartAfterWorldManagerSetUp()
@@ -75,6 +79,15 @@ public class AsteroidFieldGenerator : MonoBehaviour
         }
     }
 
+    void MakeOnePregeneratedAsteroidArea()
+    {
+        GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
+        newAsteroidArea.SetActive(false);
+        newAsteroidArea.transform.SetParent(gameObject.transform, false);
+        AsteroidAreaGameObjectQueue.AddFirst(newAsteroidArea);
+        numAreasInQueue++;
+    }
+
     void MakePregeneratedGameObjectsForAsteroidAreas()
     {
         int numToPregen = 10000;
@@ -82,11 +95,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         watch.Start();
         for (int i = 0; i < numToPregen; i++)
         {
-            GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
-            newAsteroidArea.SetActive(false);
-            newAsteroidArea.transform.SetParent(gameObject.transform, false);
-            AsteroidAreaGameObjectQueue.AddFirst(newAsteroidArea);
-            numAreasInQueue++;
+            MakeOnePregeneratedAsteroidArea();
         }
         watch.Stop();
 #if UNITY_EDITOR
@@ -101,6 +110,11 @@ public class AsteroidFieldGenerator : MonoBehaviour
         Dictionary<string, int> childCounts = new Dictionary<string, int>();
         foreach (Transform child in transform)
         {
+            // if the child object is active
+            if (!child.gameObject.activeSelf)
+            {
+                continue;
+            }
             if (childCounts.ContainsKey(child.name))
             {
                 childCounts[child.name]++;
@@ -134,8 +148,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         // GameObject newAsteroidArea = Instantiate(asteroidAreaPrefab, pos, Quaternion.identity) as GameObject;
         if (AsteroidAreaGameObjectQueue.First == null)
         {
-            Debug.LogError("AsteroidAreaGameObjectQueue is empty! Add more on load. There should be " + numAreasInQueue);
-            return;
+            MakeOnePregeneratedAsteroidArea();
         }
         GameObject newAsteroidArea = AsteroidAreaGameObjectQueue.First.Value;
         AsteroidAreaGameObjectQueue.RemoveFirst();
@@ -151,12 +164,13 @@ public class AsteroidFieldGenerator : MonoBehaviour
         // set newAsteroidAreas density, radius, and height
         asteroidAreaSpawner.radius = (radius / ((radius - negativeRad) / sizeOfPartitions));
         asteroidAreaSpawner.height = (height / ((height - negativeHeight) / sizeOfPartitions));
+
         // if it exists, delete the old one
         if (allSpawnAreas.ContainsKey(newAsteroidArea.transform.localPosition))
         {
             allSpawnAreas[newAsteroidArea.transform.localPosition].GetComponent<AsteroidAreaSpawner>().destroyAsteroidAndThis();
         }
-        asteroidAreaSpawner.GenerateAsteroids(asteroidSpawnManager);
+        asteroidAreaSpawner.GenerateAsteroids(asteroidSpawnManager, allowRandomness);
         // add to the Dictionary
         asteroidAreaSpawner.addedAtPos = newAsteroidArea.transform.localPosition;
         allSpawnAreas.Add(newAsteroidArea.transform.localPosition, newAsteroidArea);
@@ -189,9 +203,9 @@ public class AsteroidFieldGenerator : MonoBehaviour
         {
             AsteroidAreaGameObjectQueue.AddFirst(allSpawnAreas[pos]);
             numAreasInQueue++;
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 // Debug.Log("AsteroidAreaGameObjectQueue count: " + numAreasInQueue);
-            #endif
+#endif
             allSpawnAreas[pos].SetActive(false);
             allSpawnAreas.Remove(pos);
         }

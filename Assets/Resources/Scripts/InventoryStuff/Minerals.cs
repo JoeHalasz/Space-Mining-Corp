@@ -91,7 +91,7 @@ public class Minerals : MonoBehaviour
         // energy parts group 2 // redish pink
         MineralsList.Add("Rhodonide", SetupOneItem("Rhodonide", "refined tier 2 energy materials", 8.9f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.red, 2));
         // weapons parts group 2 // glowing green color
-        MineralsList.Add("Nuclarium", SetupOneItem("Nuclarium", "refined tier 2 weapons materials", 13.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.green, 2));        
+        MineralsList.Add("Nuclarium", SetupOneItem("Nuclarium", "refined tier 2 weapons materials", 13.5f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.green, 2));
         // fuel group 2 // bright purple color, glowing
         MineralsList.Add("Pentolium", SetupOneItem("Pentolium", "refined tier 2 fuel", 15.1f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(1f, .5f, 1f, 1f), 2));
 
@@ -104,7 +104,7 @@ public class Minerals : MonoBehaviour
         // energy parts group 3 // yellow color
         MineralsList.Add("Solarium", SetupOneItem("Solarium", "refined tier 3 energy materials", 25.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, Color.yellow, 3));
         // weapons parts group 3 // dark purple color
-        MineralsList.Add("Gravitite", SetupOneItem("Gravitite", "refined tier 3 weapons materials", 40.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.29f,0, .5f, 1f), 3));
+        MineralsList.Add("Gravitite", SetupOneItem("Gravitite", "refined tier 3 weapons materials", 40.1f, 2f, -1f, true, 99, Item.ItemType.Mineral, new Color(.29f, 0, .5f, 1f), 3));
         // fuel group 3 // lime color
         MineralsList.Add("Exlite", SetupOneItem("Exlite", "refined tier 3 fuel", 30.7f, 2f, -1f, true, 99, Item.ItemType.Fuel, new Color(.75f, .93f, .38f, 1f), 3));
 
@@ -112,12 +112,12 @@ public class Minerals : MonoBehaviour
         {
             MineralGroups.Add(i, new List<Item>());
         }
-        
+
         foreach (Item mineral in MineralsList.Values)
         {
             if (!MineralGroups.ContainsKey(mineral.getLevel()))
                 MineralGroups.Add(mineral.getLevel(), new List<Item>());
-            
+
             MineralGroups[mineral.getLevel()].Add(mineral);
         }
 
@@ -128,7 +128,7 @@ public class Minerals : MonoBehaviour
         // for every mineral, create an ore
         foreach (Item mineral in MineralsList.Values)
         {
-            OresList.Add(mineral.getName() + " Ore", SetupOneItem(mineral.getName() + " Ore", "un"+ mineral.getDescription(), mineral.getDensity(), mineral.getSellValue()/2, -1f, true, 999, Item.ItemType.Ore, /*mineral.getColor()*/new Color(), mineral.getLevel()));
+            OresList.Add(mineral.getName() + " Ore", SetupOneItem(mineral.getName() + " Ore", "un" + mineral.getDescription(), mineral.getDensity(), mineral.getSellValue() / 2, -1f, true, 999, Item.ItemType.Ore, /*mineral.getColor()*/new Color(), mineral.getLevel()));
         }
 
         foreach (Item ore in OresList.Values)
@@ -235,13 +235,13 @@ public class Minerals : MonoBehaviour
         {
             values.Remove(randomPick);
         }
-        
+
         // return values[Random.Range(0, values.Count)];
 
         int zone = CalculateZone(WorldPos);
 
-        // 75% chance of stone
-        if (Random.Range(0, 100) < 75)
+        // 25% chance of stone
+        if (Random.Range(0, 100) < 25)
         {
             return OresList["Stone"];
         }
