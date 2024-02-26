@@ -154,14 +154,19 @@ public class OpenInventoryUI : MonoBehaviour
         // if we are holding something then place it here
         Debug.Log(LastCaller);
         bool fromOtherInv = false;
+        Inventory otherInventory = null;
+        OpenInventoryUI otherInventoryUI = null;
         if (LastCaller != null && (heldItem == null || heldItem.amount == 0))
         {
-            heldItem = LastCaller.GetComponent<OpenInventoryUI>().heldItem;
+            otherInventory = LastCaller.GetComponent<Inventory>();
+            otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
+            heldItem = otherInventoryUI.heldItem;
             fromOtherInv = true;
         }
         if (heldItem != null)
         {
             bool skip = false;
+            bool skipPlaceHere = false;
             // if there is something in invSpot then move that item to where this one was 
             ItemPair temp = inventory.getItemAtPos(invSpot);
             if (temp != null)
@@ -175,45 +180,49 @@ public class OpenInventoryUI : MonoBehaviour
                     {
                         temp.amount = temp.item.getMaxStack();
                         heldItem.amount = leftOver;
+                        if (fromOtherInv)
+                        {
+                            otherInventory.addItem(heldItem.item, heldItem.amount, otherInventoryUI.lastPressedPos);
+                        }
+                        else
+                        {
+                            inventory.addItem(heldItem.item, heldItem.amount, lastPressedPos);
+                        }
                     }
                     else
                     {
                         temp.amount = total;
-                        heldItem = null;
                     }
                 }
                 else
                 {
-                    inventory.addItem(temp.item, temp.amount, lastPressedPos);
+                    inventory.addItem(heldItem.item, heldItem.amount, invSpot);
                     if (fromOtherInv)
                     {
-                        Inventory otherInventory = LastCaller.GetComponent<Inventory>();
-                        OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
-                        otherInventoryUI.heldItem = inventory.getItemAtPos(invSpot);
-                        otherInventoryUI.UpdateInventory();
+                        otherInventory.addItem(temp.item, temp.amount, otherInventoryUI.lastPressedPos);
                     }
-                    inventory.removeItem(invSpot);
-                    skip = true;
+                    else
+                    {
+                        inventory.addItem(temp.item, temp.amount, lastPressedPos);
+                    }
                 }
             }
-            inventory.addItem(heldItem.item, heldItem.amount, invSpot);
-            heldItem = null;
-            UpdateInventory();
-            // update the sprite
-            if (heldItemSprite != null)
+            else
             {
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
+                inventory.addItem(heldItem.item, heldItem.amount, invSpot);
             }
-            if (!skip && LastCaller != null)
+            UpdateInventory();
+            heldItem = null;
+            heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
+            heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
+            if (fromOtherInv)
             {
-                Inventory otherInventory = LastCaller.GetComponent<Inventory>();
-                OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
                 otherInventoryUI.heldItem = null;
                 otherInventoryUI.heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
                 otherInventoryUI.heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
-                otherInventory.inventoryUIScript.UpdateInventory();
+                otherInventoryUI.UpdateInventory();
             }
+
         }
     }
 
