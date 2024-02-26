@@ -12,7 +12,7 @@ public class Inventory : MonoBehaviour
 
     int totalInvSlots = -1;
     public int GetTotalInvSlots() { return totalInvSlots; }
-    
+
     public int numRows;
     public int numCols;
     public int leftOver;
@@ -20,7 +20,7 @@ public class Inventory : MonoBehaviour
     bool calculatedSize = false;
 
     GameObject player;
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,7 +57,8 @@ public class Inventory : MonoBehaviour
                 items.Add(null);
             }
         }
-        if (calculatedSize) {
+        if (calculatedSize)
+        {
             SetNumSlots(totalInvSlots);
             if (isEmpty())
             {
@@ -109,7 +110,7 @@ public class Inventory : MonoBehaviour
 
 
     public bool isEmpty()
-    { 
+    {
         foreach (ItemPair pair in items)
         {
             if (pair != null)
@@ -157,7 +158,7 @@ public class Inventory : MonoBehaviour
             i++;
         }
     }
-    
+
     public ItemPair getFirstItem()
     {
         // loop through all items, return the first one that isnt null
@@ -188,9 +189,9 @@ public class Inventory : MonoBehaviour
     // will return the leftover
     public ItemPair addItem(Item item, float amount, int pos) // if pos is -1, add to first available slot
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             //PrintInv();
-        #endif       
+#endif
         // make a pair out of item
         ItemPair itemPair = new ItemPair(item, amount);
         if (item == null || item.getName() == "")
@@ -238,7 +239,7 @@ public class Inventory : MonoBehaviour
         }
         else
         {
-            List<int> sameItemPoses = new List<int> ();
+            List<int> sameItemPoses = new List<int>();
             List<int> nullSpots = new List<int>();
 
             for (int i = 0; i < items.Count; i++)
@@ -259,7 +260,7 @@ public class Inventory : MonoBehaviour
                 }
             }
 
-            for (int i = 0; i < sameItemPoses.Count;i++)
+            for (int i = 0; i < sameItemPoses.Count; i++)
             {
                 float totalLeft = items[sameItemPoses[i]].addAmountPossible(amount);
                 itemPair.amount -= totalLeft;
@@ -296,13 +297,14 @@ public class Inventory : MonoBehaviour
 
     public void removeItem(int index)
     {
+        Debug.Log(items.Count + " " + index);
         items[index] = null;
         inventoryUIScript.UpdateInventory();
     }
 
     public ItemPair getItemAtPos(int index)
     {
-        if (items.Count <= index)
+        if (items.Count <= index || index == -1)
             return null;
         return items[index];
     }
@@ -335,7 +337,7 @@ public class Inventory : MonoBehaviour
                 totalLeft -= removeAmount;
                 if (totalLeft == 0)
                     return true;
-                
+
             }
         }
         if (totalLeft == 0)

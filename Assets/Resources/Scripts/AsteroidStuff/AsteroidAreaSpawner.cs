@@ -37,10 +37,10 @@ public class AsteroidAreaSpawner : MonoBehaviour
     }
 
     public void GenerateAsteroids(AsteroidSpawnManager asteroidSpawnManager, bool allowRandomness)
-    {   
+    {
         this.asteroidSpawnManager = asteroidSpawnManager;
-        
-        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed()+1)/1000 + ((int)transform.localPosition.x*10 + (int)transform.localPosition.y*100 + (int)transform.localPosition.z*1000))));
+
+        Random.InitState((int)(Mathf.Abs((asteroidSpawnManager.getSeed() + 1) / 1000 + ((int)transform.localPosition.x * 10 + (int)transform.localPosition.y * 100 + (int)transform.localPosition.z * 1000))));
         spawnedAsteroidPosition = new Vector3((int)Random.Range(-1 * radius, radius), (int)Random.Range(-1 * height, height), (int)Random.Range(-1 * radius, radius)) + transform.localPosition;
         if (allowRandomness)
         {
@@ -70,12 +70,12 @@ public class AsteroidAreaSpawner : MonoBehaviour
     }
 
     void ensureInCollider()
-    {   
-        
+    {
+
         // make sure the x y and z are within the size of AsteroidAreaDespawner from the player
         if (Mathf.Abs(player.transform.position.x - transform.position.x) > xMax ||
             Mathf.Abs(player.transform.position.y - transform.position.y) > yMax ||
-            Mathf.Abs(player.transform.position.z - transform.position.z) > zMax )
+            Mathf.Abs(player.transform.position.z - transform.position.z) > zMax)
         {
             destroyAsteroidAndThis();
         }

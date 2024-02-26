@@ -110,17 +110,7 @@ public class OpenInventoryUI : MonoBehaviour
             }
         }
         LastCaller = null;
-        inventoryOpen = false;   
-    }
-
-    int mouseDownFrames = 0;
-
-    void FixedUpdate()
-    {
-        if (Input.GetMouseButton(0))
-        {
-            mouseDownFrames += 1;
-        }
+        inventoryOpen = false;
     }
 
     int mouseHoldThreshhold = 4;
@@ -140,192 +130,160 @@ public class OpenInventoryUI : MonoBehaviour
         }
     }
 
+    public void OnDrag(int invSpot)
+    {
+        lastPressedPos = invSpot;
+        Debug.Log("OnDrag" + invSpot);
+        // if we arent holding something, then pick up the item at that spot
+        if (heldItem == null)
+        {
+            heldItem = inventory.getItemAtPos(invSpot);
+            if (heldItem != null)
+            {
+                inventory.removeItem(invSpot);
+                UpdateInventory();
+                // update the sprite
+                Vector3 mousePos = Input.mousePosition;
+                mousePos.z = 1;
+                heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
+                Debug.Log(itemManager.getSprite(heldItem.item.getName()));
+                Debug.Log(heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite);
+                if (LastCaller != null)
+                {
+                    Inventory otherInventory = LastCaller.GetComponent<Inventory>();
+                    OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
+                    otherInventoryUI.heldItem = heldItem;
+                    otherInventory.inventoryUIScript.UpdateInventory();
+                }
+            }
+        }
+    }
+
+    public void OnDrop(int invSpot)
+    {
+        Debug.Log("OnDrop" + invSpot);
+        // if we are holding something then place it here
+        if (heldItem != null)
+        {
+            // if there is something in invSpot then move that item to where this one was 
+            ItemPair temp = inventory.getItemAtPos(invSpot);
+            if (temp != null)
+            {
+                // if its the same item then add the amounts together and put the remainder back
+                if (temp.item.getName() == heldItem.item.getName())
+                {
+                    float total = temp.amount + heldItem.amount;
+                    float leftOver = total - temp.item.getMaxStack();
+                    if (leftOver > 0)
+                    {
+                        temp.amount = temp.item.getMaxStack();
+                        heldItem.amount = leftOver;
+                    }
+                    else
+                    {
+                        temp.amount = total;
+                        heldItem = null;
+                    }
+                }
+                else
+                {
+                    inventory.removeItem(invSpot);
+                    inventory.addItem(temp.item, temp.amount, lastPressedPos);
+                }
+            }
+            inventory.addItem(heldItem.item, heldItem.amount, invSpot);
+            heldItem = null;
+            UpdateInventory();
+            // update the sprite
+            if (heldItemSprite != null)
+            {
+                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
+                heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
+            }
+            if (LastCaller != null)
+            {
+                Inventory otherInventory = LastCaller.GetComponent<Inventory>();
+                OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
+                otherInventoryUI.heldItem = null;
+                otherInventory.inventoryUIScript.UpdateInventory();
+            }
+        }
+    }
+
+    public void OnPointerDown(int invSlot)
+    {
+        Debug.Log("OnPointerDown");
+        if (LastCaller == null) return;
+        Inventory otherInventory = LastCaller.GetComponent<Inventory>();
+        OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
+        Inventory thisInventory = GetComponent<Inventory>();
+        // if shift is pressed
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (LastCaller != null)
+            {
+                // this means there are 2 inventories open and we are moving an item from one to the other
+                ItemPair item = thisInventory.getItemAtPos(invSlot);
+                if (item != null)
+                {
+                    // remove the item from this inventory
+                    thisInventory.removeItem(invSlot);
+                    // add the item to the other inventory
+                    ItemPair itemLeftOver = otherInventory.addItem(item.item, item.amount, -1);
+                    while (itemLeftOver != null)
+                    {
+                        float amount = itemLeftOver.amount;
+                        itemLeftOver = otherInventory.addItem(itemLeftOver.item, itemLeftOver.amount, -1);
+                        if (amount == itemLeftOver.amount)
+                        {
+                            thisInventory.addItem(itemLeftOver.item, itemLeftOver.amount, -1);
+                            break;
+                        }
+                    }
+                    // update the UIs
+                    otherInventory.inventoryUIScript.UpdateInventory();
+                }
+            }
+        }
+    }
+
+    public void OnPointerEnter(int invSpot)
+    {
+
+    }
+
+    public void OnPointerExit(int invSpot)
+    {
+
+    }
+
     // Update is called once per frame
     void Update()
     {
         if (inventoryOpen)
         {
-            if (Input.GetMouseButtonDown(0) || (mouseDownFrames > mouseHoldThreshhold && !Input.GetMouseButton(0) && (heldItem != null || (LastCaller != null && LastCaller.GetComponent<OpenInventoryUI>().heldItem != null))))
-            {
-                // get the mouse pos
-                Vector3 mousePos = Input.mousePosition;
-                // figure out which inventory square is under that mouse pos
-                // get the x and y of the mouse pos
-                float x = mousePos.x;
-                float y = mousePos.y;
-
-                int localNumCols = numCols;
-                if (leftOver != 0)
-                    localNumCols++;
-
-                float xMinCheck = currentInventoryUI.transform.position.x - iconSize / 2;
-
-                float xMaxCheck = xMinCheck + numRows * spaceBetween - diff / 2;
-
-                float yMaxCheck = currentInventoryUI.transform.position.y + iconSize / 2;
-                float yMinCheck = yMaxCheck - localNumCols * spaceBetween + diff / 2;
-
-                bool InSquare = false;
-                int xSquare = -1;
-                int ySquare = -1;
-
-                if (x >= xMinCheck && x <= xMaxCheck && y >= yMinCheck && y <= yMaxCheck)
-                {
-                    x -= xMinCheck;
-                    y -= yMinCheck;
-                    x /= spaceBetween;
-                    y /= spaceBetween;
-                    y = localNumCols - y;
-                    if (x - (int)x < .85f && y - (int)y > .15f)
-                    {
-                        InSquare = true;
-                        xSquare = (int)x;
-                        ySquare = (int)y;
-                    }
-                }
-
-                if (InSquare)
-                {
-                    int pos = getFlatPos(xSquare, ySquare);
-                    // make sure pos isnt more than the inv size
-                    if (pos > inventory.GetTotalInvSlots())
-                        return;
-
-                    bool shiftPressed = Input.GetKey(KeyCode.LeftShift);
-                    Inventory thisInventory = GetComponent<Inventory>();
-                    if (LastCaller == null) return;
-                    Inventory otherInventory = LastCaller.GetComponent<Inventory>();
-                    OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
-                    if (LastCaller != null && shiftPressed)
-                    {
-                        // this means there are 2 inventories open and we are moving an item from one to the other
-                        
-                        ItemPair item = thisInventory.getItemAtPos(pos);
-                        if (item != null)
-                        {
-                            // remove the item from this inventory
-                            thisInventory.removeItem(pos);
-                            // add the item to the other inventory
-                            ItemPair itemLeftOver = otherInventory.addItem(item.item, item.amount, -1);
-                            if (itemLeftOver != null)
-                            {
-                                thisInventory.addItem(itemLeftOver.item, itemLeftOver.amount, pos);
-                            }
-                            // update the UIs
-                            otherInventory.inventoryUIScript.UpdateInventory();
-                        }
-                    }
-                    else
-                    {
-                        // if the heldItem is not null and LastCaller is null or LastCaller.heldItem is not null
-                        ItemPair otherHeldItem = null;
-                        GameObject otherHeldItemSprite = null;
-                        
-                        if (LastCaller != null) {
-                            otherHeldItem = otherInventoryUI.heldItem;
-                            otherHeldItemSprite = otherInventoryUI.heldItemSprite;
-                        }
-                        
-                        if (heldItem != null || otherHeldItem != null)
-                        {
-                            // we are placing something
-                            if (heldItem != null)
-                            {
-                                // we are moving something from this inv to this inv
-                                if (thisInventory.getItemAtPos(pos) == null || thisInventory.getItemAtPos(pos).item.getName() != heldItem.item.getName())
-                                {
-                                    ItemPair temp = thisInventory.getItemAtPos(pos);
-
-                                    // remove temp from the inventory
-                                    thisInventory.removeItem(pos);
-                                    // add this the heldItem to the inventory
-                                    ItemPair leftOver = thisInventory.addItem(heldItem.item, heldItem.amount, pos);
-
-                                    // make temp heldItem
-                                    heldItem = temp;
-
-                                }
-                                else
-                                {
-                                    // they have the same name, add as much as you can to it
-                                    ItemPair itemLeftOver = thisInventory.addItem(heldItem.item, heldItem.amount, pos);
-                                    if (itemLeftOver == null)
-                                    {
-                                        heldItem = null;
-                                    }
-                                    else
-                                    {
-                                        heldItem = itemLeftOver;
-                                    }
-                                }
-                            }
-                            else // otherHeldItem != null
-                            {
-                                // we are moving something from the other inv to this inv
-                                if (thisInventory.getItemAtPos(pos) == null || thisInventory.getItemAtPos(pos).item.getName() != otherHeldItem.item.getName())
-                                {
-                                    ItemPair temp = thisInventory.getItemAtPos(pos);
-
-                                    // remove temp from the inventory
-                                    thisInventory.removeItem(pos);
-                                    // add this the heldItem to the inventory
-                                    thisInventory.addItem(otherHeldItem.item, otherHeldItem.amount, pos);
-                                    // make temp heldItem
-                                    otherHeldItem = temp;
-                                   
-                                    otherInventoryUI.heldItem = temp;
-                                    otherInventoryUI.UpdateInventory();
-                                }
-                                else
-                                {
-                                    // they have the same name, add as much as you can to it
-                                    ItemPair itemLeftOver = thisInventory.addItem(otherInventoryUI.heldItem.item, otherInventoryUI.heldItem.amount, pos);
-                                    if (itemLeftOver == null)
-                                    {
-                                        // move the sprite back to the original position
-                                        otherInventoryUI.heldItem = null;
-                                        otherInventoryUI.UpdateInventory();
-                                    }
-                                    else
-                                    {
-                                        otherInventoryUI.heldItem = itemLeftOver;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {   
-                            // we are picking something up from this inventory
-                            ItemPair item = thisInventory.getItemAtPos(pos);
-                            // if theres something at that pos
-                            if (item != null)
-                            {
-                                // set the heldItem to that item
-                                heldItem = item;
-                                // remove from this inv
-                                thisInventory.removeItem(pos);
-                            }
-                        }
-                    }
-                    lastPressedPos = pos;
-                    UpdateInventory();
-                }
-            }
             if (heldItem != null && heldItemSprite != null)
             {
-                if (itemManager.getSprite(heldItem.item.getName()) != null)
+                // if the mouse isnt down then put the item back
+                if (!Input.GetMouseButton(0))
+                {
+                    GetComponent<Inventory>().addItem(heldItem.item, heldItem.amount, lastPressedPos);
+                    heldItem = null;
+                    if (heldItemSprite != null)
+                    {
+                        heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
+                        heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
+                    }
+                    UpdateInventory();
+                }
+                else
                 {
                     // set its position to the mouse position
                     Vector3 mousePos = Input.mousePosition;
                     mousePos.z = 1;
                     heldItemSprite.transform.position = mousePos;
-                    heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-                    heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
                 }
-            }
-            if (!Input.GetMouseButton(0))
-            {
-                mouseDownFrames = 0;
             }
         }
         else
@@ -361,14 +319,14 @@ public class OpenInventoryUI : MonoBehaviour
         Icons.Clear();
 
         int total = 0;
-        
-        for (int i = 0; i < numCols+1; i++)
+
+        for (int i = 0; i < numCols + 1; i++)
         {
             for (int j = 0; j < numRows; j++)
             {
                 if (total >= inventory.GetTotalInvSlots())
                     break;
-                
+
                 // spawn an inventory tile prefab at the correct position
                 GameObject tile = Instantiate(inventoryBackgroundTilePrefab, currentInventoryUIBackground.transform);
                 // set its parent
@@ -379,6 +337,8 @@ public class OpenInventoryUI : MonoBehaviour
                 BackgroundTiles.Add(tile);
                 // make another tile in the same spot for the item sprites
                 GameObject icon = Instantiate(inventoryTilePrefab, currentInventoryUI.transform);
+                icon.GetComponent<HandleUIInput>().invSlot = total;
+                icon.GetComponent<HandleUIInput>().openInventoryUI = this;
                 // set its parent
                 icon.transform.SetParent(currentInventoryUI.transform, true);
                 icon.transform.localPosition = new Vector3(j * spaceBetween, -i * spaceBetween, 0);
@@ -393,6 +353,9 @@ public class OpenInventoryUI : MonoBehaviour
         }
         // make a sprite for the held item
         heldItemSprite = Instantiate(inventoryTilePrefab, currentInventoryUI.transform);
+        Destroy(heldItemSprite.GetComponent<HandleUIInput>());
+        Destroy(heldItemSprite.GetComponent<UnityEngine.EventSystems.EventTrigger>());
+        heldItemSprite.GetComponent<UnityEngine.UI.Image>().raycastTarget = false;
         heldItemSprite.transform.SetParent(currentInventoryUI.transform, true);
         heldItemSprite.GetComponent<RectTransform>().sizeDelta = new Vector2(iconSize, iconSize);
         heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
@@ -421,11 +384,5 @@ public class OpenInventoryUI : MonoBehaviour
                 Icons[i].GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(allItems[i].item.getName());
             }
         }
-        if (heldItemSprite != null)
-        {
-            heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
-            heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
-        }
-
     }
 }

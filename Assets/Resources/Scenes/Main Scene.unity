@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.086486824, g: 0.086486824, b: 0.086486824, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -6663,9 +6663,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asteroidPrefab: {fileID: 4140343361690331378, guid: 0ef98c27a31240546a3fc8e263c19bad,
     type: 3}
-  maxAsteroidsX: 1
-  maxAsteroidsY: 1
-  maxAsteroidsZ: 1
+  maxAsteroidsX: 10
+  maxAsteroidsY: 10
+  maxAsteroidsZ: 10
   spacing: 20
   redoTest: 0
 --- !u!1001 &510467465
@@ -14179,8 +14179,6 @@ Transform:
   - {fileID: 508936028}
   - {fileID: 495250638423853852}
   - {fileID: 1766662399}
-  - {fileID: 2036332215}
-  - {fileID: 2091529693}
   - {fileID: 512155159}
   - {fileID: 2146019522}
   - {fileID: 246482954}
@@ -25102,7 +25100,7 @@ RectTransform:
   m_Children:
   - {fileID: 820270229}
   - {fileID: 1456275268}
-  m_Father: {fileID: 1119930622}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -25457,7 +25455,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
 --- !u!114 &2091529691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25493,7 +25491,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -25521,7 +25519,7 @@ RectTransform:
   - {fileID: 775191636}
   - {fileID: 166009392}
   - {fileID: 203327718}
-  m_Father: {fileID: 1119930622}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -30329,5 +30327,7 @@ SceneRoots:
   - {fileID: 477143904}
   - {fileID: 776957572}
   - {fileID: 704926927}
+  - {fileID: 2091529693}
+  - {fileID: 2036332215}
   - {fileID: 1779243968}
   - {fileID: 1119930622}

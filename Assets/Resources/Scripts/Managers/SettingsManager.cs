@@ -7,21 +7,21 @@ using System.Runtime.Serialization.Formatters.Binary;
 [System.Serializable]
 class Settings // for now just settings that dont have to do with unity quality 
 {
-    float renderDistance; // TODO add connection to unity generation script. Will have to reload to get this to work. 
+    public float renderDistance; // TODO add connection to unity generation script. Will have to reload to get this to work. 
 
     // TODO add keybinds
     // TODO add unity quality settings
+    // TODO add sound settings
 
 }
 
 public class SettingsManager : MonoBehaviour
 {
     // should save and load to a file in the data folder
-
-
+    Settings settings;
     void Save()
     {
-        if(!Directory.Exists("data"))
+        if (!Directory.Exists("data"))
         {
             Directory.CreateDirectory("data");
         }
@@ -34,18 +34,20 @@ public class SettingsManager : MonoBehaviour
         FileStream file = File.Create(filePath);
         if (File.Exists(filePath))
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File created successfully");
-            #endif
+#endif
         }
         else
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File creation failed");
-            #endif
+#endif
             return;
         }
         BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(file, settings);
+        file.Close();
     }
 
     void Load()
@@ -54,19 +56,21 @@ public class SettingsManager : MonoBehaviour
         string filePath = "data/settings.dat";
         if (File.Exists(filePath))
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File exists");
-            #endif
+#endif
         }
         else
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File does not exist");
-            #endif
+#endif
             return;
         }
         FileStream file = File.Open(filePath, FileMode.Open);
         // load the seed, name and name2
         BinaryFormatter bf = new BinaryFormatter();
+        settings = (Settings)bf.Deserialize(file);
+        file.Close();
     }
 }
