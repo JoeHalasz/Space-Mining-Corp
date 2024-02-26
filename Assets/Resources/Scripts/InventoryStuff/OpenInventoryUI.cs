@@ -134,29 +134,17 @@ public class OpenInventoryUI : MonoBehaviour
     {
         lastPressedPos = invSpot;
         Debug.Log("OnDrag" + invSpot);
-        // if we arent holding something, then pick up the item at that spot
-        if (heldItem == null)
+        // Then pick up the item at that spot
+        heldItem = inventory.getItemAtPos(invSpot);
+        if (heldItem != null)
         {
-            heldItem = inventory.getItemAtPos(invSpot);
-            if (heldItem != null)
-            {
-                inventory.removeItem(invSpot);
-                UpdateInventory();
-                // update the sprite
-                Vector3 mousePos = Input.mousePosition;
-                mousePos.z = 1;
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-                heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
-                Debug.Log(itemManager.getSprite(heldItem.item.getName()));
-                Debug.Log(heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite);
-                if (LastCaller != null)
-                {
-                    Inventory otherInventory = LastCaller.GetComponent<Inventory>();
-                    OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
-                    otherInventoryUI.heldItem = heldItem;
-                    otherInventory.inventoryUIScript.UpdateInventory();
-                }
-            }
+            inventory.removeItem(invSpot);
+            UpdateInventory();
+            // update the sprite
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z = 1;
+            heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+            heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(heldItem.item.getName());
         }
     }
 
@@ -164,8 +152,16 @@ public class OpenInventoryUI : MonoBehaviour
     {
         Debug.Log("OnDrop" + invSpot);
         // if we are holding something then place it here
+        Debug.Log(LastCaller);
+        bool fromOtherInv = false;
+        if (LastCaller != null && (heldItem == null || heldItem.amount == 0))
+        {
+            heldItem = LastCaller.GetComponent<OpenInventoryUI>().heldItem;
+            fromOtherInv = true;
+        }
         if (heldItem != null)
         {
+            bool skip = false;
             // if there is something in invSpot then move that item to where this one was 
             ItemPair temp = inventory.getItemAtPos(invSpot);
             if (temp != null)
@@ -188,8 +184,16 @@ public class OpenInventoryUI : MonoBehaviour
                 }
                 else
                 {
-                    inventory.removeItem(invSpot);
                     inventory.addItem(temp.item, temp.amount, lastPressedPos);
+                    if (fromOtherInv)
+                    {
+                        Inventory otherInventory = LastCaller.GetComponent<Inventory>();
+                        OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
+                        otherInventoryUI.heldItem = inventory.getItemAtPos(invSpot);
+                        otherInventoryUI.UpdateInventory();
+                    }
+                    inventory.removeItem(invSpot);
+                    skip = true;
                 }
             }
             inventory.addItem(heldItem.item, heldItem.amount, invSpot);
@@ -201,11 +205,13 @@ public class OpenInventoryUI : MonoBehaviour
                 heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
                 heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
             }
-            if (LastCaller != null)
+            if (!skip && LastCaller != null)
             {
                 Inventory otherInventory = LastCaller.GetComponent<Inventory>();
                 OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
                 otherInventoryUI.heldItem = null;
+                otherInventoryUI.heldItemSprite.GetComponent<UnityEngine.UI.Image>().sprite = null;
+                otherInventoryUI.heldItemSprite.GetComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0);
                 otherInventory.inventoryUIScript.UpdateInventory();
             }
         }

@@ -3169,6 +3169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cbab64e351ac1a46bbce02be56b41fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numCargoSlots: -1
 --- !u!64 &246482952
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -20087,6 +20088,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cbab64e351ac1a46bbce02be56b41fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numCargoSlots: -1
 --- !u!64 &1620978268
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -26365,6 +26367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cbab64e351ac1a46bbce02be56b41fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numCargoSlots: 8
 --- !u!114 &2146019527
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -19,7 +19,7 @@ public class ShipManager : MonoBehaviour
     public float GetHealth() { return health; }
     float maxHealth;
     public float GetMaxHealth() { return maxHealth; }
-    float forwardSpeed; 
+    float forwardSpeed;
     public float GetForwardSpeed() { return forwardSpeed; }
     float reverseSpeed;
     public float GetReverseSpeed() { return reverseSpeed; }
@@ -37,18 +37,18 @@ public class ShipManager : MonoBehaviour
     public float GetShieldRegen() { return shieldRegen; }
     float shieldDelay;
     public float GetShieldDelay() { return shieldDelay; }
-    
+
     // TODO for all ship parts add to save and load file
     // TODO add weapons
     // TODO add thrusters
-    
+
 
     // used for loading the game
 
-    public void loadState( float energy, float maxEnergy, float maxFuel, float fuel, int numCargoSlots, float health, 
-                    float maxHealth, float forwardSpeed, float reverseSpeed, float verticalTurnSpeed, 
-                    float horizontalTurnSpeed, float strafeSpeed, float shield, float maxShield, 
-                    float shieldRegen, float shieldDelay )
+    public void loadState(float energy, float maxEnergy, float maxFuel, float fuel, int numCargoSlots, float health,
+                    float maxHealth, float forwardSpeed, float reverseSpeed, float verticalTurnSpeed,
+                    float horizontalTurnSpeed, float strafeSpeed, float shield, float maxShield,
+                    float shieldRegen, float shieldDelay)
     {
         this.energy = energy;
         this.maxEnergy = maxEnergy;
@@ -72,16 +72,17 @@ public class ShipManager : MonoBehaviour
     Inventory inventory;
     OpenInventoryUI inventoryUI;
 
+    [SerializeField]
     int numCargoSlots = -1;
     public int GetNumCargoSlots() { return numCargoSlots; }
-    
+
 
     // Start is called before the first frame update
     void Start()
     {
         inventory = GetComponent<Inventory>();
         inventoryUI = GetComponent<OpenInventoryUI>();
-        if (inventory == null )
+        if (inventory == null)
             Debug.Log(gameObject.name + " has no inventory script attached");
         if (inventoryUI == null)
             Debug.Log(gameObject.name + " has no inventory UI script attached");
@@ -99,7 +100,7 @@ public class ShipManager : MonoBehaviour
     }
 
     public bool AddEnergy(float addEnergy)
-    {    
+    {
         if (energy + addEnergy <= maxEnergy)
         {
             energy += addEnergy;
