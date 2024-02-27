@@ -25,6 +25,8 @@ public class WorldManager : MonoBehaviour
 
     GameObject player;
 
+    bool loadedOnce = false;
+
     public Vector3 getCurrentWorldOffset()
     {
         return currentWorldOffset;
@@ -45,8 +47,6 @@ public class WorldManager : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
-        asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
-        asteroidFieldGenerator.StartAfterWorldManagerSetUp();
     }
 
     void offsetWorldIfNecessary()
@@ -58,20 +58,34 @@ public class WorldManager : MonoBehaviour
         }
     }
 
+    void FirstLoadSinceStartup()
+    {
+        asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
+        asteroidFieldGenerator.StartAfterWorldManagerSetUp();
+        loadedOnce = true;
+    }
+
     void Update()
     {
         // when the user presses F5, save the game and F9 to load the game
         if (Input.GetKeyDown(KeyCode.F5))
         {
-            Save("test");
+            if (loadedOnce)
+                Save("test");
         }
         if (Input.GetKeyDown(KeyCode.F9))
         {
+            if (!loadedOnce)
+                FirstLoadSinceStartup();
             Load("test");
         }
         if (Input.GetKeyDown(KeyCode.F10))
         {
             OffsetWorldBy(new Vector3(5000, 0, 0));
+        }
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            FirstLoadSinceStartup();
         }
 
     }
