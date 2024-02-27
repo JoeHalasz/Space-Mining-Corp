@@ -122,13 +122,13 @@ public class AsteroidGenerator : MonoBehaviour
                 lods[1].renderers[0] = transform.GetChild(0).GetComponent<Renderer>();
             }
             lodGroup.SetLODs(lods);
-            originalMesh.UploadMeshData(true);
+            originalMesh.UploadMeshData(false);
         }
         else
         {
             GetComponent<MeshCollider>().sharedMesh = mesh;
             GetComponent<MeshFilter>().sharedMesh = mesh;
-            mesh.UploadMeshData(true);
+            mesh.UploadMeshData(false);
         }
     }
 
@@ -497,7 +497,7 @@ public class AsteroidGenerator : MonoBehaviour
         {
             originalMesh = Instantiate(mesh);
         }
-        mesh.UploadMeshData(true);
+        mesh.UploadMeshData(false);
     }
 
     public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)

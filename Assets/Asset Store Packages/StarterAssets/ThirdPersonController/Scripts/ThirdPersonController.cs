@@ -84,11 +84,20 @@ namespace StarterAssets
         private void Update()
         {
             _hasAnimator = TryGetComponent(out _animator);
-            
+
             GroundedCheck();
             if (!lockPlayerMovement)
                 NormalMove();
-            
+
+        }
+
+        void FixedUpdate()
+        {
+            // if the player right clicks, teleport them 100 units in the direction they are facing
+            if (Input.GetMouseButtonUp(1))
+            {
+                transform.position += transform.forward * 100;
+            }
         }
 
         private void LateUpdate()
@@ -191,12 +200,6 @@ namespace StarterAssets
                 {
                     targetVelocity -= transform.up * _flySpeed;
                 }
-            }
-
-            // if the player right clicks, teleport them 100 units in the direction they are facing
-            if (Input.GetMouseButtonUp(1))
-            {
-                transform.position += transform.forward * 100;
             }
 
             // slowly change playerVelocity to targetVelocity
