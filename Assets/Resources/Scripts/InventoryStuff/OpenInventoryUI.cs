@@ -25,6 +25,7 @@ public class OpenInventoryUI : MonoBehaviour
     public int numRows;
     public int numCols;
     int leftOver;
+    int iconCurrentlyOn = -1;
 
     bool IsOnPlayer = false;
 
@@ -62,7 +63,6 @@ public class OpenInventoryUI : MonoBehaviour
 
         inventoryTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryTile");
         inventoryBackgroundTilePrefab = Resources.Load<GameObject>("Prefabs/UI/InventoryBackgroundTile");
-
     }
 
     public GameObject LastCaller = null;
@@ -87,8 +87,8 @@ public class OpenInventoryUI : MonoBehaviour
             {
                 LastCaller.GetComponent<OpenInventoryUI>().LastCaller = this.gameObject;
             }
-
             inventoryOpen = true;
+            iconCurrentlyOn = -1;
             GenerateInventoryUI(isLeft);
         }
     }
@@ -111,6 +111,7 @@ public class OpenInventoryUI : MonoBehaviour
         }
         LastCaller = null;
         inventoryOpen = false;
+        iconCurrentlyOn = -1;
     }
 
     int mouseHoldThreshhold = 4;
@@ -133,7 +134,6 @@ public class OpenInventoryUI : MonoBehaviour
     public void OnDrag(int invSpot)
     {
         lastPressedPos = invSpot;
-        Debug.Log("OnDrag" + invSpot);
         // Then pick up the item at that spot
         heldItem = inventory.getItemAtPos(invSpot);
         if (heldItem != null)
@@ -150,9 +150,7 @@ public class OpenInventoryUI : MonoBehaviour
 
     public void OnDrop(int invSpot)
     {
-        Debug.Log("OnDrop" + invSpot);
         // if we are holding something then place it here
-        Debug.Log(LastCaller);
         bool fromOtherInv = false;
         Inventory otherInventory = null;
         OpenInventoryUI otherInventoryUI = null;
@@ -228,7 +226,6 @@ public class OpenInventoryUI : MonoBehaviour
 
     public void OnPointerDown(int invSlot)
     {
-        Debug.Log("OnPointerDown");
         if (LastCaller == null) return;
         Inventory otherInventory = LastCaller.GetComponent<Inventory>();
         OpenInventoryUI otherInventoryUI = LastCaller.GetComponent<OpenInventoryUI>();
@@ -265,12 +262,26 @@ public class OpenInventoryUI : MonoBehaviour
 
     public void OnPointerEnter(int invSpot)
     {
-
+        // if there is an item here then highlight it 
+        iconCurrentlyOn = invSpot;
+        ItemPair item = inventory.getItemAtPos(invSpot);
+        if (item != null)
+        {
+            // make the image in the inventoryUI brighter
+            Icons[invSpot].GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+        }
     }
 
     public void OnPointerExit(int invSpot)
     {
-
+        iconCurrentlyOn = -1;
+        // if there is an item here then unhighlight it 
+        ItemPair item = inventory.getItemAtPos(invSpot);
+        if (item != null)
+        {
+            // make the image in the inventoryUI lew bright
+            Icons[invSpot].GetComponent<UnityEngine.UI.Image>().color = new Color(.88f, .88f, .88f, 1);
+        }
     }
 
     // Update is called once per frame
@@ -361,6 +372,7 @@ public class OpenInventoryUI : MonoBehaviour
                 icon.GetComponent<RectTransform>().sizeDelta = new Vector2(iconSize, iconSize);
                 // set the sprint to null for now
                 icon.GetComponent<UnityEngine.UI.Image>().sprite = null;
+                icon.GetComponent<UnityEngine.UI.Image>().color = new Color(.88f, .88f, .88f, 1);
                 // add to the list of icons
                 Icons.Add(icon);
                 total++;
@@ -391,7 +403,11 @@ public class OpenInventoryUI : MonoBehaviour
             }
             else
             {
-                Icons[i].GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+                Icons[i].GetComponent<UnityEngine.UI.Image>().color = new Color(.88f, .88f, .88f, 1);
+                if (i == iconCurrentlyOn)
+                {
+                    Icons[i].GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
+                }
                 if (itemManager.getSprite(allItems[i].item.getName()) == null)
                 {
                     Debug.Log("here1");

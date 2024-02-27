@@ -297,7 +297,6 @@ public class Inventory : MonoBehaviour
 
     public void removeItem(int index)
     {
-        Debug.Log(items.Count + " " + index);
         items[index] = null;
         inventoryUIScript.UpdateInventory();
     }
