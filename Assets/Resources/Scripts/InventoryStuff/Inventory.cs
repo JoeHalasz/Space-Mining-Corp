@@ -282,8 +282,6 @@ public class Inventory : MonoBehaviour
                 return itemPair;
             }
         }
-
-
     }
 
     public void moveItem(int index, int newIndex)
@@ -321,7 +319,6 @@ public class Inventory : MonoBehaviour
             return false;
         }
         float totalLeft = amount;
-
         // make a copy of items to loop through
         foreach (ItemPair pair in items)
         {
@@ -336,7 +333,6 @@ public class Inventory : MonoBehaviour
                 totalLeft -= removeAmount;
                 if (totalLeft == 0)
                     return true;
-
             }
         }
         if (totalLeft == 0)
