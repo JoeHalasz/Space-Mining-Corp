@@ -549,7 +549,6 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
-    // check dist every .2f on the ray
     int RemoveCubesClosestToRay(Ray ray, RaycastHit hit)
     {
         float closestDistance = Mathf.Infinity;

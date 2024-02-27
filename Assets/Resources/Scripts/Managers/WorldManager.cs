@@ -13,7 +13,7 @@ public class WorldManager : MonoBehaviour
     public void setSeed(int value) { seed = value; }
     // make a hashset for all the removed asteroids
     public HashSet<Vector3> removedAsteroids = new HashSet<Vector3>();
-    
+
     // make a dictionary for all the edited asteroids where the key is Vector3 and the value is a list of edits
     public Dictionary<Vector3, HashSet<int>> editedAsteroids = new Dictionary<Vector3, HashSet<int>>();
 
@@ -81,14 +81,14 @@ public class WorldManager : MonoBehaviour
         // time it
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
-        
+
         getRemovedAsteroids();
         getEditedAsteroids();
-        if(!Directory.Exists("data"))
+        if (!Directory.Exists("data"))
         {
             Directory.CreateDirectory("data");
         }
-        if(!Directory.Exists("data/saves"))
+        if (!Directory.Exists("data/saves"))
         {
             Directory.CreateDirectory("data/saves");
         }
@@ -101,15 +101,15 @@ public class WorldManager : MonoBehaviour
         FileStream file = File.Create(filePath);
         if (File.Exists(filePath))
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File created successfully");
-            #endif
+#endif
         }
         else
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File creation failed");
-            #endif
+#endif
             return;
         }
         // save the seed in binary
@@ -126,9 +126,9 @@ public class WorldManager : MonoBehaviour
         file.Close();
 
         watch.Stop();
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
-        #endif  
+#endif
 
     }
 
@@ -146,15 +146,15 @@ public class WorldManager : MonoBehaviour
         string filePath = "data/saves/" + name + ".dat";
         if (File.Exists(filePath))
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File exists");
-            #endif
+#endif
         }
         else
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
                 Debug.Log("File does not exist");
-            #endif
+#endif
             return;
         }
         FileStream file = File.Open(filePath, FileMode.Open);
@@ -172,9 +172,9 @@ public class WorldManager : MonoBehaviour
         file.Close();
 
         watch.Stop();
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("Loaded game in " + watch.ElapsedMilliseconds + "ms");
-        #endif
+#endif
     }
 
     // file stream is already open
@@ -206,7 +206,7 @@ public class WorldManager : MonoBehaviour
         // save the players ship
         bf.Serialize(file, playerStats.playerCurrentShip.name);
     }
-     
+
     // file stream is already open
     void loadPlayer(FileStream file)
     {
@@ -278,13 +278,13 @@ public class WorldManager : MonoBehaviour
         ShipManager shipManager = playerStats.playerCurrentShip.GetComponent<ShipManager>();
         shipManager.loadState(
             (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
-            (float)bf.Deserialize(file), (int)bf.Deserialize(file), (float)bf.Deserialize(file), 
-            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
-            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file), 
+            (float)bf.Deserialize(file), (int)bf.Deserialize(file), (float)bf.Deserialize(file),
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
+            (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
             (float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file),
             (float)bf.Deserialize(file)
             );
-        
+
     }
 
     void saveFactions(FileStream file)
@@ -378,8 +378,8 @@ public class WorldManager : MonoBehaviour
             bigList.AddRange(edits);
         }
         bf.Serialize(file, bigList);
-        
-        
+
+
     }
 
     // file stream is already open
@@ -406,7 +406,7 @@ public class WorldManager : MonoBehaviour
         for (int i = 0; i < numEditedAsteroids; i++)
         {
             // get the pos
-            Vector3 pos = new Vector3(bigList[count], bigList[count+1], bigList[count+2]);
+            Vector3 pos = new Vector3(bigList[count], bigList[count + 1], bigList[count + 2]);
             count += 3;
             // get the num edits
             int numEdits = bigList[count++];
@@ -421,10 +421,11 @@ public class WorldManager : MonoBehaviour
         }
 
         asteroidSpawnManager.LoadGame(removedAsteroids, editedAsteroids);
-        
+
     }
 
-    void getRemovedAsteroids(){
+    void getRemovedAsteroids()
+    {
         removedAsteroids = asteroidSpawnManager.getAllRemovedAsteroids();
     }
 
