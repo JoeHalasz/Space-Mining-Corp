@@ -85,11 +85,6 @@ public class AsteroidGenerator : MonoBehaviour
     }
 #endif
 
-    List<List<T>> copyListOfLists<T>(List<List<T>> lst)
-    {
-        return lst.Select(innerList => new List<T>(innerList)).ToList();
-    }
-
     public bool copyAll(ref AsteroidGenerator other, AsteroidSpawnManager _asteroidSpawnManager)
     {
         mineralType = other.mineralType;
@@ -105,7 +100,6 @@ public class AsteroidGenerator : MonoBehaviour
 #endif
             return false;
         }
-        size = other.size; // TODO delete this. its only for debugging
         return true;
     }
 
