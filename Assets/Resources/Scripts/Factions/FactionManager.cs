@@ -19,16 +19,17 @@ public class FactionManager : MonoBehaviour
     public float GetPlayerReputation() { return playerReputation; }
     public void SetPlayerReputation(float rep) { playerReputation = rep; }
     public void AddPlayerReputation(float add) { playerReputation += add; remakeMissions = true; }
-    
+
     GameObject Player;
 
     string factionName;
-    public string getFactionName() {  return factionName; }
+    public string getFactionName() { return factionName; }
 
-   
+
     PlayerStats playerStats;
 
     Minerals minerals;
+    WorldManager worldManager;
 
     // Start is called before the first frame update
     void Start()
@@ -39,6 +40,7 @@ public class FactionManager : MonoBehaviour
         CreateAllMissions c = new CreateAllMissions();
         minerals = GameObject.Find("WorldManager").GetComponent<Minerals>();
         AllDefaultMissionsByLevel = c.CreateAllGameMissions(minerals);
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
         MakeMissions();
     }
 
@@ -68,7 +70,7 @@ public class FactionManager : MonoBehaviour
     public void MakeMissions()
     {
         currentMissions = new List<Mission>();
-        int playerLevel = (int)playerReputation/100;
+        int playerLevel = (int)playerReputation / 100;
         MakeMainMissions(playerLevel);
         // number of missions to make should be a random number between 4 and 7
         int numberOfMissionsToMake = Random.Range(4, 8);
@@ -77,7 +79,7 @@ public class FactionManager : MonoBehaviour
         {
             if (tries++ > 100)
                 break;
-            
+
             // get a random number from 1 to 3.
             int numMissionsToCombine = Random.Range(1, 4);
             List<Mission> missionsToCombine = new List<Mission>();
@@ -126,10 +128,10 @@ public class FactionManager : MonoBehaviour
 
     }
 
-    void MakeMainMissions(int playerLevel)
+    void MakeMainMissions(int playerLevel) // TODO change this to new plan
     {
-        int numMainMissionsDone = playerStats.numMainMissionsDone;
-        if (numMainMissionsDone == 0)
+        int worldState = (int)worldManager.worldState;
+        if (worldState == 0)
         {
             Mission mission = new Mission();
             List<ItemPair> goal = new List<ItemPair>();
@@ -138,7 +140,7 @@ public class FactionManager : MonoBehaviour
             mission.SetUpMission("Main Mission Mine Ice", "Board your ship, fly out and mine some ice, and bring it back here", 0, 1000, 1, new List<ItemPair>(), goal, true);
             currentMissions.Add(mission);
         }
-        if (numMainMissionsDone == 1 && playerReputation > 180)
+        if (worldState == 1 && playerReputation > 180)
         {
             Mission mission = new Mission();
             List<ItemPair> goal = new List<ItemPair>();
@@ -146,7 +148,7 @@ public class FactionManager : MonoBehaviour
             mission.SetUpMission("Main Mission Refine Uranium", "We want to restart the station core, we need some tier 1 fuel to get that done.", 0, 5000, .2f, new List<ItemPair>(), goal, true);
             currentMissions.Add(mission);
         }
-        if (numMainMissionsDone == 2 && playerReputation > 280)
+        if (worldState == 2 && playerReputation > 280)
         {
             Mission mission = new Mission();
             List<ItemPair> goal = new List<ItemPair>();
@@ -154,7 +156,7 @@ public class FactionManager : MonoBehaviour
             mission.SetUpMission("Main Mission Refine Pentolium", "We want to restart the warpgate, we need some tier 2 fuel to get that done.", 0, 10000, .2f, new List<ItemPair>(), goal, true);
             currentMissions.Add(mission);
         }
-        if (numMainMissionsDone == 3 && playerReputation > 380)
+        if (worldState == 3 && playerReputation > 380)
         {
             Mission mission = new Mission();
             List<ItemPair> goal = new List<ItemPair>();

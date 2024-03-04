@@ -4792,7 +4792,7 @@ GameObject:
   - component: {fileID: 380102339}
   - component: {fileID: 380102340}
   m_Layer: 7
-  m_Name: Faction1
+  m_Name: Resource Faction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16629,6 +16629,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c477e6e4986a2458dcf583930b53d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  worldState: 0
 --- !u!114 &1332185597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26766,7 +26767,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCurrentShip: {fileID: 2146019521}
-  numMainMissionsDone: 0
 --- !u!4 &2090010240890247443
 Transform:
   m_ObjectHideFlags: 0

@@ -4,9 +4,20 @@ using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
+public enum WorldState
+{
+    Intro,
+    BeforeBeam1,
+    BeforeBeam2,
+    BeforeFirstWarp,
+    AfterFirstWarp,
+    BeforeStationDestroyed,
+    AfterStationDestroyed
+}
 
 public class WorldManager : MonoBehaviour
 {
+
     int seed;
 
     public int getSeed() { return seed; }
@@ -23,9 +34,13 @@ public class WorldManager : MonoBehaviour
     Vector3 currentWorldOffset = new Vector3(0, 0, 0);
     GameObject allMovableObjects;
 
+    public WorldState worldState = 0;
+
     GameObject player;
 
     bool loadedOnce = false;
+
+    DialogManager dialogManager;
 
     public Vector3 getCurrentWorldOffset()
     {
@@ -45,6 +60,7 @@ public class WorldManager : MonoBehaviour
         asteroidFieldGenerator = GameObject.Find("AsteroidField").GetComponent<AsteroidFieldGenerator>();
         allMovableObjects = GameObject.Find("All Movable Objects");
         player = GameObject.FindGameObjectWithTag("Player");
+        dialogManager = new DialogManager();
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
     }

@@ -7,11 +7,7 @@ public class PlayerStats : MonoBehaviour
     float playerCredits;
     float playerHealth;
     float maxHealth;
-
     public GameObject playerCurrentShip; // should always be the same 
-
-    public int numMainMissionsDone = 0;
-
     MissionManager missionManager;
 
     int invSlots = 8;
@@ -52,7 +48,7 @@ public class PlayerStats : MonoBehaviour
             playerHealth = maxHealth;
         }
     }
-    
+
     public void removeHealth(float amount)
     {
         playerHealth -= amount;
@@ -74,7 +70,7 @@ public class PlayerStats : MonoBehaviour
         playerCredits = amount;
         return playerCredits;
     }
-    
+
     public void AddCredits(float amount)
     {
         playerCredits += amount;

@@ -14,7 +14,7 @@ public class Mission
     float CreditsReward;
     public float GetCreditsReward() { return (int)CreditsReward; }
     float ReputationReward;
-    public float GetReputationReward() { return ((float)((int)(ReputationReward*1000)))/10f; }
+    public float GetReputationReward() { return ((float)((int)(ReputationReward * 1000))) / 10f; }
     List<ItemPair> ItemRewards;
     public List<ItemPair> GetItemRewards() { return ItemRewards; }
     bool isMainMission;
@@ -23,7 +23,13 @@ public class Mission
     List<ItemPair> Goal;
     public List<ItemPair> GetGoal() { return Goal; }
 
-    public void SetUpMission(string name, string description, int level, float creditsReward, float reputationReward, List<ItemPair> ItemRewards, List<ItemPair> goal, bool isMainMission=false)
+    WorldManager worldManager;
+    void Start()
+    {
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
+    }
+
+    public void SetUpMission(string name, string description, int level, float creditsReward, float reputationReward, List<ItemPair> ItemRewards, List<ItemPair> goal, bool isMainMission = false)
     {
         this.Name = name;
         this.Description = description;
@@ -77,7 +83,7 @@ public class Mission
                 }
                 if (!found)
                     this.Goal.Add(other.Goal[0]);
-                
+
             }
 
             if (other.ItemRewards.Count > 0)
@@ -95,7 +101,7 @@ public class Mission
                 if (!found)
                     this.ItemRewards.Add(other.ItemRewards[0]);
             }
-                            
+
         }
         else
         {
@@ -158,7 +164,7 @@ public class Mission
             float total = playerInventory.GetAmountOfItem(itemPair.item);
             if (shipInventory != null)
                 total += shipInventory.GetAmountOfItem(itemPair.item);
-            
+
             if (total < itemPair.amount)
             {
                 Debug.Log("Not enough of item: " + itemPair.item.getName());
@@ -168,7 +174,7 @@ public class Mission
         }
         if (notDone)
             return false;
-        
+
         return true;
     }
 
@@ -198,7 +204,7 @@ public class Mission
                 }
             }
             if (isMainMission)
-                GameObject.Find("Player").GetComponent<PlayerStats>().numMainMissionsDone++;
+                worldManager.worldState++;
 
             return true;
         }
