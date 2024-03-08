@@ -60,9 +60,14 @@ public class WorldManager : MonoBehaviour
         asteroidFieldGenerator = GameObject.Find("AsteroidField").GetComponent<AsteroidFieldGenerator>();
         allMovableObjects = GameObject.Find("All Movable Objects");
         player = GameObject.FindGameObjectWithTag("Player");
-        dialogManager = new DialogManager();
+        dialogManager = GetComponent<DialogManager>();
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
+    }
+
+    void startDialog(FactionManager faction)
+    {
+        dialogManager.interactedWithFaction(faction);
     }
 
     void offsetWorldIfNecessary()

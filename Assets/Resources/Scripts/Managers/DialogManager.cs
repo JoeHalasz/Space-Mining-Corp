@@ -42,6 +42,11 @@ public class DialogManager : MonoBehaviour
         currentState = 0;
     }
 
+    public void interactedWithFaction(FactionManager faction)
+    {
+
+    }
+
     List<Dialog> findWhatToDisplay(FactionManager faction)
     {
         if (playerShouldChooseNext)

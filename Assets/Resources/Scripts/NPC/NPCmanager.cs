@@ -26,6 +26,8 @@ public class NPCmanager : MonoBehaviour
 
     string factionName;
 
+    WorldManager worldManager;
+
     void Start()
     {
         player = GameObject.Find("Player");
@@ -35,6 +37,7 @@ public class NPCmanager : MonoBehaviour
         MissionsUIFolder = missionUI.transform.Find("Missions").gameObject;
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
         factionName = transform.parent.name;
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
     }
 
     public void RefreshMissions()
@@ -45,6 +48,10 @@ public class NPCmanager : MonoBehaviour
 
 
     public void InteractWithPlayer(GameObject player)
+    {
+        worldManager.startDialog(factionManager);
+    }
+    public void openOrCloseMissionUI()
     {
         if (missionUI.activeSelf) // close inv
         {
@@ -152,7 +159,7 @@ public class NPCmanager : MonoBehaviour
 
         float yPos = containerSize / 6;
         // set MissionsUIFolder.transform y size to containerSize
-        MissionsUIFolder.GetComponent<RectTransform>().offsetMin = new Vector2(MissionsUIFolder.GetComponent<RectTransform>().offsetMin.x, -1*containerSize/3);
+        MissionsUIFolder.GetComponent<RectTransform>().offsetMin = new Vector2(MissionsUIFolder.GetComponent<RectTransform>().offsetMin.x, -1 * containerSize / 3);
         MissionsUIFolder.GetComponent<RectTransform>().offsetMax = new Vector2(MissionsUIFolder.GetComponent<RectTransform>().offsetMax.x, 0);
 
         int i = 0;
@@ -163,13 +170,13 @@ public class NPCmanager : MonoBehaviour
 
 
         i = 0;
-        List<Mission> playerMissions = player.GetComponent<MissionManager>().GetMissions();   
+        List<Mission> playerMissions = player.GetComponent<MissionManager>().GetMissions();
         containerSize = 200 * playerMissions.Count;
 
         yPos = containerSize / 6;
 
         // set PlayerMissionsUIFolder.transform y size to containerSize
-        PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMin = new Vector2(PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMin.x, -1*containerSize/3);
+        PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMin = new Vector2(PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMin.x, -1 * containerSize / 3);
         PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMax = new Vector2(PlayerMissionsUIFolder.GetComponent<RectTransform>().offsetMax.x, 0);
 
         foreach (Mission mission in playerMissions)
@@ -188,5 +195,5 @@ public class NPCmanager : MonoBehaviour
         }
         shownMissions.Clear();
     }
-    
+
 }
