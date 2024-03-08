@@ -49,7 +49,12 @@ public class NPCmanager : MonoBehaviour
 
     public void InteractWithPlayer(GameObject player)
     {
-        worldManager.startDialog(factionManager);
+        bool displayMissionUI = worldManager.startDialog(factionManager, this.gameObject);
+        if (displayMissionUI)
+        {
+            // TODO make this happen after a few seconds
+            openOrCloseMissionUI();
+        }
     }
     public void openOrCloseMissionUI()
     {

@@ -42,6 +42,11 @@ public class WorldManager : MonoBehaviour
 
     DialogManager dialogManager;
 
+    public void nextWorldState()
+    {
+        worldState++;
+    }
+
     public Vector3 getCurrentWorldOffset()
     {
         return currentWorldOffset;
@@ -65,9 +70,9 @@ public class WorldManager : MonoBehaviour
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
     }
 
-    void startDialog(FactionManager faction)
+    public bool startDialog(FactionManager faction, GameObject voicedBy)
     {
-        dialogManager.interactedWithFaction(faction);
+        return dialogManager.interactedWithFaction(faction, voicedBy);
     }
 
     void offsetWorldIfNecessary()

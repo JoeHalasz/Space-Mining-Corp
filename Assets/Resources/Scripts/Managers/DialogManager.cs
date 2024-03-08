@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using TMPro;
 
 // TODO control f { and } in this and fill in with the correct things
 
@@ -10,13 +10,15 @@ public class DialogManager : MonoBehaviour
 
     public struct Dialog
     {
-        string text;
-        int voiceNumber;
+        public string text;
+        public int voiceNumber;
+        public bool displayMissions;
 
-        public Dialog(string t, int v)
+        public Dialog(string t, int v, bool d = false)
         {
             text = t;
             voiceNumber = v;
+            displayMissions = d;
         }
     }
 
@@ -29,12 +31,30 @@ public class DialogManager : MonoBehaviour
     bool playerChoice = false;
     bool playerShouldChooseNext = false;
 
+    // text mesh pro game object for the dialog box
+    GameObject dialogBox;
+    List<GameObject> dialogOptions = new List<GameObject>();
+
+    // current unity sound playing
+    AudioSource currentVoiceLine;
+
     void Start()
     {
         GameObject worldManagerObject = GameObject.Find("WorldManager");
         worldManager = worldManagerObject.GetComponent<WorldManager>();
         player = GameObject.Find("Player");
         playerStats = player.GetComponent<PlayerStats>();
+        // get the dialogBox gameobject
+        dialogBox = GameObject.Find("DialogBox");
+        dialogOptions.Add(GameObject.Find("Option1").transform.GetChild(0).gameObject);
+        dialogOptions.Add(GameObject.Find("Option2").transform.GetChild(0).gameObject);
+        dialogOptions.Add(GameObject.Find("Option3").transform.GetChild(0).gameObject);
+        dialogOptions.Add(GameObject.Find("Option4").transform.GetChild(0).gameObject);
+        dialogBox.SetActive(false);
+        for (int i = 0; i < dialogOptions.Count; i++)
+        {
+            dialogOptions[i].transform.parent.gameObject.SetActive(false);
+        }
     }
 
     void endDialog()
@@ -42,9 +62,78 @@ public class DialogManager : MonoBehaviour
         currentState = 0;
     }
 
-    public void interactedWithFaction(FactionManager faction)
+    public bool interactedWithFaction(FactionManager faction, GameObject voicedBy)
     {
+        List<Dialog> textToDisplay = findWhatToDisplay(faction);
+        if (textToDisplay.Count > 1)
+        {
+            // then its the player choosing a response
+            // set the dialog box to inactive
+            dialogBox.SetActive(false);
+            for (int i = 0; i < textToDisplay.Count; i++)
+            {
+                dialogOptions[i].GetComponent<TextMeshProUGUI>().text = textToDisplay[i].text;
+                // set the parent to active
+                dialogOptions[i].transform.parent.gameObject.SetActive(true);
+            }
+        }
+        else if (textToDisplay.Count == 1)
+        {
+            // its an NPC talking
+            // set the dialog options to inactive
+            for (int i = 0; i < dialogOptions.Count; i++)
+            {
+                dialogOptions[i].SetActive(false);
+            }
+            dialogBox.GetComponent<TextMeshProUGUI>().text = textToDisplay[0].text;
+            dialogBox.SetActive(true);
+            playVoiceLine(faction, voicedBy, textToDisplay[0]);
+            if (textToDisplay[0].displayMissions)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            Debug.Log("Could not find dialog for faction " + faction.getFactionName() + " in state " + currentState);
+        }
+        return false;
+    }
 
+    void playVoiceLine(FactionManager faction, GameObject voicedBy, Dialog dialog)
+    {
+        // stop playing the currentVoiceLine if its still playing
+        if (currentVoiceLine != null)
+        {
+            currentVoiceLine.Stop();
+        }
+        // get the voice line from the faction and the current state
+        currentVoiceLine = getVoiceLine(faction, voicedBy, dialog.voiceNumber);
+        if (currentVoiceLine != null)
+        {
+            currentVoiceLine.Play();
+        }
+        else
+        {
+            Debug.Log("Could not find voice line for faction " + faction.getFactionName() + " in state " + currentState);
+        }
+    }
+
+    AudioSource getVoiceLine(FactionManager faction, GameObject voicedBy, int voiceNumber)
+    {
+        // find the audio file for that voice line in the Voicelines folder in Resources
+        string path = "Voicelines/" + faction.getFactionName() + "/" + voiceNumber + "/" + currentState;
+        // if that path exists
+        if (Resources.Load<AudioSource>(path) == null)
+        {
+            return null;
+        }
+        AudioSource voiceLine = Resources.Load<AudioSource>(path);
+        // set its position to voicedBy
+        voiceLine.transform.position = voicedBy.transform.position;
+        // attach the voiceLine to the voicedBy gameobject so that the sound follows that NPC
+        voiceLine.transform.parent = voicedBy.transform;
+        return voiceLine;
     }
 
     List<Dialog> findWhatToDisplay(FactionManager faction)
@@ -139,6 +228,7 @@ public class DialogManager : MonoBehaviour
                 return new Dialog("I dont think it will make more than 1 bot at a time, but at least its working.", 52);
             case (16):
                 endDialog();
+                worldManager.nextWorldState();
                 return new Dialog("Go talk to {leader name}. She will know how you can help best", 51); // TODO put the leader name
         }
         return new Dialog();
@@ -294,12 +384,20 @@ public class DialogManager : MonoBehaviour
                 // 3 is resource faction leader voice
                 if (faction.GetPlayerReputation() < .01f)
                 {
-                    faction.AddPlayerReputation(.02f);
-                    return new Dialog("mmm... an outsider... I dont trust outsiders. My faction ensures that resources go to the correct places.\nThe day we run out of resources from that asteroid is the day we all start to perish. But you can change that. Im going to need resources of all kinds. Hopefully you can save us.", 3);
+                    switch (currentState - 1)
+                    {
+                        case (0):
+                            return new Dialog("mmm... an outsider... I dont trust outsiders.", 3);
+                        case (1):
+                            return new Dialog("My faction ensures that resources go to the correct places.\nThe day we run out of resources from that asteroid is the day we all start to perish... But you can change that.", 3);
+                        case (2):
+                            faction.AddPlayerReputation(.02f);
+                            return new Dialog("Im going to need resources of all kinds. Hopefully you can save us.", 3);
+                    }
                 }
                 else if (faction.GetPlayerReputation() < 1)
                 {
-                    return new Dialog("I need resources. Can you find any of these?", 3);
+                    return new Dialog("I need resources. Can you find any of these?", 3, true);
                 }
                 else if (faction.GetPlayerReputation() == 1)
                 {
@@ -308,16 +406,18 @@ public class DialogManager : MonoBehaviour
                 }
                 else if (faction.GetPlayerReputation() > 1)
                 {
+                    // TODO let the player choose if they want to get shup upgrades or missions
                     if (faction.GetPlayerReputation() > 2 && Random.Range(0, 100) <= 10)
                     {
-                        return new Dialog("Upgrades upgrades upgrades...", 3);
+                        return new Dialog("Upgrades upgrades upgrades...", 3, true);
                     }
-                    return new Dialog("What kind of upgrades were you thinking of?", 3);
+                    return new Dialog("What kind of upgrades were you thinking of?", 3, true);
                 }
                 break;
             case ("Energy Faction"):
                 // TODO add these
                 // 4 is energy faction leader
+                currentState = 0;
                 if (faction.GetPlayerReputation() < .01f)
                 {
                     faction.AddPlayerReputation(.02f);
@@ -325,7 +425,7 @@ public class DialogManager : MonoBehaviour
                 }
                 if (faction.GetPlayerReputation() < 2.5)
                 {
-                    return new Dialog("Hi! im looking for some materials to make energy and fuel, can you get me any of that?", 4);
+                    return new Dialog("Hi! im looking for some materials to make energy and fuel, can you get me any of that?", 4, true);
                 }
                 if (faction.GetPlayerReputation() > 2)
                 {
@@ -334,6 +434,7 @@ public class DialogManager : MonoBehaviour
                 break;
             case ("Weapons Faction"):
                 // 5 is weapons faction leader
+                currentState = 0;
                 if (faction.GetPlayerReputation() < .01f)
                 {
                     faction.AddPlayerReputation(.02f);
@@ -341,18 +442,19 @@ public class DialogManager : MonoBehaviour
                 }
                 if (faction.GetPlayerReputation() < 1)
                 {
-                    return new Dialog("I neeeeeeeed.... something. We pans!", 5);
+                    return new Dialog("I neeeeeeeed.... something. We pans!", 5, true);
                 }
                 if (faction.GetPlayerReputation() > 1)
                 {
-                    return new Dialog("Leeeeeader says you neeeeeeeed.... (whispers)weapons. I make those... good. Pew pew", 5);
+                    return new Dialog("Leeeeeader says you neeeeeeeed.... (whispers)weapons. I make those... good. Pew pew", 5, true);
                 }
                 if (faction.GetPlayerReputation() > 2)
                 {
-                    return new Dialog("mmmmmm.... kill... wearprons...", 5);
+                    return new Dialog("mmmmmm.... kill... wearprons...", 5, true);
                 }
                 break;
             case ("EnemyFaction"):
+                currentState = 0;
                 return new Dialog("Food.", -2); // no voice
                 break;
             default:
