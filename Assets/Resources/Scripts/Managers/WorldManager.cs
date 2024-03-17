@@ -38,7 +38,7 @@ public class WorldManager : MonoBehaviour
 
     GameObject player;
 
-    bool loadedOnce = false;
+    public bool inGame = false;
 
     DialogManager dialogManager;
 
@@ -58,6 +58,10 @@ public class WorldManager : MonoBehaviour
         currentWorldOffset += offset;
     }
 
+    bool first = true;
+
+    GameObject enableAfterFirstLoad;
+    GameObject mainMenuCanvas;
     void Start()
     {
         seed = 123456789; // TODO delete this
@@ -66,8 +70,11 @@ public class WorldManager : MonoBehaviour
         allMovableObjects = GameObject.Find("All Movable Objects");
         player = GameObject.FindGameObjectWithTag("Player");
         dialogManager = GetComponent<DialogManager>();
+        enableAfterFirstLoad = GameObject.Find("EnableAfterFirstLoad");
+        mainMenuCanvas = GameObject.Find("MainMenuCanvas");
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
+        Startup();
     }
 
     public bool startDialog(FactionManager faction, GameObject voicedBy)
@@ -84,36 +91,69 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    void FirstLoadSinceStartup()
+    void Startup()
     {
         asteroidSpawnManager.StartAfterWorldManagerSetUp(player.transform.position);
         asteroidFieldGenerator.StartAfterWorldManagerSetUp();
-        loadedOnce = true;
+    }
+
+    void firstLoadSinceStartup()
+    {
+        inGame = true;
+        player.GetComponent<SimpleRotate>().enabled = false;
+        player.GetComponent<PlayerMovement>().enabled = true;
+        enableAfterFirstLoad.SetActive(true);
+        player.GetComponent<UIManager>().closeAnyUI();
+        mainMenuCanvas.SetActive(false);
+    }
+
+    void backToMainMenu()
+    {
+        if (!player.GetComponent<UIManager>().getUIOpen())
+        {
+            player.GetComponent<UIManager>().openAnyUI(this.gameObject);
+            inGame = false;
+            player.transform.SetParent(allMovableObjects.transform);
+            player.GetComponent<SimpleRotate>().enabled = true;
+            player.GetComponent<PlayerMovement>().enabled = false;
+            enableAfterFirstLoad.SetActive(false);
+            mainMenuCanvas.SetActive(true);
+        }
+    }
+
+    public void createNewWorld(string name, int seed)
+    {
+        firstLoadSinceStartup();
+        GetComponent<CreateNewWorld>().CreateWorld(name, seed);
     }
 
     void Update()
     {
+        if (first)
+        {
+            first = false;
+            backToMainMenu();
+        }
         // when the user presses F5, save the game and F9 to load the game
         if (Input.GetKeyDown(KeyCode.F5))
         {
-            if (loadedOnce)
+            if (inGame)
                 Save("test");
         }
         if (Input.GetKeyDown(KeyCode.F9))
         {
-            if (!loadedOnce)
-                FirstLoadSinceStartup();
+            if (!inGame)
+                firstLoadSinceStartup();
             Load("test");
         }
         if (Input.GetKeyDown(KeyCode.F10))
         {
             OffsetWorldBy(new Vector3(5000, 0, 0));
         }
-        if (Input.GetKeyDown(KeyCode.F4))
+        if (Input.GetKeyDown(KeyCode.F1))
         {
-            FirstLoadSinceStartup();
+            backToMainMenu();
         }
-
     }
 
     public void Save(string name)

@@ -393,9 +393,6 @@ public class AsteroidGenerator : MonoBehaviour
     {
         if (newMeshCreated)
         {
-#if UNITY_EDITOR
-                Debug.Log("Freeing mesh memory");
-#endif
             Destroy(mesh);
         }
     }

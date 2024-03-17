@@ -19,11 +19,14 @@ public class UIManager : MonoBehaviour
     PlayerMovement playerMovement;
 
     List<GameObject> shownMissions = new List<GameObject>();
+
+    WorldManager worldManager;
     ItemManager itemManager;
 
 
     void Start()
     {
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
         itemManager = GameObject.Find("WorldManager").GetComponent<ItemManager>();
         missionPrefab = Resources.Load<GameObject>("Prefabs/UI/MissionUI");
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
@@ -62,11 +65,14 @@ public class UIManager : MonoBehaviour
 
     public void openAnyUI(GameObject caller)
     {
-        playerMovement.LockPlayerInputs(caller);
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-        UIOpen = true;
+        if (worldManager.inGame)
+        {
+            playerMovement.LockPlayerInputs(caller);
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            UIOpen = true;
+        }
     }
 
     public void OpenOrCloseMissionsMenu()
