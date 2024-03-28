@@ -10,6 +10,7 @@ public class MainMenuManager : MonoBehaviour
     GameObject newGameGroup;
     GameObject loadGameGroup;
     GameObject settingsGroup;
+    GameObject selectedLoadRow;
 
     void Start()
     {
@@ -57,6 +58,28 @@ public class MainMenuManager : MonoBehaviour
             loadGameGroup.SetActive(false);
             settingsGroup.SetActive(false);
         }
+    }
+
+
+    public void OnSelectSaveForLoading()
+    {
+        selectedLoadRow = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+    }
+
+    public void onLoadGameConfirm()
+    {
+        // TODO use the selected load row
+    }
+
+    public void OnDeleteSavePress()
+    {
+        selectedLoadRow = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
+        // TODO show the confirmation
+    }
+
+    public void OnDeleteConfirm()
+    {
+        // delete the save
     }
 
     public void OnPressLoadGame()

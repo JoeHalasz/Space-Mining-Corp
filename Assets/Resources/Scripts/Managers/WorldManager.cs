@@ -62,6 +62,7 @@ public class WorldManager : MonoBehaviour
 
     GameObject enableAfterFirstLoad;
     GameObject mainMenuCanvas;
+    GameObject crosshair;
     void Start()
     {
         seed = 123456789; // TODO delete this
@@ -72,6 +73,7 @@ public class WorldManager : MonoBehaviour
         dialogManager = GetComponent<DialogManager>();
         enableAfterFirstLoad = GameObject.Find("EnableAfterFirstLoad");
         mainMenuCanvas = GameObject.Find("MainMenuCanvas");
+        crosshair = GameObject.Find("Crosshair");
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
         Startup();
@@ -105,6 +107,7 @@ public class WorldManager : MonoBehaviour
         enableAfterFirstLoad.SetActive(true);
         player.GetComponent<UIManager>().closeAnyUI();
         mainMenuCanvas.SetActive(false);
+        crosshair.SetActive(true);
     }
 
     void backToMainMenu()
@@ -118,6 +121,7 @@ public class WorldManager : MonoBehaviour
             player.GetComponent<PlayerMovement>().enabled = false;
             enableAfterFirstLoad.SetActive(false);
             mainMenuCanvas.SetActive(true);
+            crosshair.SetActive(false);
         }
     }
 
