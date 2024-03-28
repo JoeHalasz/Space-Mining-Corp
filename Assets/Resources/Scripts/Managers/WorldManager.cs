@@ -146,8 +146,6 @@ public class WorldManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.F9))
         {
-            if (!inGame)
-                firstLoadSinceStartup();
             Load("test");
         }
         if (Input.GetKeyDown(KeyCode.F10))
@@ -209,6 +207,16 @@ public class WorldManager : MonoBehaviour
         saveAllAsteroidData(file);
         file.Close();
 
+        // create the metadata file
+        string metaFilePath = "data/saves/" + name + ".meta";
+        if (File.Exists(metaFilePath))
+        {
+            File.Delete(metaFilePath);
+        }
+        // format it like this: name;date and time
+        string meta = name + ";" + System.DateTime.Now.ToString();
+        File.WriteAllText(metaFilePath, meta);
+
         watch.Stop();
 #if UNITY_EDITOR
             Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
@@ -218,6 +226,8 @@ public class WorldManager : MonoBehaviour
 
     public void Load(string name)
     {
+        if (!inGame)
+            firstLoadSinceStartup();
         // time it
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
