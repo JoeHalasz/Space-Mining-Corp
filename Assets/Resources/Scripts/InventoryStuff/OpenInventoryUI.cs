@@ -41,6 +41,7 @@ public class OpenInventoryUI : MonoBehaviour
 
     GameObject player;
     ItemManager itemManager;
+    bool first = true;
 
     // Start is called before the first frame update
     void Start()
@@ -118,17 +119,31 @@ public class OpenInventoryUI : MonoBehaviour
 
     public void ShowOrHideUI(InputAction.CallbackContext context)
     {
+        Debug.Log("here");
         // if the player presses tab and the inventory is not open, open it else close it
-        if (IsOnPlayer && !inventoryUILeft.activeSelf && !GetComponent<UIManager>().getUIOpen())
+        if (IsOnPlayer)
         {
-            ShowInventory(this.gameObject, true);
-            GetComponent<UIManager>().openAnyUI(this.gameObject);
+            Debug.Log("here2");
+            if (!inventoryUILeft.activeSelf && !GetComponent<UIManager>().getUIOpen())
+            {
+                Debug.Log("here3");
+                if (GetComponent<UIManager>().openAnyUI(this.gameObject, false, true, new List<GameObject> { inventoryUILeft, inventoryUIRight, inventoryUILeftBackground, inventoryUIRightBackground }))
+                {
+                    Debug.Log("Showing");
+                    ShowInventory(this.gameObject, true);
+                }
+            }
+            else if (inventoryUILeft.activeSelf)
+            {
+                Debug.Log("here4");
+                if (GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject))
+                {
+                    Debug.Log("Hiding");
+                    HideInventory(true);
+                }
+            }   
         }
-        else if (IsOnPlayer && inventoryUILeft.activeSelf)
-        {
-            HideInventory(true);
-            GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
-        }
+        
     }
 
     public void OnDrag(int invSpot)
@@ -287,6 +302,14 @@ public class OpenInventoryUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (first)
+        {
+            inventoryUILeft.SetActive(false);
+            inventoryUIRight.SetActive(false);
+            inventoryUILeftBackground.SetActive(false);
+            inventoryUIRightBackground.SetActive(false);
+            first = false;
+        }
         if (inventoryOpen)
         {
             if (heldItem != null && heldItemSprite != null)

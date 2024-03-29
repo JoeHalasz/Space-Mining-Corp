@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
-public class MainMenuManager : MonoBehaviour
+public class MenuManager : MonoBehaviour
 {
 
     GameObject mainMenuCanvas;
+    GameObject escapeMenuCanvas;
     WorldManager worldManager;
     GameObject newGameGroup;
     GameObject loadGameGroup;
     GameObject settingsGroup;
+    GameObject deleteSaveConfirmationGroup;
+    GameObject escapeMenuGroup;
     GameObject selectedLoadRow;
     GameObject loadGameSelectionRow;
     GameObject loadGameScrollContent;
+    bool fromEscapeMenu = false;
 
     void Start()
     {
@@ -22,19 +26,30 @@ public class MainMenuManager : MonoBehaviour
         newGameGroup = GameObject.Find("NewGameGroup");
         loadGameGroup = GameObject.Find("LoadGameGroup");
         settingsGroup = GameObject.Find("SettingsGroup");
+        deleteSaveConfirmationGroup = GameObject.Find("DeleteSaveConfirmationGroup");
+        escapeMenuGroup = GameObject.Find("EscapeMenuGroup");
         loadGameSelectionRow = GameObject.Find("LoadGameSelectionRow");
         loadGameScrollContent = GameObject.Find("LoadGameScrollContent");
         newGameGroup.SetActive(false);
         loadGameGroup.SetActive(false);
         settingsGroup.SetActive(false);
+        deleteSaveConfirmationGroup.SetActive(false);
+    }
+
+    public void turnAllGroupsOff()
+    {
+        newGameGroup.SetActive(false);
+        loadGameGroup.SetActive(false);
+        settingsGroup.SetActive(false);
+        deleteSaveConfirmationGroup.SetActive(false);
+        escapeMenuGroup.SetActive(false);
     }
 
 
     public void OnPressNewGame()
     {
+        turnAllGroupsOff();
         newGameGroup.SetActive(true);
-        loadGameGroup.SetActive(false);
-        settingsGroup.SetActive(false);
     }
 
     public void onNewGameConfirm()
@@ -59,10 +74,32 @@ public class MainMenuManager : MonoBehaviour
             newGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
             newGameGroup.transform.Find("SeedInput").GetComponent<TMPro.TMP_InputField>().text = "";
             worldManager.createNewWorld(name, seed);
-            newGameGroup.SetActive(false);
-            loadGameGroup.SetActive(false);
-            settingsGroup.SetActive(false);
+            turnAllGroupsOff();
         }
+    }
+
+    public void OnPressLoadGameFromEscapeMenu()
+    {
+        fromEscapeMenu = true;
+        mainMenuCanvas.SetActive(true);
+        // set all children to inactive
+        foreach (Transform child in mainMenuCanvas.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        OnPressLoadGame();
+    }
+
+    public void OnPressSettingsFromEscapeMenu()
+    {
+        fromEscapeMenu = true;
+        mainMenuCanvas.SetActive(true);
+        // set all children to inactive
+        foreach (Transform child in mainMenuCanvas.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        OnPressSettings();
     }
 
 
@@ -79,27 +116,50 @@ public class MainMenuManager : MonoBehaviour
             Debug.Log("Loading save: " + saveName);
         #endif
         worldManager.Load(saveName);
-        newGameGroup.SetActive(false);
-        loadGameGroup.SetActive(false);
-        settingsGroup.SetActive(false);
+        turnAllGroupsOff();
     }
 
     public void OnDeleteSavePress()
     {
         selectedLoadRow = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
-        // TODO show the confirmation
+        deleteSaveConfirmationGroup.SetActive(true);
+        loadGameGroup.SetActive(false);
     }
 
-    public void OnDeleteConfirm()
+    public void OnDeleteSaveConfirm()
     {
         // delete the save
+        string saveName = selectedLoadRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text;
+        string[] files = Directory.GetFiles("data/saves");
+        foreach (string file in files)
+        {
+            if (file.EndsWith(".meta"))
+            {
+                string saveData = File.ReadAllText(file);
+                if (saveData.Split(';')[0] == saveName)
+                {
+                    File.Delete(file);
+                    // delete the file with the same name but without the .meta and with the .dat extension
+                    File.Delete(file.Replace(".meta", ".dat"));
+                    deleteSaveConfirmationGroup.SetActive(false);
+                    break;
+                }
+            }
+        }
+        OnPressLoadGame();
+    }
+
+    public void OnDeleteSaveCancel()
+    {
+        deleteSaveConfirmationGroup.SetActive(false);
+        loadGameGroup.SetActive(true);
     }
 
     public void OnPressLoadGame()
     {
-        newGameGroup.SetActive(false);
+        turnAllGroupsOff();
         loadGameGroup.SetActive(true);
-        settingsGroup.SetActive(false);
+
         if (!Directory.Exists("data"))
         {
             Directory.CreateDirectory("data");
@@ -139,9 +199,14 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnPressSettings()
     {
-        newGameGroup.SetActive(false);
-        loadGameGroup.SetActive(false);
+        turnAllGroupsOff();
         settingsGroup.SetActive(true);
+    }
+
+    public void OnPressMainMenu()
+    {
+        turnAllGroupsOff();
+        worldManager.backToMainMenu();
     }
 
     public void OnPressExitGame()

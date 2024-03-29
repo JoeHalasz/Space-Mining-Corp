@@ -125,16 +125,18 @@ public class Inventory : MonoBehaviour
     {
         if (inventoryUIScript != null)
         {
-            localIsLeft = isLeft;
-            // open the other inventory
-            inventoryUIScript.ShowInventory(this.gameObject, isLeft);
-            if (other != null)
-                other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject, !isLeft);
-            else
-                Debug.LogError("Error in Inventory.cs, other is null");
+            if (player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject))
+            {
+                localIsLeft = isLeft;
+                // open the other inventory
+                inventoryUIScript.ShowInventory(this.gameObject, isLeft);
+                if (other != null)
+                    other.GetComponent<OpenInventoryUI>().ShowInventory(this.gameObject, !isLeft);
+                else
+                    Debug.LogError("Error in Inventory.cs, other is null");
 
-            inventoryUIScript.UpdateInventory();
-            player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
+                inventoryUIScript.UpdateInventory();
+            }
         }
     }
 
@@ -143,8 +145,8 @@ public class Inventory : MonoBehaviour
         if (inventoryUIScript != null)
         {
             // close all inventorys
-            player.GetComponent<OpenInventoryUI>().HideInventory(localIsLeft);
-            player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject);
+            if (player.GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject))
+                player.GetComponent<OpenInventoryUI>().HideInventory(localIsLeft);
         }
     }
 

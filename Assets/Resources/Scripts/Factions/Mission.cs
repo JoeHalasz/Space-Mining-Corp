@@ -23,12 +23,6 @@ public class Mission
     List<ItemPair> Goal;
     public List<ItemPair> GetGoal() { return Goal; }
 
-    WorldManager worldManager;
-    void Start()
-    {
-        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
-    }
-
     public void SetUpMission(string name, string description, int level, float creditsReward, float reputationReward, List<ItemPair> ItemRewards, List<ItemPair> goal, bool isMainMission = false)
     {
         this.Name = name;
@@ -204,7 +198,7 @@ public class Mission
                 }
             }
             if (isMainMission)
-                worldManager.worldState++;
+                GameObject.Find("WorldManager").GetComponent<WorldManager>().worldState++; // have to find it every time because it has to be serializable to save
 
             return true;
         }

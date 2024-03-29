@@ -22,6 +22,8 @@ public class UIManager : MonoBehaviour
 
     WorldManager worldManager;
     ItemManager itemManager;
+    GameObject currentOpenUICaller;
+    List<GameObject> currentOpenUIs = new List<GameObject>();
 
 
     void Start()
@@ -56,6 +58,13 @@ public class UIManager : MonoBehaviour
 
     public void closeAnyUI()
     {
+        Debug.Log("Closing UI");
+        currentOpenUICaller = null;
+        foreach (GameObject UI in currentOpenUIs)
+        {
+            UI.SetActive(false);
+        }
+        currentOpenUIs.Clear();
         playerMovement.UnlockPlayerMovement();
         playerMovement.UnlockPlayerInputs();
         Cursor.visible = false;
@@ -63,25 +72,37 @@ public class UIManager : MonoBehaviour
         UIOpen = false;
     }
 
-    public void openAnyUI(GameObject caller)
+    public bool openAnyUI(GameObject caller, bool canClose, bool needToCloseOthers, List<GameObject> UIsOpened)
     {
-        if (worldManager.inGame)
+        Debug.Log(caller + " is trying to open UI. canClose is " + canClose + " and UIOpen is " + UIOpen + " and currentOpenUICaller is " + currentOpenUICaller);
+        if (UIOpen && canClose && needToCloseOthers)
+            closeAnyUI();
+        
+        if (!UIOpen || !needToCloseOthers)
         {
+            Debug.Log("Opening UI for " + caller);
+            // add the new UIs
+            foreach (GameObject UI in UIsOpened)
+            {
+                currentOpenUIs.Add(UI);
+            }
             playerMovement.LockPlayerInputs(caller);
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
             UIOpen = true;
+            currentOpenUICaller = caller;
+            return true;
         }
+        return false;
     }
 
     public void OpenOrCloseMissionsMenu()
     {
-
         if (playerMissionUI.activeSelf && doneByThis) // close inv
         {
-            playerMissionUI.SetActive(false);
             closeAnyUI();
+            playerMissionUI.SetActive(false);
             hideAllMissions();
             doneByThis = false;
         }
@@ -89,29 +110,46 @@ public class UIManager : MonoBehaviour
         {
             if (!UIOpen)
             {
-                playerMissionUI.SetActive(true);
-                openAnyUI(this.gameObject);
-                showPlayerMissions();
-                doneByThis = true;
+                if (openAnyUI(this.gameObject, false, true, new List<GameObject> { playerMissionUI }))
+                {
+                    playerMissionUI.SetActive(true);
+                    showPlayerMissions();
+                    doneByThis = true;
+                }
             }
         }
     }
 
-    public void OpenOrCloseInventory(GameObject caller)
+    public bool OpenOrCloseInventory(GameObject caller)
     {
         if (UIOpen)
         {
-            // close the inv
-            leftInventory.SetActive(false);
-            rightInventory.SetActive(false);
-            closeAnyUI();
+            if (currentOpenUICaller.name == "Player")
+            {
+                // close the inv
+                closeAnyUI();
+                leftInventory.SetActive(false);
+                rightInventory.SetActive(false);
+            }
+            else
+            {
+                Debug.Log(caller + " tried to open inventory while another UI was open from " + currentOpenUICaller);
+                return false;
+            }
         }
         else
         {
-            leftInventory.SetActive(true);
-            rightInventory.SetActive(true);
-            openAnyUI(caller);
+            if (openAnyUI(caller, false, false, new List<GameObject> { leftInventory, rightInventory }))
+            {
+                rightInventory.SetActive(true);
+                leftInventory.SetActive(true);
+            }
+            else
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     void hideAllMissions()

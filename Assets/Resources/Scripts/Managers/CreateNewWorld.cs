@@ -16,7 +16,7 @@ public class CreateNewWorld : MonoBehaviour
         defaultShip = GameObject.Find("Ship 1");
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
     }
-    public void CreateWorld(string name, int seed = -1)
+    public void CreateWorld(int seed = -1)
     {
         // generate a seed if none is provided
         if (seed == -1)
@@ -30,7 +30,7 @@ public class CreateNewWorld : MonoBehaviour
         // save the seed to the manager so it can be used to generate things in the world, and so the world can be loaded
         worldManager.setSeed(seed);
         loadBlankWorld();
-        worldManager.Save(name);
+        worldManager.Save();
     }
 
 

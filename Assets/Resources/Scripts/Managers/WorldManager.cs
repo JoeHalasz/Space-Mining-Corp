@@ -20,6 +20,8 @@ public class WorldManager : MonoBehaviour
 
     int seed;
 
+    string currentlyLoadedSave;
+
     public int getSeed() { return seed; }
     public void setSeed(int value) { seed = value; }
     // make a hashset for all the removed asteroids
@@ -62,7 +64,10 @@ public class WorldManager : MonoBehaviour
 
     GameObject enableAfterFirstLoad;
     GameObject mainMenuCanvas;
+    GameObject escapeMenuCanvas;
+    GameObject escapeMenuGroup;
     GameObject crosshair;
+    MenuManager menuManager;
     void Start()
     {
         seed = 123456789; // TODO delete this
@@ -73,7 +78,10 @@ public class WorldManager : MonoBehaviour
         dialogManager = GetComponent<DialogManager>();
         enableAfterFirstLoad = GameObject.Find("EnableAfterFirstLoad");
         mainMenuCanvas = GameObject.Find("MainMenuCanvas");
+        escapeMenuCanvas = GameObject.Find("EscapeMenuCanvas");
+        escapeMenuGroup = GameObject.Find("EscapeMenuGroup");
         crosshair = GameObject.Find("Crosshair");
+        menuManager = GetComponent<MenuManager>();
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
         Startup();
@@ -105,30 +113,30 @@ public class WorldManager : MonoBehaviour
         player.GetComponent<SimpleRotate>().enabled = false;
         player.GetComponent<PlayerMovement>().enabled = true;
         enableAfterFirstLoad.SetActive(true);
-        player.GetComponent<UIManager>().closeAnyUI();
         mainMenuCanvas.SetActive(false);
         crosshair.SetActive(true);
+        player.GetComponent<UIManager>().closeAnyUI();
     }
 
-    void backToMainMenu()
+    public void backToMainMenu()
     {
-        if (!player.GetComponent<UIManager>().getUIOpen())
-        {
-            player.GetComponent<UIManager>().openAnyUI(this.gameObject);
-            inGame = false;
-            player.transform.SetParent(allMovableObjects.transform);
-            player.GetComponent<SimpleRotate>().enabled = true;
-            player.GetComponent<PlayerMovement>().enabled = false;
-            enableAfterFirstLoad.SetActive(false);
-            mainMenuCanvas.SetActive(true);
-            crosshair.SetActive(false);
-        }
+        player.GetComponent<UIManager>().closeAnyUI();
+        player.GetComponent<UIManager>().openAnyUI(this.gameObject, true, true, new List<GameObject> { mainMenuCanvas });
+        inGame = false;
+        player.transform.SetParent(allMovableObjects.transform);
+        player.GetComponent<SimpleRotate>().enabled = true;
+        player.GetComponent<PlayerMovement>().enabled = false;
+        enableAfterFirstLoad.SetActive(false);
+        mainMenuCanvas.SetActive(true);
+        escapeMenuCanvas.SetActive(false);
+        crosshair.SetActive(false);
     }
 
     public void createNewWorld(string name, int seed)
     {
         firstLoadSinceStartup();
-        GetComponent<CreateNewWorld>().CreateWorld(name, seed);
+        currentlyLoadedSave = name;
+        GetComponent<CreateNewWorld>().CreateWorld(seed);
     }
 
     void Update()
@@ -142,23 +150,37 @@ public class WorldManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F5))
         {
             if (inGame)
-                Save("test");
+                Save();
         }
         if (Input.GetKeyDown(KeyCode.F9))
         {
-            Load("test");
+            Load(currentlyLoadedSave);
         }
         if (Input.GetKeyDown(KeyCode.F10))
         {
             OffsetWorldBy(new Vector3(5000, 0, 0));
         }
-        if (Input.GetKeyDown(KeyCode.F1))
+        // if esc is pressed, open the escape menu
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            backToMainMenu();
+            if (inGame)
+            {
+                if (!player.GetComponent<UIManager>().getUIOpen())
+                {
+                    escapeMenuCanvas.SetActive(true);
+                    player.GetComponent<UIManager>().openAnyUI(this.gameObject, true, true, new List<GameObject> { escapeMenuGroup });
+                    escapeMenuGroup.SetActive(true);
+                }
+                else
+                {
+                    player.GetComponent<UIManager>().closeAnyUI();
+                    menuManager.turnAllGroupsOff();
+                }
+            }
         }
     }
 
-    public void Save(string name)
+    public void Save()
     {
         // time it
         var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -174,8 +196,8 @@ public class WorldManager : MonoBehaviour
         {
             Directory.CreateDirectory("data/saves");
         }
-        // save a file under data/saves/{name}.dat
-        string filePath = "data/saves/" + name + ".dat";
+        // save a file under data/saves/{currentlyLoadedSave}.dat
+        string filePath = "data/saves/" + currentlyLoadedSave + ".dat";
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
@@ -208,13 +230,13 @@ public class WorldManager : MonoBehaviour
         file.Close();
 
         // create the metadata file
-        string metaFilePath = "data/saves/" + name + ".meta";
+        string metaFilePath = "data/saves/" + currentlyLoadedSave + ".meta";
         if (File.Exists(metaFilePath))
         {
             File.Delete(metaFilePath);
         }
         // format it like this: name;date and time
-        string meta = name + ";" + System.DateTime.Now.ToString();
+        string meta = currentlyLoadedSave + ";" + System.DateTime.Now.ToString();
         File.WriteAllText(metaFilePath, meta);
 
         watch.Stop();
@@ -228,6 +250,7 @@ public class WorldManager : MonoBehaviour
     {
         if (!inGame)
             firstLoadSinceStartup();
+        currentlyLoadedSave = name;
         // time it
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();

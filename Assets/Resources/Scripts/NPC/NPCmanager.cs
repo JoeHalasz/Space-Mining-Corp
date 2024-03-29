@@ -27,6 +27,7 @@ public class NPCmanager : MonoBehaviour
     string factionName;
 
     WorldManager worldManager;
+    bool first = true;
 
     void Start()
     {
@@ -58,23 +59,26 @@ public class NPCmanager : MonoBehaviour
     }
     public void openOrCloseMissionUI()
     {
-        if (missionUI.activeSelf) // close inv
+        if (missionUI.activeSelf && !first) // close inv
         {
+            player.GetComponent<UIManager>().closeAnyUI();
             missionUI.SetActive(false);
             playerMissionUI.SetActive(false);
-            player.GetComponent<UIManager>().closeAnyUI();
             hideAllMissions();
         }
         else // open inv
         {
             if (!player.GetComponent<UIManager>().getUIOpen())
             {
-                missionUI.SetActive(true);
-                playerMissionUI.SetActive(true);
-                player.GetComponent<UIManager>().openAnyUI(this.gameObject);
-                showAllMissions();
+                if (player.GetComponent<UIManager>().openAnyUI(this.gameObject, false, true, new List<GameObject> { missionUI, playerMissionUI }))
+                {
+                    missionUI.SetActive(true);
+                    playerMissionUI.SetActive(true);
+                    showAllMissions();
+                }
             }
         }
+        first = false;
     }
 
     void MissionAcceptButtonOnClick(int missionNum)
