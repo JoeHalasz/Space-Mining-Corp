@@ -130,6 +130,18 @@ public class WorldManager : MonoBehaviour
         mainMenuCanvas.SetActive(true);
         escapeMenuCanvas.SetActive(false);
         crosshair.SetActive(false);
+        currentlyLoadedSave = null;
+    }
+
+    public void backToGame()
+    {
+        if (!inGame)
+        {
+            Debug.LogError("Cannot go back to game when not in game");
+            return;
+        }
+        player.GetComponent<UIManager>().closeAnyUI();
+
     }
 
     public void createNewWorld(string name, int seed)
@@ -180,11 +192,21 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    public void Save()
+    public bool Save(string newName = null)
     {
         // time it
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
+
+        string name;
+        if (newName == null)
+        {
+            name = currentlyLoadedSave;
+        }
+        else
+        {
+            name = newName;
+        }
 
         getRemovedAsteroids();
         getEditedAsteroids();
@@ -196,8 +218,8 @@ public class WorldManager : MonoBehaviour
         {
             Directory.CreateDirectory("data/saves");
         }
-        // save a file under data/saves/{currentlyLoadedSave}.dat
-        string filePath = "data/saves/" + currentlyLoadedSave + ".dat";
+        // save a file under data/saves/{name}.dat
+        string filePath = "data/saves/" + name + ".dat";
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
@@ -206,15 +228,15 @@ public class WorldManager : MonoBehaviour
         if (File.Exists(filePath))
         {
 #if UNITY_EDITOR
-                Debug.Log("File created successfully");
+                Debug.Log("File created successfully [" + filePath + "]");
 #endif
         }
         else
         {
 #if UNITY_EDITOR
-                Debug.Log("File creation failed");
+                Debug.LogError("File creation failed");
 #endif
-            return;
+            return false;
         }
         // save the seed in binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -230,20 +252,20 @@ public class WorldManager : MonoBehaviour
         file.Close();
 
         // create the metadata file
-        string metaFilePath = "data/saves/" + currentlyLoadedSave + ".meta";
+        string metaFilePath = "data/saves/" + name + ".meta";
         if (File.Exists(metaFilePath))
         {
             File.Delete(metaFilePath);
         }
         // format it like this: name;date and time
-        string meta = currentlyLoadedSave + ";" + System.DateTime.Now.ToString();
+        string meta = name + ";" + System.DateTime.Now.ToString();
         File.WriteAllText(metaFilePath, meta);
 
         watch.Stop();
 #if UNITY_EDITOR
             Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
 #endif
-
+        return true;
     }
 
     public void Load(string name)
@@ -290,7 +312,7 @@ public class WorldManager : MonoBehaviour
 
         watch.Stop();
 #if UNITY_EDITOR
-            Debug.Log("Loaded game in " + watch.ElapsedMilliseconds + "ms");
+            Debug.Log("Loaded game [" + name + "] in " + watch.ElapsedMilliseconds + "ms");
 #endif
     }
 
