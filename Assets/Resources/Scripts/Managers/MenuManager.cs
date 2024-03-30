@@ -17,6 +17,7 @@ public class MenuManager : MonoBehaviour
     GameObject escapeMenuGroup;
     GameObject saveGameGroup;
     GameObject overrightSaveConfirmationGroup;
+    GameObject backButton;
     GameObject selectedLoadRow;
     GameObject loadGameSelectionRow;
     GameObject loadGameScrollContent;
@@ -38,6 +39,7 @@ public class MenuManager : MonoBehaviour
         escapeMenuGroup = GameObject.Find("EscapeMenuGroup");
         saveGameGroup = GameObject.Find("SaveGameGroup");
         overrightSaveConfirmationGroup = GameObject.Find("OverrightSaveConfirmationGroup");
+        backButton = GameObject.Find("Back button");
         loadGameSelectionRow = GameObject.Find("LoadGameSelectionRow");
         loadGameScrollContent = GameObject.Find("LoadGameScrollContent");
         saveGameSelectionRow = GameObject.Find("SaveGameSelectionRow");
@@ -48,6 +50,8 @@ public class MenuManager : MonoBehaviour
         deleteSaveConfirmationGroup.SetActive(false);
     }
 
+    /* ------------------ Helper functions ------------------*/
+
     public void turnAllGroupsOff()
     {
         newGameGroup.SetActive(false);
@@ -57,13 +61,61 @@ public class MenuManager : MonoBehaviour
         escapeMenuGroup.SetActive(false);
         saveGameGroup.SetActive(false);
         overrightSaveConfirmationGroup.SetActive(false);
+        backButton.SetActive(false);
     }
 
+    bool checkSaveExists(string name)
+    {
+        string[] files = Directory.GetFiles("data/saves");
+        foreach (string file in files)
+        {
+            if (file.EndsWith(".meta"))
+            {
+                string saveData = File.ReadAllText(file);
+                if (saveData.Split(';')[0] == name)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    string[] getSaveFiles()
+    {
+        if (!Directory.Exists("data"))
+        {
+            Directory.CreateDirectory("data");
+        }
+        if (!Directory.Exists("data/saves"))
+        {
+            Directory.CreateDirectory("data/saves");
+        }
+        // sort the save files by date and time (meta data after the ; in the file)
+        string[] files = Directory.GetFiles("data/saves");
+        List<string> filesList = new List<string>();
+        foreach (string file in files)
+        {
+            if (file.EndsWith(".meta"))
+            {
+                filesList.Add(file);
+            }
+        }
+        files = filesList.ToArray();
+        System.Array.Sort(files, (x, y) => File.GetLastWriteTime(y).CompareTo(File.GetLastWriteTime(x)));
+        return files;
+    }
+
+    /* ------------------ Main menu buttons ------------------ */
 
     public void OnPressNewGame()
     {
         turnAllGroupsOff();
         newGameGroup.SetActive(true);
+        // clear the fields
+        newGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "";
+        newGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
+        newGameGroup.transform.Find("SeedInput").GetComponent<TMPro.TMP_InputField>().text = "";
     }
 
     public void onNewGameConfirm()
@@ -84,52 +136,36 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Creating new world with name: " + name + " and seed: " + seed);
-            newGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
-            newGameGroup.transform.Find("SeedInput").GetComponent<TMPro.TMP_InputField>().text = "";
-            worldManager.createNewWorld(name, seed);
-            turnAllGroupsOff();
+            List<char> invalidChars = worldManager.createNewWorld(name, seed);
+            if (invalidChars.Count == 0)
+            {
+                newGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "";
+                newGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
+                newGameGroup.transform.Find("SeedInput").GetComponent<TMPro.TMP_InputField>().text = "";
+                turnAllGroupsOff();
+            }
+            else
+            {
+                Debug.LogError("Could not create new world");
+                newGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "Name cannot contain: " + string.Join("", invalidChars);
+            }
         }
     }
 
-    public void OnPressLoadGameFromEscapeMenu()
-    {
-        fromEscapeMenu = true;
-        mainMenuCanvas.SetActive(true);
-        // set all children to inactive
-        foreach (Transform child in mainMenuCanvas.transform)
-        {
-            child.gameObject.SetActive(false);
-        }
-        OnPressLoadGame();
-    }
-
-    public void OnPressSettingsFromEscapeMenu()
-    {
-        fromEscapeMenu = true;
-        mainMenuCanvas.SetActive(true);
-        // set all children to inactive
-        foreach (Transform child in mainMenuCanvas.transform)
-        {
-            child.gameObject.SetActive(false);
-        }
-        OnPressSettings();
-    }
-
-    public void OnPressSaveGame()
+    public void OnPressLoadGame()
     {
         turnAllGroupsOff();
-        saveGameGroup.SetActive(true);
+        loadGameGroup.SetActive(true);
 
         string[] files = getSaveFiles();
 
-        // delete all of the children of the SaveGameScrollContent except for the saveGameSelectionRow
-        foreach (Transform child in saveGameScrollContent.transform)
+        // delete all of the children of the LoadGameScrollContent except for the loadGameSelectionRow
+        foreach (Transform child in loadGameScrollContent.transform)
         {
-            if (child.gameObject != saveGameSelectionRow)
+            if (child.gameObject != loadGameSelectionRow)
                 GameObject.Destroy(child.gameObject);
         }
-        saveGameSelectionRow.SetActive(false);
+        loadGameSelectionRow.SetActive(false);
 
         int i = 0;
         foreach (string file in files)
@@ -137,111 +173,18 @@ public class MenuManager : MonoBehaviour
             if (file.EndsWith(".meta"))
             {
                 string saveData = File.ReadAllText(file);
-                // make a copy of the saveGameSelectionRow and copy in the correct data
-                GameObject newSaveGameSelectionRow = Instantiate(saveGameSelectionRow, saveGameScrollContent.transform);
-                newSaveGameSelectionRow.SetActive(true);
-                newSaveGameSelectionRow.transform.SetParent(saveGameScrollContent.transform);
-                newSaveGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
+                // make a copy of the loadGameSelectionRow and copy in the correct data
+                GameObject newLoadGameSelectionRow = Instantiate(loadGameSelectionRow, loadGameScrollContent.transform);
+                newLoadGameSelectionRow.SetActive(true);
+                newLoadGameSelectionRow.transform.SetParent(loadGameScrollContent.transform);
+                newLoadGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
                 string saveName = saveData.Split(';')[0];
                 string saveDateTime = saveData.Split(';')[1];
-                newSaveGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
-                newSaveGameSelectionRow.transform.Find("DateAndTimeSaved").GetComponent<TMPro.TextMeshProUGUI>().text = saveDateTime;
+                newLoadGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
+                newLoadGameSelectionRow.transform.Find("DateAndTimeSaved").GetComponent<TMPro.TextMeshProUGUI>().text = saveDateTime;
             }
         }
     }
-
-    public void useSaveNameInputField()
-    {
-        // if there is any text in the input field then select the input field
-        if (saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text != "")
-        {
-            Debug.Log("text is " + saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text);
-            selectedLoadRow = saveGameGroup.transform.Find("NameInput").gameObject;
-        }
-        else
-        {
-            Debug.Log("text is empty");
-        }
-    }
-
-    bool checkSaveExists(string name)
-    {
-        string[] files = Directory.GetFiles("data/saves");
-        foreach (string file in files)
-        {
-            if (file.EndsWith(".meta"))
-            {
-                string saveData = File.ReadAllText(file);
-                if (saveData.Split(';')[0] == name)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-
-    public void onPressSaveGameConfirm()
-    {
-        string saveName;
-        if (selectedLoadRow == null)
-        {
-            return;
-        }
-        if (selectedLoadRow.name == "NameInput")
-        {
-            // use the text from the input field
-            saveName = saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text;
-        }
-        else
-        {
-            // use the selected row
-            saveName = selectedLoadRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text;
-        }
-        if (checkSaveExists(saveName))
-        {
-            tryingToSaveTo = saveName;
-            turnAllGroupsOff();
-            overrightSaveConfirmationGroup.SetActive(true);
-        }
-        else
-        {
-            tryingToSaveTo = saveName;
-            onOverrightSaveConfirm();
-        }
-    }
-
-    public void onOverrightSaveConfirm()
-    {
-        if (worldManager.Save(tryingToSaveTo))
-        {
-            saveGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "";
-            saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
-            turnAllGroupsOff();
-            worldManager.backToGame();
-        }
-        else
-        {
-            Debug.LogError("Could not save game");
-            turnAllGroupsOff();
-            saveGameGroup.SetActive(true);
-            saveGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "Please choose a different name";
-        }
-    }
-
-    public void onOverrightSaveCancel()
-    {
-        turnAllGroupsOff();
-        saveGameGroup.SetActive(true);
-    }
-
-    public void OnSaveGameCancel()
-    {
-        turnAllGroupsOff();
-        saveGameGroup.SetActive(true);
-    }
-
 
     public void OnSelectRow()
     {
@@ -300,77 +243,10 @@ public class MenuManager : MonoBehaviour
         loadGameGroup.SetActive(true);
     }
 
-
-    public void OnPressLoadGame()
-    {
-        turnAllGroupsOff();
-        loadGameGroup.SetActive(true);
-
-        string[] files = getSaveFiles();
-
-        // delete all of the children of the LoadGameScrollContent except for the loadGameSelectionRow
-        foreach (Transform child in loadGameScrollContent.transform)
-        {
-            if (child.gameObject != loadGameSelectionRow)
-                GameObject.Destroy(child.gameObject);
-        }
-        loadGameSelectionRow.SetActive(false);
-
-        int i = 0;
-        foreach (string file in files)
-        {
-            if (file.EndsWith(".meta"))
-            {
-                string saveData = File.ReadAllText(file);
-                // make a copy of the loadGameSelectionRow and copy in the correct data
-                GameObject newLoadGameSelectionRow = Instantiate(loadGameSelectionRow, loadGameScrollContent.transform);
-                newLoadGameSelectionRow.SetActive(true);
-                newLoadGameSelectionRow.transform.SetParent(loadGameScrollContent.transform);
-                newLoadGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
-                string saveName = saveData.Split(';')[0];
-                string saveDateTime = saveData.Split(';')[1];
-                newLoadGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
-                newLoadGameSelectionRow.transform.Find("DateAndTimeSaved").GetComponent<TMPro.TextMeshProUGUI>().text = saveDateTime;
-            }
-        }
-    }
-    string[] getSaveFiles()
-    {
-        if (!Directory.Exists("data"))
-        {
-            Directory.CreateDirectory("data");
-        }
-        if (!Directory.Exists("data/saves"))
-        {
-            Directory.CreateDirectory("data/saves");
-        }
-        // sort the save files by date and time (meta data after the ; in the file)
-        string[] files = Directory.GetFiles("data/saves");
-        List<string> filesList = new List<string>();
-        foreach (string file in files)
-        {
-            if (file.EndsWith(".meta"))
-            {
-                filesList.Add(file);
-            }
-        }
-        files = filesList.ToArray();
-        System.Array.Sort(files, (x, y) => File.GetLastWriteTime(y).CompareTo(File.GetLastWriteTime(x)));
-        return files;
-    }
-
     public void OnPressSettings()
     {
         turnAllGroupsOff();
         settingsGroup.SetActive(true);
-    }
-
-    public void OnPressMainMenu()
-    {
-        turnAllGroupsOff();
-        worldManager.backToMainMenu();
-        mainMenuCanvas.SetActive(true);
-        mainMenuGroup.SetActive(true);
     }
 
     public void OnPressExitGame()
@@ -380,5 +256,158 @@ public class MenuManager : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    /* ------------------ Escape menu buttons ------------------ */
+
+    public void onBackButtonEscapeMenu()
+    {
+        turnAllGroupsOff();
+        escapeMenuGroup.SetActive(true);
+    }
+
+    public void OnPressSaveGame()
+    {
+        turnAllGroupsOff();
+        saveGameGroup.SetActive(true);
+        backButton.SetActive(true);
+        saveGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "";
+        saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
+
+        string[] files = getSaveFiles();
+
+        // delete all of the children of the SaveGameScrollContent except for the saveGameSelectionRow
+        foreach (Transform child in saveGameScrollContent.transform)
+        {
+            if (child.gameObject != saveGameSelectionRow)
+                GameObject.Destroy(child.gameObject);
+        }
+        saveGameSelectionRow.SetActive(false);
+
+        int i = 0;
+        foreach (string file in files)
+        {
+            if (file.EndsWith(".meta"))
+            {
+                string saveData = File.ReadAllText(file);
+                // make a copy of the saveGameSelectionRow and copy in the correct data
+                GameObject newSaveGameSelectionRow = Instantiate(saveGameSelectionRow, saveGameScrollContent.transform);
+                newSaveGameSelectionRow.SetActive(true);
+                newSaveGameSelectionRow.transform.SetParent(saveGameScrollContent.transform);
+                newSaveGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
+                string saveName = saveData.Split(';')[0];
+                string saveDateTime = saveData.Split(';')[1];
+                newSaveGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
+                newSaveGameSelectionRow.transform.Find("DateAndTimeSaved").GetComponent<TMPro.TextMeshProUGUI>().text = saveDateTime;
+            }
+        }
+    }
+
+    public void useSaveNameInputField()
+    {
+        string text = saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text;
+        if (text != null && text != "" && text != " " && !string.IsNullOrWhiteSpace(text))
+        {
+            selectedLoadRow = saveGameGroup.transform.Find("NameInput").gameObject;
+        }
+        else
+        {
+            selectedLoadRow = null;
+        }
+    }
+
+    public void onPressSaveGameConfirm()
+    {
+        string saveName;
+        if (selectedLoadRow == null)
+        {
+            return;
+        }
+        if (selectedLoadRow.name == "NameInput")
+        {
+            // use the text from the input field
+            saveName = saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text;
+        }
+        else
+        {
+            // use the selected row
+            saveName = selectedLoadRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text;
+        }
+        if (checkSaveExists(saveName))
+        {
+            tryingToSaveTo = saveName;
+            turnAllGroupsOff();
+            overrightSaveConfirmationGroup.SetActive(true);
+        }
+        else
+        {
+            tryingToSaveTo = saveName;
+            onOverrightSaveConfirm();
+        }
+    }
+
+    public void onOverrightSaveConfirm()
+    {
+        List<char> invalidChars = worldManager.Save(tryingToSaveTo);
+        if (invalidChars.Count == 0)
+        {
+            saveGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "";
+            saveGameGroup.transform.Find("NameInput").GetComponent<TMPro.TMP_InputField>().text = "";
+            turnAllGroupsOff();
+            worldManager.backToGame();
+        }
+        else
+        {
+            Debug.LogError("Could not save game");
+            turnAllGroupsOff();
+            saveGameGroup.SetActive(true);
+            saveGameGroup.transform.Find("ErrorText").GetComponent<TMPro.TextMeshProUGUI>().text = "Name cannot contain " + string.Join("", invalidChars);
+        }
+    }
+
+    public void onOverrightSaveCancel()
+    {
+        turnAllGroupsOff();
+        saveGameGroup.SetActive(true);
+    }
+
+    public void OnSaveGameCancel()
+    {
+        turnAllGroupsOff();
+        saveGameGroup.SetActive(true);
+    }
+
+    public void OnPressLoadGameFromEscapeMenu()
+    {
+        fromEscapeMenu = true;
+        mainMenuCanvas.SetActive(true);
+        // set all children to inactive
+        foreach (Transform child in mainMenuCanvas.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        OnPressLoadGame();
+        backButton.SetActive(true);
+    }
+
+    public void OnPressSettingsFromEscapeMenu()
+    {
+        fromEscapeMenu = true;
+        mainMenuCanvas.SetActive(true);
+        // set all children to inactive
+        foreach (Transform child in mainMenuCanvas.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        OnPressSettings();
+        backButton.SetActive(true);
+    }
+    
+    public void OnPressMainMenu()
+    {
+        turnAllGroupsOff();
+        worldManager.backToMainMenu();
+        mainMenuCanvas.SetActive(true);
+        mainMenuGroup.SetActive(true);
     }
 }

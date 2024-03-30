@@ -144,11 +144,17 @@ public class WorldManager : MonoBehaviour
 
     }
 
-    public void createNewWorld(string name, int seed)
+    public List<char> createNewWorld(string name, int seed)
     {
+        List<char> invalidChars = checkSaveName(name);
+        if (invalidChars.Count > 0)
+        {
+            return invalidChars;
+        }
         firstLoadSinceStartup();
         currentlyLoadedSave = name;
         GetComponent<CreateNewWorld>().CreateWorld(seed);
+        return invalidChars;
     }
 
     void Update()
@@ -192,11 +198,26 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    public bool Save(string newName = null)
+    public List<char> checkSaveName(string name)
     {
-        // time it
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-        watch.Start();
+        if (name == "" || string.IsNullOrWhiteSpace(name))
+        {
+            return new List<char> { ' ' };
+        }
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        List<char> invalidCharsList = new List<char>();
+        foreach (char c in invalidChars)
+        {
+            if (name.Contains(c))
+            {
+                invalidCharsList.Add(c);
+            }
+        }
+        return invalidCharsList;
+    }
+
+    public List<char> Save(string newName = null)
+    {
 
         string name;
         if (newName == null)
@@ -208,6 +229,16 @@ public class WorldManager : MonoBehaviour
             name = newName;
         }
 
+        List<char> invalidChars = checkSaveName(name);
+        if (invalidChars.Count > 0)
+        {
+            return invalidChars;
+        }
+
+        // time it
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        watch.Start();
+        currentlyLoadedSave = name;
         getRemovedAsteroids();
         getEditedAsteroids();
         if (!Directory.Exists("data"))
@@ -236,7 +267,7 @@ public class WorldManager : MonoBehaviour
 #if UNITY_EDITOR
                 Debug.LogError("File creation failed");
 #endif
-            return false;
+            return new List<char>("File creation failed");
         }
         // save the seed in binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -265,7 +296,7 @@ public class WorldManager : MonoBehaviour
 #if UNITY_EDITOR
             Debug.Log("Saved game in " + watch.ElapsedMilliseconds + "ms");
 #endif
-        return true;
+        return new List<char>();
     }
 
     public void Load(string name)
