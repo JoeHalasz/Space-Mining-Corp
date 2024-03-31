@@ -18,6 +18,7 @@ public class MineAsteroid : MonoBehaviour
 
     float lastTimeMined = 0;
     float lastTimeAttemptedMine = 0;
+    WorldManager worldManager;
 
     void Start()
     {
@@ -25,6 +26,7 @@ public class MineAsteroid : MonoBehaviour
         currentMineDelay = mineDelayStart;
         lastTimeMined = Time.time;
         lastTimeAttemptedMine = Time.time;
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
     }
 
 
@@ -68,7 +70,7 @@ public class MineAsteroid : MonoBehaviour
                         if (hit.transform.GetComponent<AsteroidGenerator>() == null)
                             Destroy(hit.transform.gameObject);
                         else{
-                            hit.transform.GetComponent<AsteroidGenerator>().MineAsteroid(transform.gameObject, ray, hit, ray.direction, 5);
+                            hit.transform.GetComponent<AsteroidGenerator>().MineAsteroid(transform.gameObject, ray, hit, ray.direction, 5, worldManager);
                             if (currentMineDelay > mineDelayMin)
                             {
                                 currentMineDelay -= mineDelayDelta;

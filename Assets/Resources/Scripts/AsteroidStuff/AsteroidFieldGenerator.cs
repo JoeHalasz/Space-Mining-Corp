@@ -60,7 +60,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
             // pregenerate game objects for asteroid areas
             MakePregeneratedGameObjectsForAsteroidAreas();
             // generate an asteroid field around this object
-            SpawnNewArea(transform.localPosition);
+            SpawnNewArea(worldManager.getObjectTruePosition(transform.position));
         }
 
     }
@@ -130,7 +130,7 @@ public class AsteroidFieldGenerator : MonoBehaviour
         }
     }
 
-    Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZMOD
+    public Vector3 makeSurePosIsOnGrid(Vector3 pos) // EZMOD
     {
         int xOffset = ((int)pos.x) % sizeOfPartitions;
         int yOffset = ((int)pos.y) % sizeOfPartitions;
@@ -140,8 +140,12 @@ public class AsteroidFieldGenerator : MonoBehaviour
 
     public void SpawnNewArea(Vector3 pos)
     {
+        Vector3 beforePos = pos;
         pos = makeSurePosIsOnGrid(pos);
-
+        if (beforePos != pos)
+        {
+            Debug.Log("SpawnNewArea: pos was not on grid, changed from " + beforePos + " to " + pos);
+        }
         int negativeRad = -1 * radius;
         int negativeHeight = -1 * height;
         // make AsteroidAreaPrefab
@@ -158,7 +162,8 @@ public class AsteroidFieldGenerator : MonoBehaviour
 #endif
         // set the parent to this object
         newAsteroidArea.transform.SetParent(gameObject.transform, false);
-        newAsteroidArea.transform.localPosition = pos;
+        // Debug.Log("pos is " + pos + " and worldManager.getCurrentWorldOffset() is " + worldManager.getCurrentWorldOffset() + " so the new pos is " + (pos + worldManager.getCurrentWorldOffset()));
+        newAsteroidArea.transform.position = pos + worldManager.getCurrentWorldOffset();
         newAsteroidArea.SetActive(true);
         AsteroidAreaSpawner asteroidAreaSpawner = newAsteroidArea.GetComponent<AsteroidAreaSpawner>();
         // set newAsteroidAreas density, radius, and height
@@ -166,14 +171,14 @@ public class AsteroidFieldGenerator : MonoBehaviour
         asteroidAreaSpawner.height = (height / ((height - negativeHeight) / sizeOfPartitions));
 
         // if it exists, delete the old one
-        if (allSpawnAreas.ContainsKey(newAsteroidArea.transform.localPosition))
+        if (allSpawnAreas.ContainsKey(pos))
         {
-            allSpawnAreas[newAsteroidArea.transform.localPosition].GetComponent<AsteroidAreaSpawner>().destroyAsteroidAndThis();
+            allSpawnAreas[pos].GetComponent<AsteroidAreaSpawner>().destroyAsteroidAndThis();
         }
-        asteroidAreaSpawner.GenerateAsteroids(asteroidSpawnManager, allowRandomness);
+        asteroidAreaSpawner.GenerateAsteroids(asteroidSpawnManager, allowRandomness, worldManager);
         // add to the Dictionary
-        asteroidAreaSpawner.addedAtPos = newAsteroidArea.transform.localPosition;
-        allSpawnAreas.Add(newAsteroidArea.transform.localPosition, newAsteroidArea);
+        asteroidAreaSpawner.addedAtPos = pos;
+        allSpawnAreas.Add(pos, newAsteroidArea);
     }
 
     public void SpawnMoreAreasAt(Vector3 middlePos)

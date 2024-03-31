@@ -158,7 +158,7 @@ public class AsteroidSpawnManager : MonoBehaviour
 
         loadingGame = false;
         // spawn the first area spawner near the players current pos
-        asteroidFieldGenerator.SpawnNewArea(player.transform.localPosition);
+        asteroidFieldGenerator.SpawnNewArea(worldManager.getObjectTruePosition(player.transform.position));
     }
 
     // this create all the asteroid presets
@@ -389,7 +389,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         GameObject newAsteroid = AsteroidGameObjectQueue.First.Value;
         AsteroidGameObjectQueue.RemoveFirst();
         numAsteroidsInQueue--;
-        newAsteroid.transform.localPosition = position;
+        newAsteroid.transform.position = position + worldManager.getCurrentWorldOffset();
 
         newAsteroid.transform.SetParent(asteroidToCopy.transform.parent, false);
         AsteroidGenerator o = asteroidToCopy.GetComponent<AsteroidGenerator>();
@@ -402,7 +402,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         newAsteroid.GetComponent<AsteroidGenerator>().setOriginalPosition(position);
 
         // make it a different mineral
-        Item mineralType = minerals.GetMineralTypeFromPos(newAsteroid.transform.localPosition, isBig);
+        Item mineralType = minerals.GetMineralTypeFromPos(worldManager.getObjectTruePosition(newAsteroid.transform.position), isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = mineralType;
         newAsteroid.GetComponent<Renderer>().materials = new Material[] { itemManager.getMaterial(mineralType.getName()), itemManager.getMaterial("Stone") };
 

@@ -44,6 +44,8 @@ public class WorldManager : MonoBehaviour
 
     DialogManager dialogManager;
 
+    List<string> moveTags = new List<string> { "Player", "Asteroid", "Ship", "AsteroidSpawnZone", "Station" }; // TODO make sure everything that needs to be teleported has a tag and is here
+
     public void nextWorldState()
     {
         worldState++;
@@ -56,7 +58,7 @@ public class WorldManager : MonoBehaviour
 
     public Vector3 getObjectTruePosition(Vector3 pos)
     {
-        return pos + currentWorldOffset;
+        return pos - currentWorldOffset;
     }
 
     public void OffsetWorldBy(Vector3 offset)
@@ -65,12 +67,21 @@ public class WorldManager : MonoBehaviour
         offset.x = Mathf.Round(offset.x);
         offset.y = Mathf.Round(offset.y);
         offset.z = Mathf.Round(offset.z);
+
+        // make sure the offset is on the grid
+        offset = asteroidFieldGenerator.makeSurePosIsOnGrid(offset);
+
         Debug.Log("Offsetting world by " + offset);
-        // loop through all child objects and move them by the offset
-        foreach (Transform child in allMovableObjects.transform)
+        // move all the objects in the world by the offset
+        foreach (string tag in moveTags)
         {
-            child.position += offset;
+            GameObject[] objects = GameObject.FindGameObjectsWithTag(tag); // TODO this might take too long. Should know all the object on startup + ones that are generated for asteroids.
+            foreach (GameObject obj in objects)
+            {
+                obj.transform.position += offset;
+            }
         }
+
         currentWorldOffset += offset;
     }
 
@@ -98,7 +109,6 @@ public class WorldManager : MonoBehaviour
         menuManager = GetComponent<MenuManager>();
         // check the players pos and offset if too far from the origin
         InvokeRepeating("offsetWorldIfNecessary", 0, 5);
-        Startup();
     }
 
     public bool startDialog(FactionManager faction, GameObject voicedBy)
@@ -175,6 +185,7 @@ public class WorldManager : MonoBehaviour
     {
         if (first)
         {
+            Startup();
             first = false;
             backToMainMenu();
         }
@@ -359,6 +370,7 @@ public class WorldManager : MonoBehaviour
 #if UNITY_EDITOR
             Debug.Log("Loaded game [" + name + "] in " + watch.ElapsedMilliseconds + "ms");
 #endif
+        offsetWorldIfNecessary();
     }
 
     // file stream is already open
@@ -367,7 +379,7 @@ public class WorldManager : MonoBehaviour
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         BinaryFormatter bf = new BinaryFormatter();
         // save the players position and rotation
-        Vector3 playerPos = player.transform.localPosition;
+        Vector3 playerPos = getObjectTruePosition(player.transform.position);
         Vector3 playerRot = player.transform.rotation.eulerAngles;
         // save each float
         bf.Serialize(file, playerPos.x);
@@ -399,7 +411,7 @@ public class WorldManager : MonoBehaviour
         // load the players position and rotation float by float
         Vector3 playerPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
         Vector3 playerRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
-        player.transform.localPosition = playerPos;
+        player.transform.position = playerPos;
         player.transform.rotation = Quaternion.Euler(playerRot);
         // load the players credits
         playerStats.setCredits((float)bf.Deserialize(file));
@@ -420,7 +432,7 @@ public class WorldManager : MonoBehaviour
     {
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         BinaryFormatter bf = new BinaryFormatter();
-        Vector3 shipPos = playerStats.playerCurrentShip.transform.localPosition;
+        Vector3 shipPos = getObjectTruePosition(playerStats.playerCurrentShip.transform.position);
         Vector3 shipRot = playerStats.playerCurrentShip.transform.rotation.eulerAngles;
         bf.Serialize(file, shipPos.x);
         bf.Serialize(file, shipPos.y);
@@ -455,7 +467,7 @@ public class WorldManager : MonoBehaviour
         BinaryFormatter bf = new BinaryFormatter();
         Vector3 shipPos = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
         Vector3 shipRot = new Vector3((float)bf.Deserialize(file), (float)bf.Deserialize(file), (float)bf.Deserialize(file));
-        playerStats.playerCurrentShip.transform.localPosition = shipPos;
+        playerStats.playerCurrentShip.transform.position = shipPos;
         playerStats.playerCurrentShip.transform.rotation = Quaternion.Euler(shipRot);
         Inventory shipInventory = playerStats.playerCurrentShip.GetComponent<Inventory>();
         shipInventory.setInventory((List<ItemPair>)bf.Deserialize(file));

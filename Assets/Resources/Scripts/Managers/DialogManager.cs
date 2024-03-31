@@ -457,7 +457,7 @@ public class DialogManager : MonoBehaviour
                 }
                 if (faction.GetPlayerReputation() < 1)
                 {
-                    return new Dialog("I neeeeeeeed.... something. We pans!", 5, 10, true);
+                    return new Dialog("I neeeeeeeed.... something. We pans... Weapons!", 5, 10, true);
                 }
                 if (faction.GetPlayerReputation() > 1)
                 {

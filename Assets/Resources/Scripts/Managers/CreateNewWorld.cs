@@ -48,7 +48,7 @@ public class CreateNewWorld : MonoBehaviour
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         Vector3 playerPos = new Vector3(0, 10, 0);
         Vector3 playerRot = new Vector3(0, 0, 0);
-        player.transform.localPosition = playerPos;
+        player.transform.position = playerPos;
         player.transform.rotation = Quaternion.Euler(playerRot);
         playerStats.setCredits(0);
         playerStats.setHealth(100);
@@ -65,7 +65,7 @@ public class CreateNewWorld : MonoBehaviour
         PlayerStats playerStats = player.GetComponent<PlayerStats>();
         Vector3 shipPos = new Vector3(0, 10, 100);
         Vector3 shipRot = new Vector3(0, 180, 0);
-        playerStats.playerCurrentShip.transform.localPosition = shipPos;
+        playerStats.playerCurrentShip.transform.position = shipPos;
         playerStats.playerCurrentShip.transform.rotation = Quaternion.Euler(shipRot);
         Inventory shipInventory = playerStats.playerCurrentShip.GetComponent<Inventory>();
         shipInventory.setInventory(new List<ItemPair>());

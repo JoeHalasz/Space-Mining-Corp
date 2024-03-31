@@ -56,7 +56,6 @@ public class AsteroidGenerator : MonoBehaviour
     {
         // set the layer to 8 (asteroid)
         gameObject.layer = 8;
-        originalPosition = transform.localPosition;
 #if UNITY_EDITOR
         InvokeRepeating("CheckDebugBooleans", 5, 1);
 #endif
@@ -497,7 +496,7 @@ public class AsteroidGenerator : MonoBehaviour
         mesh.UploadMeshData(false);
     }
 
-    public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine)
+    public void MineAsteroid(GameObject miner, Ray ray, RaycastHit hit, Vector3 rayDirection, int amountToMine, WorldManager worldManager)
     {
         if (!edited)
         {
@@ -508,7 +507,7 @@ public class AsteroidGenerator : MonoBehaviour
             edited = true;
         }
 
-        int removedCubeIndex = RemoveCubesClosestToRay(ray, hit);
+        int removedCubeIndex = RemoveCubesClosestToRay(ray, hit, worldManager);
         Item itemMined = stone;
 
         if (allCubeData[removedCubeIndex].isOre)
@@ -546,7 +545,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
     }
 
-    int RemoveCubesClosestToRay(Ray ray, RaycastHit hit)
+    int RemoveCubesClosestToRay(Ray ray, RaycastHit hit, WorldManager worldManager)
     {
         float closestDistance = Mathf.Infinity;
         int closestCubeIndex = 0;
@@ -567,7 +566,7 @@ public class AsteroidGenerator : MonoBehaviour
             }
         }
         minedCubesIndecies.Add(closestCubeIndex);
-        asteroidSpawnManager.setRemovedChunksForAsteroid(transform.localPosition, minedCubesIndecies);
+        asteroidSpawnManager.setRemovedChunksForAsteroid(worldManager.getObjectTruePosition(transform.position), minedCubesIndecies);
         return closestCubeIndex;
     }
 

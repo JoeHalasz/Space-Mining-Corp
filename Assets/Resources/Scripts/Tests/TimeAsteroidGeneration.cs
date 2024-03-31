@@ -29,11 +29,13 @@ public class TimeAsteroidGeneration : MonoBehaviour
     int numAsteroids = 0;
 
     AsteroidSpawnManager asteroidSpawnManager;
+    WorldManager worldManager;
 
     void Start()
     {
         asteroidSpawnManager = GameObject.Find("AsteroidSpawnManager").GetComponent<AsteroidSpawnManager>();
         asteroidPrefab = Resources.Load<GameObject>("Prefabs/Asteroids/Asteroid") as GameObject;
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
     }
 
     void doTest()
@@ -80,7 +82,7 @@ public class TimeAsteroidGeneration : MonoBehaviour
 
         // random mineral based on the world position
         // worldPosition = asteroid pos + asteroid area spawner position + asteroid field position
-        Vector3 worldPosition = position + transform.localPosition;
+        Vector3 worldPosition = position + worldManager.getObjectTruePosition(transform.position);
 
         newAsteroid.GetComponent<AsteroidGenerator>().mineralType = minerals.GetMineralTypeFromPos(worldPosition, isBig);
         newAsteroid.GetComponent<AsteroidGenerator>().isBig = isBig;
