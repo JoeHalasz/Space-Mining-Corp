@@ -119,23 +119,18 @@ public class OpenInventoryUI : MonoBehaviour
 
     public void ShowOrHideUI(InputAction.CallbackContext context)
     {
-        Debug.Log("here");
         // if the player presses tab and the inventory is not open, open it else close it
         if (IsOnPlayer)
         {
-            Debug.Log("here2");
             if (!inventoryUILeft.activeSelf && !GetComponent<UIManager>().getUIOpen())
             {
-                Debug.Log("here3");
                 if (GetComponent<UIManager>().openAnyUI(this.gameObject, false, true, new List<GameObject> { inventoryUILeft, inventoryUIRight, inventoryUILeftBackground, inventoryUIRightBackground }))
                 {
-                    Debug.Log("Showing");
                     ShowInventory(this.gameObject, true);
                 }
             }
             else if (inventoryUILeft.activeSelf)
             {
-                Debug.Log("here4");
                 if (GetComponent<UIManager>().OpenOrCloseInventory(this.gameObject))
                 {
                     Debug.Log("Hiding");

@@ -54,9 +54,23 @@ public class WorldManager : MonoBehaviour
         return currentWorldOffset;
     }
 
+    public Vector3 getObjectTruePosition(Vector3 pos)
+    {
+        return pos + currentWorldOffset;
+    }
+
     public void OffsetWorldBy(Vector3 offset)
     {
-        allMovableObjects.transform.position += offset;
+        // round the offset to the nearest 1
+        offset.x = Mathf.Round(offset.x);
+        offset.y = Mathf.Round(offset.y);
+        offset.z = Mathf.Round(offset.z);
+        Debug.Log("Offsetting world by " + offset);
+        // loop through all child objects and move them by the offset
+        foreach (Transform child in allMovableObjects.transform)
+        {
+            child.position += offset;
+        }
         currentWorldOffset += offset;
     }
 
