@@ -36,7 +36,19 @@ public class ShowFps : MonoBehaviour
             needsUpdate = false;
             // The average FPS over the last second is the number of frame times in the queue
             float averageFPS = frameTimes.Count / x;
-
+            // if FPS is less than 30 show in red, less than 60 show in yellow, otherwise show in green
+            if (averageFPS < 30)
+            {
+                fpsText.GetComponent<TMPro.TextMeshProUGUI>().color = Color.red;
+            }
+            else if (averageFPS < 60)
+            {
+                fpsText.GetComponent<TMPro.TextMeshProUGUI>().color = Color.yellow;
+            }
+            else
+            {
+                fpsText.GetComponent<TMPro.TextMeshProUGUI>().color = Color.green;
+            }
             fpsText.GetComponent<TMPro.TextMeshProUGUI>().text = Mathf.Round(averageFPS).ToString();
         }
     }

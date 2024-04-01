@@ -21,6 +21,7 @@ public class NPCmanager : MonoBehaviour
 
     List<GameObject> shownMissions = new List<GameObject>();
     List<GameObject> playerMissions = new List<GameObject>();
+    ItemManager itemManager;
 
     public FactionManager factionManager;
 
@@ -39,6 +40,7 @@ public class NPCmanager : MonoBehaviour
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
         factionName = transform.parent.name;
         worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
+        itemManager = GameObject.Find("WorldManager").GetComponent<ItemManager>();
     }
 
     public void RefreshMissions()
@@ -149,8 +151,29 @@ public class NPCmanager : MonoBehaviour
         {
             Transform image = newMission.transform.Find("Image" + x++);
             image.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
-            //image.GetComponent<UnityEngine.UI.Image>().sprite = itemPair.item.getSpriteGameObject();
-            image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = "" + itemPair.getAmount();
+            image.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(itemPair.item.getName());
+            float totalPlayerHas = player.GetComponent<Inventory>().GetAmountOfItem(itemPair.item);
+            float totalNeeded = itemPair.getAmount();
+            string oreAmountText;
+            if (buttonName == "Complete") // we should check if the button should be available
+            {
+                if (totalPlayerHas >= totalNeeded)
+                {
+                    totalPlayerHas = totalNeeded;
+                    // make the complete button available
+                    newMission.transform.Find("Button").GetComponent<UnityEngine.UI.Button>().interactable = true;
+                }
+                else
+                {
+                    newMission.transform.Find("Button").GetComponent<UnityEngine.UI.Button>().interactable = false;
+                }
+                oreAmountText = totalPlayerHas + " / " + totalNeeded;
+            }
+            else
+            {
+                oreAmountText = itemPair.getAmount().ToString();
+            }
+            image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = oreAmountText;
         }
 
         return newMission;

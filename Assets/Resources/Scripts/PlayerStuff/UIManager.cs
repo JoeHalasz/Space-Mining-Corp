@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviour
     ItemManager itemManager;
     GameObject currentOpenUICaller;
     List<GameObject> currentOpenUIs = new List<GameObject>();
+    GameObject player;
+    GameObject crosshair;
 
 
     void Start()
@@ -33,6 +35,8 @@ public class UIManager : MonoBehaviour
         missionPrefab = Resources.Load<GameObject>("Prefabs/UI/MissionUI");
         PlayerMissionsUIFolder = playerMissionUI.transform.Find("Missions").gameObject;
         playerMovement = GetComponent<PlayerMovement>();
+        player = GameObject.Find("Player");
+        crosshair = GameObject.Find("Crosshair");
     }
 
     public bool getUIOpen() { return UIOpen; }
@@ -69,6 +73,7 @@ public class UIManager : MonoBehaviour
         playerMovement.UnlockPlayerInputs();
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        crosshair.SetActive(true);
         UIOpen = false;
     }
 
@@ -90,6 +95,7 @@ public class UIManager : MonoBehaviour
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            crosshair.SetActive(false);
             UIOpen = true;
             currentOpenUICaller = caller;
             return true;
@@ -211,7 +217,9 @@ public class UIManager : MonoBehaviour
             Transform image = newMission.transform.Find("Image" + x++);
             image.GetComponent<UnityEngine.UI.Image>().color = new Color(1, 1, 1, 1);
             image.GetComponent<UnityEngine.UI.Image>().sprite = itemManager.getSprite(itemPair.item.getName());
-            image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = "" + itemPair.getAmount();
+            // text should be amountPlayerHasInInv / amountNeeded
+            string text = player.GetComponent<Inventory>().GetAmountOfItem(itemPair.item) + " / " + itemPair.getAmount();
+            image.Find("OreAmount").GetComponent<TMPro.TextMeshProUGUI>().text = text;
         }
 
         return newMission;

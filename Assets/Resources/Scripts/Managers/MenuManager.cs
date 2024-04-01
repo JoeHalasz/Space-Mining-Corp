@@ -177,7 +177,7 @@ public class MenuManager : MonoBehaviour
                 GameObject newLoadGameSelectionRow = Instantiate(loadGameSelectionRow, loadGameScrollContent.transform);
                 newLoadGameSelectionRow.SetActive(true);
                 newLoadGameSelectionRow.transform.SetParent(loadGameScrollContent.transform);
-                newLoadGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
+                newLoadGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, loadGameSelectionRow.GetComponent<RectTransform>().anchoredPosition.y + (-i++ * 70));
                 string saveName = saveData.Split(';')[0];
                 string saveDateTime = saveData.Split(';')[1];
                 newLoadGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
@@ -294,7 +294,8 @@ public class MenuManager : MonoBehaviour
                 GameObject newSaveGameSelectionRow = Instantiate(saveGameSelectionRow, saveGameScrollContent.transform);
                 newSaveGameSelectionRow.SetActive(true);
                 newSaveGameSelectionRow.transform.SetParent(saveGameScrollContent.transform);
-                newSaveGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i++ * 70);
+                // get saveGameSelectionRows y pos
+                newSaveGameSelectionRow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, saveGameSelectionRow.GetComponent<RectTransform>().anchoredPosition.y + (-i++ * 70));
                 string saveName = saveData.Split(';')[0];
                 string saveDateTime = saveData.Split(';')[1];
                 newSaveGameSelectionRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text = saveName;
