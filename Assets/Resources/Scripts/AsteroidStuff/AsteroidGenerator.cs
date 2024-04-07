@@ -186,20 +186,20 @@ public class AsteroidGenerator : MonoBehaviour
         points = new List<Vector3>();
         if (isBig)
         {
-            AsteroidMinSize = 4.2f;
-            AsteroidMaxSize = 4.7f;
+            AsteroidMinSize = 10.5f;
+            AsteroidMaxSize = 10.5f;
         }
         else
         {
-            AsteroidMinSize = 3.2f;
-            AsteroidMaxSize = 3.7f;
+            AsteroidMinSize = 3.5f;
+            AsteroidMaxSize = 3.5f;
         }
 
         // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
-        float originalSize = (AsteroidMinSize + AsteroidMaxSize) / 2f;
         size = Random.Range(AsteroidMinSize, AsteroidMaxSize);
-        float inbetweenPointSize = (size / 10f) * 1.5f;
-        float increment = size / originalSize;
+        Debug.Log(size);
+        float inbetweenPointSize = .5f;
+        float increment = 1;
 
         float maxDistance = Vector3.Distance(new Vector3(0, 0, 0), new Vector3(size, size, size));
 
@@ -261,17 +261,6 @@ public class AsteroidGenerator : MonoBehaviour
                                 }
                                 newCubePointIndecies.Add(pointsSetPositions[pointInt]);
                                 pointsNotMoved++;
-                            }
-                            else
-                            {
-                                Vector3 newPoint = new Vector3(x, y, z);
-                                if (!pointsSetPositions.ContainsKey(newPoint))
-                                {
-                                    pointsSetPositions.Add(newPoint, points.Count);
-                                    points.Add(newPoint);
-                                    count += 1;
-                                }
-                                newCubePointIndecies.Add(pointsSetPositions[newPoint]);
                             }
                         }
                         if (pointsNotMoved >= 5)
