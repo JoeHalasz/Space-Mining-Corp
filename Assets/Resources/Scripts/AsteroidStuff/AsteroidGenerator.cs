@@ -10,6 +10,12 @@ public class CubeData
     public List<Vector3> verts;
     public List<int> tris;
     public List<Vector3> normals;
+    public CubeData leftCube = null;
+    public CubeData rightCube = null;
+    public CubeData topCube = null;
+    public CubeData bottomCube = null;
+    public CubeData frontCube = null;
+    public CubeData backCube = null;
     public List<Vector2> uvs;
     public Vector3 midpoint;
     public int distanceBandFromCenter;
@@ -20,6 +26,35 @@ public class CubeData
         verts = new List<Vector3>();
         tris = new List<int>();
         normals = new List<Vector3>();
+    }
+
+    public void setConnectedCubesToOutsideCubes()
+    {
+        if (leftCube != null)
+        {
+            leftCube.isOutside = true;
+        }
+        if (rightCube != null)
+        {
+            rightCube.isOutside = true;
+        }
+        if (topCube != null)
+        {
+            topCube.isOutside = true;
+        }
+        if (bottomCube != null)
+        {
+            bottomCube.isOutside = true;
+        }
+        if (frontCube != null)
+        {
+            frontCube.isOutside = true;
+        }
+        if (backCube != null)
+        {
+            backCube.isOutside = true;
+        }
+    
     }
 }
 
@@ -145,6 +180,7 @@ public class AsteroidGenerator : MonoBehaviour
     {
         IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
         Dictionary<CubeData, int> cubeDistances = new Dictionary<CubeData, int>();
+        List<List<List<CubeData>>> cubeDataGrid = new List<List<List<CubeData>>>();
         List<int> newCubePointIndecies = new List<int>();
         allCubeData = new List<CubeData>();
         points = new List<Vector3>();
@@ -174,14 +210,20 @@ public class AsteroidGenerator : MonoBehaviour
         Vector3 asteroidCenter = new Vector3(-size + c, -size + c, -size + c);
 
         int count = 0;
+        int xGridPos = 0;
         for (float x = -size - increment; x <= size;)
         {
+            int yGridPos = 0;
+            cubeDataGrid.Add(new List<List<CubeData>>());
             x += increment;
             for (float y = -size - increment; y <= size;)
             {
+                int zGridPos = 0;
+                cubeDataGrid[cubeDataGrid.Count - 1].Add(new List<CubeData>());
                 y += increment;
                 for (float z = -size - increment; z <= size;)
                 {
+                    cubeDataGrid[cubeDataGrid.Count - 1][cubeDataGrid[cubeDataGrid.Count - 1].Count - 1].Add(null);
                     z += increment;
                     //calculate the distance from the center of the asteroid
                     float distance = Vector3.Distance(asteroidCenter, new Vector3(x, y, z));
@@ -201,6 +243,7 @@ public class AsteroidGenerator : MonoBehaviour
                         pointsAround[7] = new Vector3(x - inbetweenPointSize, y - inbetweenPointSize, z - inbetweenPointSize);
 
                         newCubePointIndecies.Clear();
+                        int pointsNotMoved = 0;
                         // foreach point if the point isnt in pointsSet add it to pointsSet
                         foreach (Vector3 point in pointsAround)
                         {
@@ -217,14 +260,67 @@ public class AsteroidGenerator : MonoBehaviour
                                     count += 1;
                                 }
                                 newCubePointIndecies.Add(pointsSetPositions[pointInt]);
+                                pointsNotMoved++;
+                            }
+                            else
+                            {
+                                Vector3 newPoint = new Vector3(x, y, z);
+                                if (!pointsSetPositions.ContainsKey(newPoint))
+                                {
+                                    pointsSetPositions.Add(newPoint, points.Count);
+                                    points.Add(newPoint);
+                                    count += 1;
+                                }
+                                newCubePointIndecies.Add(pointsSetPositions[newPoint]);
                             }
                         }
-                        if (newCubePointIndecies.Count >= 5)
+                        if (pointsNotMoved >= 5)
                         {
                             // make a new CubeData and add it to the list
                             CubeData cubeData = new CubeData();
                             cubeData.indecies = new List<int>(newCubePointIndecies);
                             allCubeData.Add(cubeData); // Add the cubeData to the list
+                            cubeDataGrid[xGridPos][yGridPos][zGridPos] = cubeData;
+                        }
+                    }
+                    zGridPos += 1;
+                }
+                yGridPos += 1;
+            }
+            xGridPos += 1;
+        }
+
+        for (int x = 0; x < cubeDataGrid.Count; x++)
+        {
+            for (int y = 0; y < cubeDataGrid[x].Count; y++)
+            {
+                for (int z = 0; z < cubeDataGrid[x][y].Count; z++)
+                {
+                    if (cubeDataGrid[x][y][z] != null)
+                    {
+                        if (x + 1 < cubeDataGrid.Count && cubeDataGrid[x + 1][y][z] != null)
+                        {
+                            cubeDataGrid[x][y][z].rightCube = cubeDataGrid[x + 1][y][z];
+                        }
+                        if (x - 1 >= 0 && cubeDataGrid[x - 1][y][z] != null)
+                        {
+                            cubeDataGrid[x][y][z].leftCube = cubeDataGrid[x - 1][y][z];
+                        }
+                        if (y + 1 < cubeDataGrid[x].Count && cubeDataGrid[x][y + 1][z] != null)
+                        {
+                            cubeDataGrid[x][y][z].topCube = cubeDataGrid[x][y + 1][z];
+                        }
+                        if (y - 1 >= 0 && cubeDataGrid[x][y - 1][z] != null)
+                        {
+                            cubeDataGrid[x][y][z].bottomCube = cubeDataGrid[x][y - 1][z];
+                        }
+                        if (z + 1 < cubeDataGrid[x][y].Count && cubeDataGrid[x][y][z + 1] != null)
+                        {
+                            cubeDataGrid[x][y][z].frontCube = cubeDataGrid[x][y][z + 1];
+                        }
+                        if (z - 1 >= 0 && cubeDataGrid[x][y][z - 1] != null)
+                        {
+                            cubeDataGrid[x][y][z].backCube = cubeDataGrid[x][y][z - 1];
                         }
                     }
                 }
@@ -272,20 +368,24 @@ public class AsteroidGenerator : MonoBehaviour
                 }
             }
         }
-        // make all the cubes in the furthest 2 bands outside cubes
         // if its an inside cube then make it a 90% chance that its an ore
         foreach (KeyValuePair<CubeData, int> kvp in cubeDistances)
         {
-            if (kvp.Value == furthest || kvp.Value == furthest2)
-            {
-                kvp.Key.isOutside = true;
-            }
-            else
+            if (kvp.Value != furthest && kvp.Value != furthest2)
             {
                 if (Random.Range(0, 10) <= 9)
                 {
                     kvp.Key.isOre = true;
                 }
+            }
+        }
+
+        // if a cube has any of its sides missing cubeData then its an outside Cube 
+        foreach (CubeData cube in allCubeData)
+        {
+            if (cube.leftCube == null || cube.rightCube == null || cube.topCube == null || cube.bottomCube == null || cube.frontCube == null || cube.backCube == null)
+            {
+                cube.isOutside = true;
             }
         }
 
@@ -344,6 +444,7 @@ public class AsteroidGenerator : MonoBehaviour
 
             ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
             ConvexHullCalcGlobal.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
+            
             cube.verts = new List<Vector3>(verts);
             cube.tris = new List<int>(tris);
             cube.normals = new List<Vector3>(normals);
@@ -429,7 +530,7 @@ public class AsteroidGenerator : MonoBehaviour
 
         for (int i = 0; i < allCubeData.Count; i++)
         {
-            if (!edited && !allCubeData[i].isOutside)
+            if (!allCubeData[i].isOutside)
             {
                 continue;
             }
@@ -555,7 +656,7 @@ public class AsteroidGenerator : MonoBehaviour
         // get the distances and pick the least. thats the closest cube
         for (int i = 0; i < allCubeData.Count; i++)
         {
-            if (!minedCubesIndecies.Contains(i))
+            if (!minedCubesIndecies.Contains(i) && allCubeData[i].isOutside)
             {
                 float dist = Vector3.Distance(hit.point, allCubeData[i].midpoint + asteroidCurrentPosition);
                 if (dist < closestDist)
@@ -566,6 +667,9 @@ public class AsteroidGenerator : MonoBehaviour
             }
         }
         minedCubesIndecies.Add(closestCubeIndex);
+        // set the cubes connected to the mined cube to be outside cubes
+        allCubeData[closestCubeIndex].setConnectedCubesToOutsideCubes();
+        
         asteroidSpawnManager.setRemovedChunksForAsteroid(worldManager.getObjectTruePosition(transform.position), minedCubesIndecies);
         return closestCubeIndex;
     }
@@ -574,6 +678,11 @@ public class AsteroidGenerator : MonoBehaviour
     {
         edited = true;
         this.minedCubesIndecies = minedCubesIndecies;
+        // use setConnectedCubesToOutsideCubes();
+        foreach (int index in minedCubesIndecies)
+        {
+            allCubeData[index].setConnectedCubesToOutsideCubes();
+        }
 
         if (minedCubesIndecies.Count < allCubeData.Count - 1)
         {

@@ -9254,9 +9254,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asteroidPrefab: {fileID: 4140343361690331378, guid: 0ef98c27a31240546a3fc8e263c19bad,
     type: 3}
-  maxAsteroidsX: 10
-  maxAsteroidsY: 10
-  maxAsteroidsZ: 10
+  maxAsteroidsX: 1
+  maxAsteroidsY: 1
+  maxAsteroidsZ: 1
   spacing: 20
   redoTest: 0
 --- !u!1001 &510467465
@@ -22758,6 +22758,7 @@ GameObject:
   - component: {fileID: 1332185600}
   - component: {fileID: 1332185601}
   - component: {fileID: 1332185602}
+  - component: {fileID: 1332185603}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -22774,7 +22775,7 @@ Transform:
   m_GameObject: {fileID: 1332185594}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.992332, y: 1.7103882, z: -2.964296}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -22864,6 +22865,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a87a774174f780644bb0e9f398c0eea7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1332185603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332185594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3a5c64cd8fb414988fd9381b9217e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1338583408
