@@ -507,7 +507,10 @@ using UnityEngine;
                         {
                             var p3 = points[i3];
 
-                            if (AreCoplanar(p0, p1, p2, p3)) continue;
+                            if (AreCoplanar(p0, p1, p2, p3)) 
+                            {
+                                continue;
+                            }
 
                             b0 = i0;
                             b1 = i1;

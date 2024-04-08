@@ -27,35 +27,6 @@ public class CubeData
         tris = new List<int>();
         normals = new List<Vector3>();
     }
-
-    public void setConnectedCubesToOutsideCubes()
-    {
-        if (leftCube != null)
-        {
-            leftCube.isOutside = true;
-        }
-        if (rightCube != null)
-        {
-            rightCube.isOutside = true;
-        }
-        if (topCube != null)
-        {
-            topCube.isOutside = true;
-        }
-        if (bottomCube != null)
-        {
-            bottomCube.isOutside = true;
-        }
-        if (frontCube != null)
-        {
-            frontCube.isOutside = true;
-        }
-        if (backCube != null)
-        {
-            backCube.isOutside = true;
-        }
-    
-    }
 }
 
 public class AsteroidGenerator : MonoBehaviour
@@ -72,6 +43,7 @@ public class AsteroidGenerator : MonoBehaviour
     public float size;
     public List<Vector3> points;
     public List<CubeData> allCubeData;
+    public List<CubeData> allOutsideCubeData;
     public HashSet<int> minedCubesIndecies;
     public Mesh mesh;
     public Mesh originalMesh;
@@ -126,6 +98,7 @@ public class AsteroidGenerator : MonoBehaviour
         points = other.points;
         originalMesh = other.originalMesh;
         allCubeData = other.allCubeData;
+        allOutsideCubeData = other.allOutsideCubeData;
         asteroidSpawnManager = _asteroidSpawnManager;
         if (originalMesh == null)
         {
@@ -176,274 +149,151 @@ public class AsteroidGenerator : MonoBehaviour
         GenerateAsteroid();
     }
 
-    void GenerateAsteroid() // this should only happen for the pregenerated asteroids at game load
+    void GenerateAsteroid()
     {
-        IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
-        Dictionary<CubeData, int> cubeDistances = new Dictionary<CubeData, int>();
         List<List<List<CubeData>>> cubeDataGrid = new List<List<List<CubeData>>>();
+        IDictionary<Vector3, int> pointsSetPositions = new Dictionary<Vector3, int>();
         List<int> newCubePointIndecies = new List<int>();
+        IDictionary<Vector3, Vector3> posToRandomizedPos = new Dictionary<Vector3, Vector3>();
         allCubeData = new List<CubeData>();
+        allOutsideCubeData = new List<CubeData>();
         points = new List<Vector3>();
         if (isBig)
         {
-            AsteroidMinSize = 10.5f;
-            AsteroidMaxSize = 10.5f;
+            size = 5f; // make sure this is an even number
         }
         else
         {
-            AsteroidMinSize = 3.5f;
-            AsteroidMaxSize = 3.5f;
+            size = 5f; // make sure this is an even number 
         }
 
-        // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
-        size = Random.Range(AsteroidMinSize, AsteroidMaxSize);
-        Debug.Log(size);
-        float inbetweenPointSize = .5f;
         float increment = 1;
 
-        float maxDistance = Vector3.Distance(new Vector3(0, 0, 0), new Vector3(size, size, size));
-
+        float maxDistFromCenter = Vector3.Distance(new Vector3(0, 0, 0), new Vector3(size, size, size));
 
         float c;
         // calculate c
         for (c = -size; c <= size; c += increment) { }
         Vector3 asteroidCenter = new Vector3(-size + c, -size + c, -size + c);
+        
+        ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
 
-        int count = 0;
-        int xGridPos = 0;
-        for (float x = -size - increment; x <= size;)
+        // inizialize cubeDataGrid
+        for (int i = 0; i < size * 4; i++)
         {
-            int yGridPos = 0;
             cubeDataGrid.Add(new List<List<CubeData>>());
-            x += increment;
-            for (float y = -size - increment; y <= size;)
+            for (int j = 0; j < size * 4; j++)
             {
-                int zGridPos = 0;
-                cubeDataGrid[cubeDataGrid.Count - 1].Add(new List<CubeData>());
-                y += increment;
-                for (float z = -size - increment; z <= size;)
+                cubeDataGrid[i].Add(new List<CubeData>());
+                for (int k = 0; k < size * 4; k++)
                 {
-                    cubeDataGrid[cubeDataGrid.Count - 1][cubeDataGrid[cubeDataGrid.Count - 1].Count - 1].Add(null);
-                    z += increment;
-                    //calculate the distance from the center of the asteroid
-                    float distance = Vector3.Distance(asteroidCenter, new Vector3(x, y, z));
-
-                    // the further from center, the higher the chances are that the vertex will not be added
-                    if (.75f >= distance / maxDistance)
-                    {
-                        // generate 8 points around the position of the voxel that make a cube
-                        Vector3[] pointsAround = new Vector3[8];
-                        pointsAround[0] = new Vector3(x + inbetweenPointSize, y + inbetweenPointSize, z + inbetweenPointSize);
-                        pointsAround[1] = new Vector3(x + inbetweenPointSize, y + inbetweenPointSize, z - inbetweenPointSize);
-                        pointsAround[2] = new Vector3(x + inbetweenPointSize, y - inbetweenPointSize, z + inbetweenPointSize);
-                        pointsAround[3] = new Vector3(x + inbetweenPointSize, y - inbetweenPointSize, z - inbetweenPointSize);
-                        pointsAround[4] = new Vector3(x - inbetweenPointSize, y + inbetweenPointSize, z + inbetweenPointSize);
-                        pointsAround[5] = new Vector3(x - inbetweenPointSize, y + inbetweenPointSize, z - inbetweenPointSize);
-                        pointsAround[6] = new Vector3(x - inbetweenPointSize, y - inbetweenPointSize, z + inbetweenPointSize);
-                        pointsAround[7] = new Vector3(x - inbetweenPointSize, y - inbetweenPointSize, z - inbetweenPointSize);
-
-                        newCubePointIndecies.Clear();
-                        int pointsNotMoved = 0;
-                        // foreach point if the point isnt in pointsSet add it to pointsSet
-                        foreach (Vector3 point in pointsAround)
-                        {
-                            // get the distance from the center of the asteroid
-                            float distanceFromCenter = Vector3.Distance(asteroidCenter, point);
-                            if (.75f >= distanceFromCenter / maxDistance)
-                            {
-                                // make a point using the int of all the points
-                                Vector3 pointInt = new Vector3(Mathf.Round(point.x), Mathf.Round(point.y), Mathf.Round(point.z));
-                                if (!pointsSetPositions.ContainsKey(pointInt))
-                                {
-                                    pointsSetPositions.Add(pointInt, points.Count);
-                                    points.Add(point);
-                                    count += 1;
-                                }
-                                newCubePointIndecies.Add(pointsSetPositions[pointInt]);
-                                pointsNotMoved++;
-                            }
-                        }
-                        if (pointsNotMoved >= 5)
-                        {
-                            // make a new CubeData and add it to the list
-                            CubeData cubeData = new CubeData();
-                            cubeData.indecies = new List<int>(newCubePointIndecies);
-                            allCubeData.Add(cubeData); // Add the cubeData to the list
-                            cubeDataGrid[xGridPos][yGridPos][zGridPos] = cubeData;
-                        }
-                    }
-                    zGridPos += 1;
-                }
-                yGridPos += 1;
-            }
-            xGridPos += 1;
-        }
-
-        for (int x = 0; x < cubeDataGrid.Count; x++)
-        {
-            for (int y = 0; y < cubeDataGrid[x].Count; y++)
-            {
-                for (int z = 0; z < cubeDataGrid[x][y].Count; z++)
-                {
-                    if (cubeDataGrid[x][y][z] != null)
-                    {
-                        if (x + 1 < cubeDataGrid.Count && cubeDataGrid[x + 1][y][z] != null)
-                        {
-                            cubeDataGrid[x][y][z].rightCube = cubeDataGrid[x + 1][y][z];
-                        }
-                        if (x - 1 >= 0 && cubeDataGrid[x - 1][y][z] != null)
-                        {
-                            cubeDataGrid[x][y][z].leftCube = cubeDataGrid[x - 1][y][z];
-                        }
-                        if (y + 1 < cubeDataGrid[x].Count && cubeDataGrid[x][y + 1][z] != null)
-                        {
-                            cubeDataGrid[x][y][z].topCube = cubeDataGrid[x][y + 1][z];
-                        }
-                        if (y - 1 >= 0 && cubeDataGrid[x][y - 1][z] != null)
-                        {
-                            cubeDataGrid[x][y][z].bottomCube = cubeDataGrid[x][y - 1][z];
-                        }
-                        if (z + 1 < cubeDataGrid[x][y].Count && cubeDataGrid[x][y][z + 1] != null)
-                        {
-                            cubeDataGrid[x][y][z].frontCube = cubeDataGrid[x][y][z + 1];
-                        }
-                        if (z - 1 >= 0 && cubeDataGrid[x][y][z - 1] != null)
-                        {
-                            cubeDataGrid[x][y][z].backCube = cubeDataGrid[x][y][z - 1];
-                        }
-                    }
+                    cubeDataGrid[i][j].Add(null);
                 }
             }
         }
 
-        Dictionary<int, int> numCubesInDistanceBand = new Dictionary<int, int>();
-
-        // calculate cubePointIndeciesDistances
-        foreach (CubeData cube in allCubeData)
-        {
-            float minDist = Mathf.Infinity;
-            foreach (int index in cube.indecies)
-            {
-                float dist = Vector3.Distance(asteroidCenter, points[index]);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                }
-            }
-            int distanceLayer = (int)minDist;
-            cubeDistances.Add(cube, distanceLayer);
-            if (!numCubesInDistanceBand.ContainsKey(distanceLayer))
-            {
-                numCubesInDistanceBand.Add(distanceLayer, 0);
-            }
-            numCubesInDistanceBand[distanceLayer] += 1;
-        }
-
-        // find the 2 furthest layers that have at least 32 cubes
-        int furthest = 0;
-        int furthest2 = 0;
-        foreach (KeyValuePair<int, int> kvp in numCubesInDistanceBand)
-        {
-            if (kvp.Value >= 32)
-            {
-                if (kvp.Key > furthest)
-                {
-                    furthest2 = furthest;
-                    furthest = kvp.Key;
-                }
-                else if (kvp.Key > furthest2)
-                {
-                    furthest2 = kvp.Key;
-                }
-            }
-        }
-        // if its an inside cube then make it a 90% chance that its an ore
-        foreach (KeyValuePair<CubeData, int> kvp in cubeDistances)
-        {
-            if (kvp.Value != furthest && kvp.Value != furthest2)
-            {
-                if (Random.Range(0, 10) <= 9)
-                {
-                    kvp.Key.isOre = true;
-                }
-            }
-        }
-
-        // if a cube has any of its sides missing cubeData then its an outside Cube 
-        foreach (CubeData cube in allCubeData)
-        {
-            if (cube.leftCube == null || cube.rightCube == null || cube.topCube == null || cube.bottomCube == null || cube.frontCube == null || cube.backCube == null)
-            {
-                cube.isOutside = true;
-            }
-        }
-
-        float addRandomness = increment / 3f;
-        // add some randomness to each point and give each point a color
-        for (int i = 0; i < points.Count; i++)
-        {
-            points[i] = new Vector3(points[i].x + Random.Range(-addRandomness, addRandomness), points[i].y + Random.Range(-addRandomness, addRandomness), points[i].z + Random.Range(-addRandomness, addRandomness));
-        }
-
-        List<int> oreIndecies = new List<int>();
-        // 3% that a point is an ore. If a point is in a cube then make that cube an ore
-        for (int i = 0; i < points.Count; i++)
-        {
-            if (Random.Range(0, 100) <= 3)
-            {
-                oreIndecies.Add(i);
-            }
-        }
-        foreach (CubeData cube in allCubeData)
-        {
-            foreach (int index in cube.indecies)
-            {
-                if (oreIndecies.Contains(index))
-                {
-                    cube.isOre = true;
-                    break;
-                }
-            }
-        }
-
-        GenerateVertsTrisNormalsAndUVs();
-        GenerateMidPoints();
+        createAllCubes((int)size, asteroidCenter, asteroidCenter, maxDistFromCenter, true, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+        
         GenerateMesh();
     }
 
-
-    // this should only happen once whne the asteroid is first generated
-    void GenerateVertsTrisNormalsAndUVs()
+    CubeData createAllCubes(int maxDistBand, Vector3 pos, Vector3 asteroidCenter, float maxDistFromCenter, bool lastWasOre, 
+                            ref List<List<List<CubeData>>> cubeDataGrid, ref IDictionary<Vector3, int> pointsSetPositions, 
+                            ref IDictionary<Vector3, Vector3> posToRandomizedPos, ref List<Vector3> points, ref ConvexHullCalculator ConvexHullCalcGlobal)
     {
-        List<Vector3> verts = new List<Vector3>();
-        List<int> tris = new List<int>();
-        List<Vector3> normals = new List<Vector3>();
-        List<Vector3> pointInThisCube = new List<Vector3>();
-
-        foreach (CubeData cube in allCubeData)
+        int distBand = (int)(Mathf.Abs(asteroidCenter.x - pos.x) + Mathf.Abs(asteroidCenter.y - pos.y) + Mathf.Abs(asteroidCenter.z - pos.z));
+        if (distBand > maxDistBand)
         {
-            verts.Clear();
-            tris.Clear();
-            normals.Clear();
-            pointInThisCube.Clear();
-            foreach (int index in cube.indecies)
-            {
-                pointInThisCube.Add(points[index]);
-            }
+            return null;
+        }
+        if (cubeDataGrid[(int)pos.x + maxDistBand][(int)pos.y+ maxDistBand][(int)pos.z+ maxDistBand] != null)
+        {
+            return cubeDataGrid[(int)pos.x+ maxDistBand][(int)pos.y+ maxDistBand][(int)pos.z+ maxDistBand];
+        }
 
-            ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
-            ConvexHullCalcGlobal.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
-            
-            cube.verts = new List<Vector3>(verts);
-            cube.tris = new List<int>(tris);
-            cube.normals = new List<Vector3>(normals);
-            // calculate the uvs using the verts x,y or x,z or y,z depending on which way the triangle is stretched
-            cube.uvs = new List<Vector2>();
-            for (int j = 0; j < cube.tris.Count; j += 3)
+        // if we are on the last layer then make sure we arent too far from the center
+        if (distBand == maxDistBand)
+        {
+            if (.75f >= Vector3.Distance(pos, asteroidCenter) / maxDistFromCenter)
             {
-                Vector3 v1 = cube.verts[cube.tris[j]];
-                Vector3 v2 = cube.verts[cube.tris[j + 1]];
-                Vector3 v3 = cube.verts[cube.tris[j + 2]];
+                return null;
+            }
+        }
+
+        // generate 8 points around the position of the voxel that make a cube
+        Vector3[] pointsAround = new Vector3[8];
+        pointsAround[0] = new Vector3(pos.x + .5f, pos.y + .5f, pos.z + .5f);
+        pointsAround[1] = new Vector3(pos.x + .5f, pos.y + .5f, pos.z - .5f);
+        pointsAround[2] = new Vector3(pos.x + .5f, pos.y - .5f, pos.z + .5f);
+        pointsAround[3] = new Vector3(pos.x + .5f, pos.y - .5f, pos.z - .5f);
+        pointsAround[4] = new Vector3(pos.x - .5f, pos.y + .5f, pos.z + .5f);
+        pointsAround[5] = new Vector3(pos.x - .5f, pos.y + .5f, pos.z - .5f);
+        pointsAround[6] = new Vector3(pos.x - .5f, pos.y - .5f, pos.z + .5f);
+        pointsAround[7] = new Vector3(pos.x - .5f, pos.y - .5f, pos.z - .5f);
+
+        List<int> newCubePointIndecies = new List<int>();
+        foreach (Vector3 point in pointsAround)
+        {
+            // if we are on the last layer then make sure each point isnt too far from the center
+            if (distBand < maxDistBand || .75f >= (Vector3.Distance(asteroidCenter, point)) / maxDistFromCenter)
+            {
+                // make a point using the int of all the points
+                if (!pointsSetPositions.ContainsKey(point))
+                {
+                    pointsSetPositions.Add(point, points.Count);
+                    points.Add(point);
+                    // randomize the position of the point
+                    Vector3 randomizedPos = new Vector3(point.x + Random.Range(-.33f, .33f), point.y + Random.Range(-.33f, .33f), point.z + Random.Range(-.33f, .33f));
+                    posToRandomizedPos.Add(point, randomizedPos);
+                }
+                newCubePointIndecies.Add(pointsSetPositions[point]);
+            }
+        }
+        if (newCubePointIndecies.Count >= 5)
+        {
+            // make a new CubeData and add it to the list
+            CubeData cubeData = new CubeData();
+            cubeData.distanceBandFromCenter = distBand;
+            cubeData.indecies = new List<int>(newCubePointIndecies);
+            if (distBand == maxDistBand)
+            {
+                if (lastWasOre)
+                {
+                    cubeData.isOre = Random.Range(0, 100) <= 70; // TODO mess with this number if the ores dont look good
+                }
+                else
+                {
+                    cubeData.isOre = Random.Range(0, 100) <= 10;
+                }
+            }
+            else
+            {
+                cubeData.isOre = Random.Range(0, 100) <= 90;
+            }
+            // calculate midpoint using the randomized points in newCubePointIndecies
+            Vector3 midpoint = new Vector3(0, 0, 0);
+            foreach (int index in newCubePointIndecies)
+            {
+                midpoint += posToRandomizedPos[points[index]];
+            }
+            midpoint /= newCubePointIndecies.Count;
+            cubeData.midpoint = midpoint;
+            
+
+            
+            List<Vector3> pointInThisCube = new List<Vector3>();
+            foreach (int index in cubeData.indecies)
+            {
+                pointInThisCube.Add(posToRandomizedPos[points[index]]);
+            }
+            ConvexHullCalcGlobal.GenerateHull(pointInThisCube, true, ref cubeData.verts, ref cubeData.tris, ref cubeData.normals);
+            // calculate the uvs using the verts x,y or x,z or y,z depending on which way the triangle is stretched
+            cubeData.uvs = new List<Vector2>();
+            for (int j = 0; j < cubeData.tris.Count; j += 3)
+            {
+                Vector3 v1 = cubeData.verts[cubeData.tris[j]];
+                Vector3 v2 = cubeData.verts[cubeData.tris[j + 1]];
+                Vector3 v3 = cubeData.verts[cubeData.tris[j + 2]];
                 Vector3 side1 = v2 - v1;
                 Vector3 side2 = v3 - v1;
                 Vector3 normal = Vector3.Cross(side1, side2);
@@ -452,24 +302,45 @@ public class AsteroidGenerator : MonoBehaviour
                 float ratioX = Vector3.Distance(v1, v2) / Vector3.Distance(side1, side2);
                 float ratioY = Vector3.Distance(v1, v3) / Vector3.Distance(side1, side2);
 
-                cube.uvs.Add(new Vector2(ratioX, ratioY));
-                cube.uvs.Add(new Vector2(0, ratioY));
-                cube.uvs.Add(new Vector2(ratioX, 0));
+                cubeData.uvs.Add(new Vector2(ratioX, ratioY));
+                cubeData.uvs.Add(new Vector2(0, ratioY));
+                cubeData.uvs.Add(new Vector2(ratioX, 0));
             }
-        }
-    }
 
-    void GenerateMidPoints()
-    {
-        foreach (CubeData cube in allCubeData)
-        {
-            Vector3 midPoint = Vector3.zero;
-            foreach (int index in cube.indecies)
+            // if any of them are null then this is an outside cube
+            if (cubeData.leftCube == null || cubeData.rightCube == null || cubeData.topCube == null || cubeData.bottomCube == null || cubeData.frontCube == null || cubeData.backCube == null)
             {
-                midPoint += points[index];
+                cubeData.isOutside = true;
             }
-            midPoint /= cube.indecies.Count;
-            cube.midpoint = midPoint;
+
+            cubeDataGrid[(int)pos.x+ maxDistBand][(int)pos.y+ maxDistBand][(int)pos.z+ maxDistBand] = cubeData;
+            
+            cubeData.leftCube =   createAllCubes(maxDistBand, new Vector3(pos.x - 1, pos.y, pos.z), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            cubeData.rightCube =  createAllCubes(maxDistBand, new Vector3(pos.x + 1, pos.y, pos.z), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            cubeData.topCube =    createAllCubes(maxDistBand, new Vector3(pos.x, pos.y + 1, pos.z), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            cubeData.bottomCube = createAllCubes(maxDistBand, new Vector3(pos.x, pos.y - 1, pos.z), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            cubeData.frontCube =  createAllCubes(maxDistBand, new Vector3(pos.x, pos.y, pos.z + 1), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            cubeData.backCube =   createAllCubes(maxDistBand, new Vector3(pos.x, pos.y, pos.z - 1), asteroidCenter, maxDistFromCenter, cubeData.isOre, ref cubeDataGrid, ref pointsSetPositions, ref posToRandomizedPos, ref points, ref ConvexHullCalcGlobal);
+            
+            allOutsideCubeData.Add(cubeData);
+            allCubeData.Add(cubeData);
+
+            // create a small sphere at the midpoint where the color is different depending on the distband
+            Color[] colors = { Color.red, Color.blue, Color.green, Color.yellow, Color.cyan, Color.magenta, Color.black, Color.white };
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.position = midpoint + transform.position + new Vector3(0, 10, 0);
+            sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+            if (distBand != cubeData.distanceBandFromCenter)
+            {
+                Debug.Log("This one was fixed");
+            }
+            sphere.GetComponent<Renderer>().material.color = colors[cubeData.distanceBandFromCenter % colors.Length];
+            
+            return cubeData; // Add the cubeData to the list
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -517,9 +388,9 @@ public class AsteroidGenerator : MonoBehaviour
             trisTemp.Clear();
         }
 
-        for (int i = 0; i < allCubeData.Count; i++)
+        for (int i = 0; i < allOutsideCubeData.Count; i++)
         {
-            if (!allCubeData[i].isOutside)
+            if (!allOutsideCubeData[i].isOutside)
             {
                 continue;
             }
@@ -527,25 +398,25 @@ public class AsteroidGenerator : MonoBehaviour
             if (!minedCubesIndecies.Contains(i))
             {
                 trisTemp.Clear();
-                trisTemp.AddRange(allCubeData[i].tris);
+                trisTemp.AddRange(allOutsideCubeData[i].tris);
                 trisTemp.Select(i => i + allVerts.Count);
-                allVerts.AddRange(allCubeData[i].verts);
+                allVerts.AddRange(allOutsideCubeData[i].verts);
                 allTris.AddRange(trisTemp);
-                allNormals.AddRange(allCubeData[i].normals);
-                allUVs.AddRange(allCubeData[i].uvs);
+                allNormals.AddRange(allOutsideCubeData[i].normals);
+                allUVs.AddRange(allOutsideCubeData[i].uvs);
 
-                if (allCubeData[i].isOre)
+                if (allOutsideCubeData[i].isOre)
                 {
-                    foreach (int tri in allCubeData[i].tris)
+                    foreach (int tri in allOutsideCubeData[i].tris)
                     {
-                        oreTris.Add(tri + allVerts.Count - allCubeData[i].verts.Count);
+                        oreTris.Add(tri + allVerts.Count - allOutsideCubeData[i].verts.Count);
                     }
                 }
                 else
                 {
-                    foreach (int tri in allCubeData[i].tris)
+                    foreach (int tri in allOutsideCubeData[i].tris)
                     {
-                        otherTris.Add(tri + allVerts.Count - allCubeData[i].verts.Count);
+                        otherTris.Add(tri + allVerts.Count - allOutsideCubeData[i].verts.Count);
                     }
                 }
             }
@@ -600,7 +471,7 @@ public class AsteroidGenerator : MonoBehaviour
         int removedCubeIndex = RemoveCubesClosestToRay(ray, hit, worldManager);
         Item itemMined = stone;
 
-        if (allCubeData[removedCubeIndex].isOre)
+        if (allOutsideCubeData[removedCubeIndex].isOre)
         {
             itemMined = mineralType;
         }
@@ -625,13 +496,47 @@ public class AsteroidGenerator : MonoBehaviour
             }
         }
 
-        if (minedCubesIndecies.Count < allCubeData.Count - 1)
+        if (minedCubesIndecies.Count < allOutsideCubeData.Count - 1)
         {
             GenerateMesh();
         }
         else
         {
             asteroidSpawnManager.addRemovedAsteroid(originalPosition); // this will destroy it as well
+        }
+    }
+
+    void setConnectedCubesToOutsideCubes(CubeData cube)
+    {
+        if (cube.leftCube != null && !cube.leftCube.isOutside)
+        {
+            cube.leftCube.isOutside = true;
+            allOutsideCubeData.Add(cube.leftCube);
+        }
+        if (cube.rightCube != null && !cube.rightCube.isOutside)
+        {
+            cube.rightCube.isOutside = true;
+            allOutsideCubeData.Add(cube.rightCube);
+        }
+        if (cube.topCube != null && !cube.topCube.isOutside)
+        {
+            cube.topCube.isOutside = true;
+            allOutsideCubeData.Add(cube.topCube);
+        }
+        if (cube.bottomCube != null && !cube.bottomCube.isOutside)
+        {
+            cube.bottomCube.isOutside = true;
+            allOutsideCubeData.Add(cube.bottomCube);
+        }
+        if (cube.frontCube != null && !cube.frontCube.isOutside)
+        {
+            cube.frontCube.isOutside = true;
+            allOutsideCubeData.Add(cube.frontCube);
+        }
+        if (cube.backCube != null && !cube.backCube.isOutside)
+        {
+            cube.backCube.isOutside = true;
+            allOutsideCubeData.Add(cube.backCube);
         }
     }
 
@@ -643,11 +548,11 @@ public class AsteroidGenerator : MonoBehaviour
 
         float closestDist = Mathf.Infinity;
         // get the distances and pick the least. thats the closest cube
-        for (int i = 0; i < allCubeData.Count; i++)
+        for (int i = 0; i < allOutsideCubeData.Count; i++)
         {
-            if (!minedCubesIndecies.Contains(i) && allCubeData[i].isOutside)
+            if (!minedCubesIndecies.Contains(i) && allOutsideCubeData[i].isOutside)
             {
-                float dist = Vector3.Distance(hit.point, allCubeData[i].midpoint + asteroidCurrentPosition);
+                float dist = Vector3.Distance(hit.point, allOutsideCubeData[i].midpoint + asteroidCurrentPosition);
                 if (dist < closestDist)
                 {
                     closestDist = dist;
@@ -657,7 +562,7 @@ public class AsteroidGenerator : MonoBehaviour
         }
         minedCubesIndecies.Add(closestCubeIndex);
         // set the cubes connected to the mined cube to be outside cubes
-        allCubeData[closestCubeIndex].setConnectedCubesToOutsideCubes();
+        setConnectedCubesToOutsideCubes(allOutsideCubeData[closestCubeIndex]);
         
         asteroidSpawnManager.setRemovedChunksForAsteroid(worldManager.getObjectTruePosition(transform.position), minedCubesIndecies);
         return closestCubeIndex;
@@ -670,10 +575,10 @@ public class AsteroidGenerator : MonoBehaviour
         // use setConnectedCubesToOutsideCubes();
         foreach (int index in minedCubesIndecies)
         {
-            allCubeData[index].setConnectedCubesToOutsideCubes();
+            setConnectedCubesToOutsideCubes(allOutsideCubeData[index]);
         }
 
-        if (minedCubesIndecies.Count < allCubeData.Count - 1)
+        if (minedCubesIndecies.Count < allOutsideCubeData.Count - 1)
         {
             GenerateMesh();
         }
@@ -685,7 +590,7 @@ public class AsteroidGenerator : MonoBehaviour
 
     public void regenerateAsteroid()
     {
-        if (minedCubesIndecies.Count < allCubeData.Count - 1)
+        if (minedCubesIndecies.Count < allOutsideCubeData.Count - 1)
         {
             GenerateMesh();
         }
