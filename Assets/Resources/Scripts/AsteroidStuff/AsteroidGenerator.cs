@@ -54,7 +54,7 @@ public class CubeData
         {
             backCube.isOutside = true;
         }
-    
+
     }
 }
 
@@ -67,8 +67,7 @@ public class AsteroidGenerator : MonoBehaviour
     public Item mineralType;
     public Item stone;
     public bool isBig = false;
-    float AsteroidMinSize = 3.2f; // 4.2 for isBig
-    float AsteroidMaxSize = 3.7f; // 4.7 for isBig
+    public bool isMoon = false;
     public float size;
     public List<Vector3> points;
     public List<CubeData> allCubeData;
@@ -186,18 +185,17 @@ public class AsteroidGenerator : MonoBehaviour
         points = new List<Vector3>();
         if (isBig)
         {
-            AsteroidMinSize = 10.5f;
-            AsteroidMaxSize = 10.5f;
+            size = 7.5f;
         }
         else
         {
-            AsteroidMinSize = 3.5f;
-            AsteroidMaxSize = 3.5f;
+            size = 3.5f;
+        }
+        if (isMoon)
+        {
+            size = 20.5f;
         }
 
-        // make a vector3 for the dimentions of the asteroid with random values between AsteroidMinSize and AsteroidMaxSize
-        size = Random.Range(AsteroidMinSize, AsteroidMaxSize);
-        Debug.Log(size);
         float inbetweenPointSize = .5f;
         float increment = 1;
 
@@ -211,6 +209,15 @@ public class AsteroidGenerator : MonoBehaviour
 
         int count = 0;
         int xGridPos = 0;
+        float percentUsedForCutoff = .75f;
+        if (isBig)
+        {
+            percentUsedForCutoff = .65f;
+        }
+        if (isMoon)
+        {
+            percentUsedForCutoff = .5f;
+        }
         for (float x = -size - increment; x <= size;)
         {
             int yGridPos = 0;
@@ -229,7 +236,7 @@ public class AsteroidGenerator : MonoBehaviour
                     float distance = Vector3.Distance(asteroidCenter, new Vector3(x, y, z));
 
                     // the further from center, the higher the chances are that the vertex will not be added
-                    if (.75f >= distance / maxDistance)
+                    if (.99f >= distance / maxDistance)
                     {
                         // generate 8 points around the position of the voxel that make a cube
                         Vector3[] pointsAround = new Vector3[8];
@@ -249,7 +256,7 @@ public class AsteroidGenerator : MonoBehaviour
                         {
                             // get the distance from the center of the asteroid
                             float distanceFromCenter = Vector3.Distance(asteroidCenter, point);
-                            if (.75f >= distanceFromCenter / maxDistance)
+                            if (percentUsedForCutoff >= distanceFromCenter / maxDistance)
                             {
                                 // make a point using the int of all the points
                                 Vector3 pointInt = new Vector3(Mathf.Round(point.x), Mathf.Round(point.y), Mathf.Round(point.z));
@@ -433,7 +440,7 @@ public class AsteroidGenerator : MonoBehaviour
 
             ConvexHullCalculator ConvexHullCalcGlobal = new ConvexHullCalculator();
             ConvexHullCalcGlobal.GenerateHull(pointInThisCube, true, ref verts, ref tris, ref normals);
-            
+
             cube.verts = new List<Vector3>(verts);
             cube.tris = new List<int>(tris);
             cube.normals = new List<Vector3>(normals);
@@ -658,7 +665,7 @@ public class AsteroidGenerator : MonoBehaviour
         minedCubesIndecies.Add(closestCubeIndex);
         // set the cubes connected to the mined cube to be outside cubes
         allCubeData[closestCubeIndex].setConnectedCubesToOutsideCubes();
-        
+
         asteroidSpawnManager.setRemovedChunksForAsteroid(worldManager.getObjectTruePosition(transform.position), minedCubesIndecies);
         return closestCubeIndex;
     }

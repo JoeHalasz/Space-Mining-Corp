@@ -171,7 +171,7 @@ public class AsteroidSpawnManager : MonoBehaviour
         var watch = System.Diagnostics.Stopwatch.StartNew();
         watch.Start();
         // make normal asteroids
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < totalToPregen; i++)
         {
             AllPregeneratedAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), false));
         }
@@ -179,12 +179,12 @@ public class AsteroidSpawnManager : MonoBehaviour
         Debug.Log("Pregenerated " + totalToPregen + " small asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
         // make big asteroids
         watch = System.Diagnostics.Stopwatch.StartNew();
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < totalToPregen / 10; i++)
         {
             AllPregeneratedBigAsteroids.Add(GenerateOneAsteroid(new Vector3(0, 0, 0), true));
         }
         watch.Stop();
-        Debug.Log("Pregenerated " + 1 + " big asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
+        Debug.Log("Pregenerated " + totalToPregen / 10 + " big asteroids in " + watch.ElapsedMilliseconds / 1000f + "s");
 
     }
 
