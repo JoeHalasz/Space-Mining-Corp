@@ -67,7 +67,6 @@ public class AsteroidGenerator : MonoBehaviour
     public Item mineralType;
     public Item stone;
     public bool isBig = false;
-    public bool isMoon = false;
     public float size;
     public List<Vector3> points;
     public List<CubeData> allCubeData;
@@ -191,10 +190,6 @@ public class AsteroidGenerator : MonoBehaviour
         {
             size = 3.5f;
         }
-        if (isMoon)
-        {
-            size = 20.5f;
-        }
 
         float inbetweenPointSize = .5f;
         float increment = 1;
@@ -213,10 +208,6 @@ public class AsteroidGenerator : MonoBehaviour
         if (isBig)
         {
             percentUsedForCutoff = .65f;
-        }
-        if (isMoon)
-        {
-            percentUsedForCutoff = .5f;
         }
         for (float x = -size - increment; x <= size;)
         {
@@ -611,6 +602,7 @@ public class AsteroidGenerator : MonoBehaviour
         {
             itemMined = mineralType;
         }
+        Debug.Log(itemMined.getName() + " mined by " + miner.name);
 
         // if the miner or the miners parent has an inventory then add the mineral to the inventory
         if (miner.GetComponent<Inventory>() != null)
