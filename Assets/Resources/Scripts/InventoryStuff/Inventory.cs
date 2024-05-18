@@ -392,9 +392,18 @@ public class Inventory : MonoBehaviour
         return items;
     }
 
-    public void setInventory(List<ItemPair> items)
+    public void setInventory(List<ItemPair> _items)
     {
-        this.items = items;
+        if (_items.Count != 0)
+            this.items = _items;
+        else
+        {
+            // set all slots to null
+            for (int i = 0; i < items.Count; i++)
+            {
+                items[i] = null;
+            }
+        }
     }
 
 }
