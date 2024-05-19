@@ -199,9 +199,9 @@ public class MenuManager : MonoBehaviour
             return;
         }
         string saveName = selectedLoadRow.transform.Find("SaveName").GetComponent<TMPro.TextMeshProUGUI>().text;
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
             Debug.Log("Loading save: " + saveName);
-        #endif
+#endif
         turnAllGroupsOff();
         worldManager.Load(saveName);
         worldManager.backToGame();
@@ -403,7 +403,7 @@ public class MenuManager : MonoBehaviour
         OnPressSettings();
         backButton.SetActive(true);
     }
-    
+
     public void OnPressMainMenu()
     {
         turnAllGroupsOff();
